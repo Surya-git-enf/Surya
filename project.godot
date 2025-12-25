@@ -1,0 +1,7 @@
+[application]
+config/name="Auto Game"
+run/main_scene="res://scenes/Main.tscn"
+
+[display]
+window/size/viewport_width=720
+window/size/viewport_height=1280
