@@ -1,8 +1,12 @@
-extends Node2D
+extends Control
 
-var score := 0
+@onready var btn := $StartButton
+@onready var lbl := $Label
 
-func _input(event):
-    if event is InputEventScreenTouch and event.pressed:
-        score += 1
-        print("Score:", score)
+func _ready():
+    lbl.text = "Playable Template — ready!"
+    btn.pressed.connect(_on_button_pressed)
+
+func _on_button_pressed():
+    lbl.text = "You pressed Play! 🎮"
+    btn.disabled = true
