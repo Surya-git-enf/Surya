@@ -1,7 +1,4 @@
-[application]
-config/name="Auto Game"
+; minimal Godot 4 project
+config_version=4
 run/main_scene="res://scenes/Main.tscn"
-
-[display]
-window/size/viewport_width=720
-window/size/viewport_height=1280
+application/name="PlayableTemplate"
