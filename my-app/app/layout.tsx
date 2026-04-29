@@ -1,30 +1,30 @@
 
 import type { Metadata } from "next";
+import { Ubuntu } from "next/font/google";
 import "./globals.css";
 
+// Configure the premium Ubuntu font
+const ubuntu = Ubuntu({
+  weight: ['300', '400', '500', '700'],
+  subsets: ["latin"],
+  variable: "--font-ubuntu", // Allows us to use it in Tailwind
+});
+
 export const metadata: Metadata = {
-  title: "Surya Peddishetti — Portfolio",
-  description:
-    "Full Stack AI Developer & 3D Web Architect. I build immersive experiences that convert visitors into customers.",
-  openGraph: {
-    title: "Surya Peddishetti",
-    description: "Full Stack AI Developer & 3D Web Architect",
-    type: "website",
-  },
+  title: "Peddishetti Surya | Creative Developer",
+  description: "I build full stack AI apps and design immersive 3D websites.",
 };
 
 export default function RootLayout({
   children,
-}: {
+}: Readonly<{
   children: React.ReactNode;
-}) {
+}>) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-      </head>
-      <body className="bg-black antialiased">{children}</body>
+    <html lang="en" className="bg-black">
+      <body className={`${ubuntu.variable} font-sans antialiased bg-black text-white overflow-x-hidden`}>
+        {children}
+      </body>
     </html>
   );
 }
