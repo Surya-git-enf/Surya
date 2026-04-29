@@ -1,494 +1,353 @@
 
-"use client";
-import { useEffect, useRef, useState } from "react";
-import { gsap } from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
+'use client'
 
-gsap.registerPlugin(ScrollTrigger);
+import { useEffect, useRef, useState } from 'react'
 
-const apps = [
+const APPS = [
   {
-    id: "mailmate",
-    name: "Mailmate",
-    tagline: "Email Intelligence",
+    id: 'mailmate',
+    name: 'Mailmate',
     description:
-      "Email agent that filters priority business correspondence and dispatches Telegram alerts — so you only see what matters.",
-    accentColor: "#facc15",
-    glowColor: "rgba(250,204,21,0.5)",
+      'Email agent that filters priority business correspondence and dispatches real-time Telegram alerts — so nothing critical falls through the noise.',
+    frontColor: '#3B82F6',
     icon: (
-      <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
-        <rect x="8" y="20" width="64" height="44" rx="8" stroke="white" strokeOpacity="0.9" strokeWidth="3.5" fill="none"/>
-        <path d="M8 28l32 22 32-22" stroke="white" strokeOpacity="0.9" strokeWidth="3.5" strokeLinejoin="round"/>
-        <circle cx="62" cy="22" r="10" fill="#facc15"/>
-        <path d="M58 22l2.5 2.5L66 17" stroke="black" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+      <svg viewBox="0 0 80 80" width="64" height="64" fill="none">
+        <rect x="8" y="20" width="64" height="44" rx="6" stroke="white" strokeWidth="3"/>
+        <path d="M8 26l32 20 32-20" stroke="white" strokeWidth="3" strokeLinecap="round"/>
+        <circle cx="62" cy="22" r="8" fill="#EF4444"/>
+        <path d="M59 22h6M62 19v6" stroke="white" strokeWidth="2" strokeLinecap="round"/>
       </svg>
     ),
   },
   {
-    id: "slide",
-    name: "Slide",
-    tagline: "AI News Engine",
+    id: 'slide',
+    name: 'Slide',
     description:
-      "AI news aggregator distilling complex articles into high-impact briefings — cutting signal from noise at scale.",
-    accentColor: "#60a5fa",
-    glowColor: "rgba(96,165,250,0.5)",
+      'AI news aggregator that distils complex global articles into high-impact briefings — the signal, never the noise. Built for people who think in first principles.',
+    frontColor: '#8B5CF6',
     icon: (
-      <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
-        <rect x="10" y="10" width="60" height="60" rx="10" fill="none" stroke="white" strokeOpacity="0.9" strokeWidth="3.5"/>
-        <path d="M20 28h40M20 40h28M20 52h20" stroke="white" strokeOpacity="0.85" strokeWidth="3" strokeLinecap="round"/>
-        <circle cx="58" cy="48" r="10" fill="#60a5fa"/>
-        <path d="M54 48l8 0M58 44l4 4-4 4" stroke="black" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+      <svg viewBox="0 0 80 80" width="64" height="64" fill="none">
+        <rect x="10" y="10" width="60" height="12" rx="4" fill="white"/>
+        <rect x="10" y="30" width="44" height="12" rx="4" fill="white" fillOpacity="0.6"/>
+        <rect x="10" y="50" width="30" height="12" rx="4" fill="white" fillOpacity="0.35"/>
+        <circle cx="64" cy="60" r="10" fill="white" fillOpacity="0.2" stroke="white" strokeWidth="2"/>
+        <path d="M60 60h8M64 56v8" stroke="white" strokeWidth="2" strokeLinecap="round"/>
       </svg>
     ),
   },
   {
-    id: "playful",
-    name: "Playful",
-    tagline: "AI Game Engine",
+    id: 'playful',
+    name: 'Playful',
     description:
-      "Advanced AI game engine transforming text prompts into fully playable environments — turns words into worlds.",
-    accentColor: "#a78bfa",
-    glowColor: "rgba(167,139,250,0.5)",
+      'Advanced AI game engine that transforms text prompts into fully playable, immersive browser environments — no code, no assets, just words becoming worlds.',
+    frontColor: '#F97316',
     icon: (
-      <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
-        <rect x="8" y="28" width="64" height="36" rx="16" fill="none" stroke="white" strokeOpacity="0.9" strokeWidth="3.5"/>
-        <circle cx="28" cy="46" r="6" fill="none" stroke="white" strokeOpacity="0.85" strokeWidth="3"/>
-        <path d="M25 46h6M28 43v6" stroke="white" strokeOpacity="0.85" strokeWidth="2.5" strokeLinecap="round"/>
-        <circle cx="52" cy="46" r="6" fill="none" stroke="white" strokeOpacity="0.85" strokeWidth="3"/>
-        <circle cx="50" cy="44" r="2" fill="white" fillOpacity="0.85"/>
-        <circle cx="54" cy="48" r="2" fill="white" fillOpacity="0.85"/>
-        <path d="M30 16L40 8l10 8" stroke="white" strokeOpacity="0.5" strokeWidth="2.5" strokeLinejoin="round"/>
-        <line x1="40" y1="8" x2="40" y2="28" stroke="white" strokeOpacity="0.4" strokeWidth="2"/>
-        <circle cx="40" cy="16" r="3" fill="#a78bfa"/>
+      <svg viewBox="0 0 80 80" width="64" height="64" fill="none">
+        <rect x="8" y="20" width="64" height="44" rx="10" stroke="white" strokeWidth="3"/>
+        <circle cx="28" cy="42" r="6" fill="white"/>
+        <circle cx="52" cy="42" r="6" fill="white" fillOpacity="0.4"/>
+        <path d="M37 34v16M29 42h16" stroke="white" strokeWidth="2.5" strokeLinecap="round"/>
+        <path d="M46 38l6 4-6 4" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
       </svg>
     ),
   },
-];
+]
 
-// Sine wave geometry
-const WAVE_WIDTH = 900;
-const WAVE_HEIGHT = 220;
-const AMPLITUDE = 72;
-const FREQUENCY = 1; // 1 full cycle
-const VIEWBOX_W = WAVE_WIDTH;
-const VIEWBOX_H = WAVE_HEIGHT;
+function FlipCard({ app, active }: { app: typeof APPS[number]; active: boolean }) {
+  const [flipped, setFlipped] = useState(false)
 
-function getSineY(x: number, width: number, amplitude: number, cy: number, freq: number) {
-  return cy + amplitude * Math.sin((x / width) * freq * 2 * Math.PI);
+  return (
+    <div
+      style={{
+        opacity: active ? 1 : 0.25,
+        transform: active ? 'scale(1)' : 'scale(0.88)',
+        transition: 'opacity 0.5s ease, transform 0.5s var(--ease)',
+      }}
+    >
+      <div
+        className="flip-scene"
+        style={{ width: '260px', height: '320px', cursor: 'pointer' }}
+        onClick={() => setFlipped(v => !v)}
+      >
+        <div className={`flip-inner${flipped ? ' flipped' : ''}`}>
+
+          {/* Front */}
+          <div className="flip-front glass" style={{
+            display: 'flex', flexDirection: 'column',
+            alignItems: 'center', justifyContent: 'center',
+            gap: '20px',
+            boxShadow: active
+              ? `0 0 50px ${app.frontColor}44, 0 0 0 1px ${app.frontColor}33`
+              : '0 0 0 1px rgba(255,255,255,0.08)',
+          }}>
+            <div style={{
+              width: '88px', height: '88px',
+              borderRadius: '22px',
+              background: `linear-gradient(135deg, ${app.frontColor}33, ${app.frontColor}11)`,
+              border: `1px solid ${app.frontColor}44`,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+              {app.icon}
+            </div>
+            <p style={{
+              fontFamily: 'var(--font-display)',
+              fontSize: '22px', fontWeight: 700, color: '#fff',
+            }}>
+              {app.name}
+            </p>
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: '6px',
+            }}>
+              <div style={{ width: '16px', height: '1px', background: 'rgba(255,255,255,0.3)' }} />
+              <span style={{
+                fontFamily: 'var(--font-body)', fontSize: '10px',
+                letterSpacing: '0.25em', textTransform: 'uppercase',
+                color: 'rgba(255,255,255,0.35)',
+              }}>
+                Tap to read
+              </span>
+              <div style={{ width: '16px', height: '1px', background: 'rgba(255,255,255,0.3)' }} />
+            </div>
+          </div>
+
+          {/* Back */}
+          <div className="flip-back glass noise" style={{
+            padding: '28px 24px',
+            display: 'flex', flexDirection: 'column',
+            justifyContent: 'space-between',
+            boxShadow: `0 0 50px ${app.frontColor}55, 0 0 0 1px ${app.frontColor}44`,
+          }}>
+            <div>
+              <div style={{
+                height: '3px', borderRadius: '2px', marginBottom: '20px',
+                background: `linear-gradient(90deg, ${app.frontColor}, transparent)`,
+              }} />
+              <p style={{
+                fontFamily: 'var(--font-body)', fontSize: '10px',
+                fontWeight: 500, letterSpacing: '0.35em',
+                textTransform: 'uppercase', color: `${app.frontColor}`,
+                marginBottom: '12px',
+              }}>
+                {app.name}
+              </p>
+              <p style={{
+                fontFamily: 'var(--font-body)',
+                fontSize: '14px', lineHeight: 1.75,
+                color: 'rgba(255,255,255,0.65)',
+              }}>
+                {app.description}
+              </p>
+            </div>
+            <button
+              onClick={e => { e.stopPropagation(); setFlipped(false) }}
+              style={{
+                marginTop: '20px', padding: '10px',
+                background: 'rgba(255,255,255,0.06)',
+                border: '1px solid rgba(255,255,255,0.1)',
+                borderRadius: '8px',
+                fontFamily: 'var(--font-body)', fontSize: '11px',
+                letterSpacing: '0.2em', textTransform: 'uppercase',
+                color: 'rgba(255,255,255,0.4)', cursor: 'pointer',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+              }}
+            >
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                <path d="M10 6H2M5 3L2 6L5 9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+              Back
+            </button>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  )
 }
-
-// Card positions: peaks/troughs of the sine wave at x = W/6, W/2, 5W/6
-const cardXRatios = [0.15, 0.5, 0.85];
-const cardPositions = cardXRatios.map((r) => {
-  const x = r * WAVE_WIDTH;
-  const y = getSineY(x, WAVE_WIDTH, AMPLITUDE, WAVE_HEIGHT / 2, FREQUENCY);
-  return { x, y };
-});
-
-// Build the SVG path
-function buildWavePath() {
-  const pts: string[] = [];
-  for (let x = 0; x <= WAVE_WIDTH; x += 4) {
-    const y = getSineY(x, WAVE_WIDTH, AMPLITUDE, WAVE_HEIGHT / 2, FREQUENCY);
-    pts.push(x === 0 ? `M ${x},${y}` : `L ${x},${y}`);
-  }
-  return pts.join(" ");
-}
-
-const wavePath = buildWavePath();
 
 export default function AppsSineWave() {
-  const sectionRef = useRef<HTMLDivElement>(null);
-  const waveRef = useRef<SVGPathElement>(null);
-  const dotRef = useRef<SVGCircleElement>(null);
-  const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const [activeCard, setActiveCard] = useState(0);
-  const [flipped, setFlipped] = useState<boolean[]>([false, false, false]);
+  const wrapRef    = useRef<HTMLDivElement>(null)
+  const sectionRef = useRef<HTMLDivElement>(null)
+  const pathRef    = useRef<SVGPathElement>(null)
+  const [activeIdx, setActiveIdx] = useState(0)
 
-  const handleFlip = (i: number) => {
-    setFlipped((prev) => prev.map((v, idx) => (idx === i ? !v : v)));
-  };
+  // Sine wave path and card positions
+  const W = 1200, H = 260
+  const AMPLITUDE = 80, PERIOD = W / 2
+
+  const sineY = (x: number) =>
+    H / 2 - AMPLITUDE * Math.sin((2 * Math.PI * x) / PERIOD)
+
+  // Card x positions along wave
+  const cardXs = [W * 0.18, W * 0.5, W * 0.82]
+
+  const buildPath = () => {
+    const steps = 120
+    let d = `M 0 ${sineY(0)}`
+    for (let i = 1; i <= steps; i++) {
+      const x = (i / steps) * W
+      d += ` L ${x} ${sineY(x)}`
+    }
+    return d
+  }
 
   useEffect(() => {
-    // Animate cards in on scroll
-    cardRefs.current.forEach((card, i) => {
-      if (!card) return;
-      gsap.fromTo(
-        card,
-        { y: 50, opacity: 0, scale: 0.92, filter: "blur(8px)" },
-        {
-          y: 0,
-          opacity: 1,
-          scale: 1,
-          filter: "blur(0px)",
-          duration: 1.1,
-          ease: "cubic-bezier(0.16,1,0.3,1)",
-          scrollTrigger: {
-            trigger: sectionRef.current,
-            start: `${15 + i * 20}% center`,
-            toggleActions: "play none none reverse",
-          },
-        }
-      );
-    });
+    let mounted = true
+    let st: import('gsap/ScrollTrigger').ScrollTrigger
 
-    // Active card progression via scroll
-    ScrollTrigger.create({
-      trigger: sectionRef.current,
-      start: "top center",
-      end: "bottom center",
-      onUpdate: (self) => {
-        const p = self.progress;
-        let nextActive = 0;
-        if (p > 0.66) nextActive = 2;
-        else if (p > 0.33) nextActive = 1;
-        setActiveCard(nextActive);
+    const run = async () => {
+      const { gsap }          = await import('gsap')
+      const { ScrollTrigger } = await import('gsap/ScrollTrigger')
+      gsap.registerPlugin(ScrollTrigger)
 
-        // Animate the dot along the wave
-        if (dotRef.current) {
-          const xRatio = 0.15 + p * 0.7;
-          const xAbs = xRatio * WAVE_WIDTH;
-          const yAbs = getSineY(xAbs, WAVE_WIDTH, AMPLITUDE, WAVE_HEIGHT / 2, FREQUENCY);
-          dotRef.current.setAttribute("cx", String(xAbs));
-          dotRef.current.setAttribute("cy", String(yAbs));
-        }
-      },
-    });
+      const wrap    = wrapRef.current
+      const section = sectionRef.current
+      if (!wrap || !section || !mounted) return
 
-    // Heading reveal
-    gsap.fromTo(
-      ".apps-heading",
-      { y: 40, opacity: 0 },
-      {
-        y: 0,
-        opacity: 1,
-        duration: 1.0,
-        ease: "cubic-bezier(0.16,1,0.3,1)",
-        scrollTrigger: {
-          trigger: sectionRef.current,
-          start: "top 75%",
-          toggleActions: "play none none reverse",
+      st = ScrollTrigger.create({
+        trigger: section,
+        start: 'top 60%',
+        end: 'bottom 40%',
+        scrub: 1,
+        onUpdate(self) {
+          // 0–0.33 → card 0 active, 0.33–0.66 → card 1, 0.66–1 → card 2
+          const idx = Math.min(Math.floor(self.progress * 3), 2)
+          if (mounted) setActiveIdx(idx)
+
+          // Glowing dot travels along wave
+          const dot = wrap.querySelector<SVGCircleElement>('.wave-dot')
+          if (dot) {
+            const x = self.progress * W
+            const y = sineY(x)
+            dot.setAttribute('cx', `${x}`)
+            dot.setAttribute('cy', `${y}`)
+          }
         },
-      }
-    );
-  }, []);
+      })
+    }
+
+    run()
+    return () => { mounted = false; st?.kill() }
+  }, [])
 
   return (
     <section
       ref={sectionRef}
-      className="relative py-28 overflow-hidden bg-black"
-      style={{ minHeight: "100vh" }}
+      style={{
+        background: '#000',
+        padding: 'clamp(80px, 10vw, 140px) 0',
+        position: 'relative',
+        overflow: 'hidden',
+      }}
     >
-      {/* Background gradient */}
-      <div
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          background:
-            "radial-gradient(ellipse 80% 50% at 50% 50%, rgba(167,139,250,0.04) 0%, transparent 70%)",
-        }}
-      />
-
-      <div className="max-w-6xl mx-auto px-6">
-        {/* Heading */}
-        <div className="apps-heading text-center mb-4 opacity-0">
-          <p
-            className="text-white/25 tracking-[0.4em] uppercase mb-3"
-            style={{ fontFamily: "'DM Mono', monospace", fontSize: 11 }}
-          >
-            Products
-          </p>
-          <h2
-            className="text-white"
-            style={{
-              fontFamily: "'Bebas Neue', sans-serif",
-              fontSize: "clamp(48px, 8vw, 90px)",
-              letterSpacing: "0.05em",
-              lineHeight: 1,
-            }}
-          >
-            What I&apos;ve Built
-          </h2>
-          <div
-            className="mx-auto mt-4"
-            style={{
-              width: 80,
-              height: 1,
-              background:
-                "linear-gradient(90deg, transparent, rgba(167,139,250,0.8), transparent)",
-            }}
-          />
-        </div>
-
-        {/* Instruction */}
-        <p
-          className="text-center text-white/25 mb-12"
-          style={{ fontFamily: "'DM Mono', monospace", fontSize: 11, letterSpacing: "0.2em" }}
-        >
-          Tap cards to flip · Scroll to activate
+      {/* Header */}
+      <div style={{
+        textAlign: 'center', marginBottom: '60px',
+        padding: '0 clamp(24px, 6vw, 96px)',
+      }}>
+        <p style={{
+          fontFamily: 'var(--font-body)', fontSize: '11px',
+          fontWeight: 500, letterSpacing: '0.4em',
+          textTransform: 'uppercase', color: 'rgba(255,255,255,0.3)',
+          marginBottom: '14px',
+        }}>
+          Products
         </p>
-
-        {/* Sine wave + cards container */}
-        <div className="relative" style={{ minHeight: VIEWBOX_H + 300 }}>
-          {/* SVG Sine Wave */}
-          <div className="absolute inset-x-0 top-0 w-full overflow-visible pointer-events-none">
-            <svg
-              viewBox={`0 0 ${VIEWBOX_W} ${VIEWBOX_H}`}
-              preserveAspectRatio="xMidYMid meet"
-              className="w-full"
-              style={{ overflow: "visible" }}
-            >
-              <defs>
-                {/* Glow filter */}
-                <filter id="wave-glow" x="-20%" y="-100%" width="140%" height="300%">
-                  <feGaussianBlur stdDeviation="6" result="coloredBlur" />
-                  <feMerge>
-                    <feMergeNode in="coloredBlur" />
-                    <feMergeNode in="coloredBlur" />
-                    <feMergeNode in="SourceGraphic" />
-                  </feMerge>
-                </filter>
-                <linearGradient id="waveGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                  <stop offset="0%" stopColor="#facc15" stopOpacity="0.3" />
-                  <stop offset="33%" stopColor="#a78bfa" stopOpacity="0.8" />
-                  <stop offset="66%" stopColor="#60a5fa" stopOpacity="0.8" />
-                  <stop offset="100%" stopColor="#ec4899" stopOpacity="0.3" />
-                </linearGradient>
-                <filter id="dot-glow">
-                  <feGaussianBlur stdDeviation="4" result="coloredBlur" />
-                  <feMerge>
-                    <feMergeNode in="coloredBlur" />
-                    <feMergeNode in="SourceGraphic" />
-                  </feMerge>
-                </filter>
-              </defs>
-
-              {/* Shadow wave */}
-              <path
-                d={wavePath}
-                stroke="rgba(255,255,255,0.04)"
-                strokeWidth="12"
-                fill="none"
-                strokeLinecap="round"
-              />
-
-              {/* Main wave */}
-              <path
-                ref={waveRef}
-                d={wavePath}
-                stroke="url(#waveGrad)"
-                strokeWidth="2.5"
-                fill="none"
-                filter="url(#wave-glow)"
-                strokeLinecap="round"
-              />
-
-              {/* Card anchor dots */}
-              {cardPositions.map((pos, i) => (
-                <g key={i}>
-                  <circle
-                    cx={pos.x}
-                    cy={pos.y}
-                    r={activeCard === i ? 9 : 5}
-                    fill={activeCard === i ? apps[i].accentColor : "rgba(255,255,255,0.3)"}
-                    filter={activeCard === i ? "url(#dot-glow)" : undefined}
-                    style={{ transition: "r 0.4s ease, fill 0.4s ease" }}
-                  />
-                  {/* Vertical connector */}
-                  <line
-                    x1={pos.x}
-                    y1={pos.y}
-                    x2={pos.x}
-                    y2={i % 2 === 0 ? pos.y - 20 : pos.y + 20}
-                    stroke={activeCard === i ? apps[i].accentColor : "rgba(255,255,255,0.15)"}
-                    strokeWidth="1.5"
-                    strokeDasharray="3 3"
-                  />
-                </g>
-              ))}
-
-              {/* Traveling dot */}
-              <circle
-                ref={dotRef}
-                cx={cardPositions[0].x}
-                cy={cardPositions[0].y}
-                r="5"
-                fill="white"
-                fillOpacity="0.9"
-                filter="url(#dot-glow)"
-              />
-            </svg>
-          </div>
-
-          {/* Flip Cards */}
-          <div className="relative" style={{ paddingTop: VIEWBOX_H - 60 }}>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8">
-              {apps.map((app, i) => {
-                const isActive = activeCard === i;
-                const isFlipped = flipped[i];
-
-                return (
-                  <div
-                    key={app.id}
-                    ref={(el) => { cardRefs.current[i] = el; }}
-                    className="opacity-0"
-                    style={{ perspective: "1000px" }}
-                    onClick={() => handleFlip(i)}
-                  >
-                    <div
-                      className="relative cursor-pointer"
-                      style={{
-                        width: "100%",
-                        height: 280,
-                        transformStyle: "preserve-3d",
-                        transform: isFlipped ? "rotateY(180deg)" : "rotateY(0deg)",
-                        transition: "transform 0.75s cubic-bezier(0.16,1,0.3,1)",
-                      }}
-                    >
-                      {/* FRONT */}
-                      <div
-                        className="absolute inset-0 rounded-3xl flex flex-col items-center justify-center p-6"
-                        style={{
-                          backfaceVisibility: "hidden",
-                          WebkitBackfaceVisibility: "hidden",
-                          background: isActive
-                            ? `linear-gradient(135deg, rgba(10,10,10,0.9) 0%, rgba(20,20,20,0.7) 100%)`
-                            : "rgba(10,10,10,0.6)",
-                          backdropFilter: "blur(24px)",
-                          WebkitBackdropFilter: "blur(24px)",
-                          border: `1px solid ${isActive ? app.accentColor + "88" : "rgba(255,255,255,0.07)"}`,
-                          boxShadow: isActive
-                            ? `0 0 40px 6px ${app.glowColor}, 0 24px 60px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.1)`
-                            : "0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.04)",
-                          transition: "all 0.5s cubic-bezier(0.16,1,0.3,1)",
-                          transform: isActive ? "translateY(-6px)" : "none",
-                        }}
-                      >
-                        {/* Icon */}
-                        <div
-                          className="mb-4"
-                          style={{
-                            width: 72,
-                            height: 72,
-                            filter: isActive
-                              ? `drop-shadow(0 0 16px ${app.accentColor})`
-                              : "none",
-                            transition: "filter 0.4s ease",
-                          }}
-                        >
-                          {app.icon}
-                        </div>
-
-                        {/* App name */}
-                        <h3
-                          className="text-white text-center mb-1"
-                          style={{
-                            fontFamily: "'Bebas Neue', sans-serif",
-                            fontSize: 28,
-                            letterSpacing: "0.08em",
-                          }}
-                        >
-                          {app.name}
-                        </h3>
-
-                        {/* Tagline */}
-                        <p
-                          className="tracking-widest uppercase text-center"
-                          style={{
-                            color: app.accentColor,
-                            fontFamily: "'DM Mono', monospace",
-                            fontSize: 10,
-                            letterSpacing: "0.25em",
-                            opacity: 0.8,
-                          }}
-                        >
-                          {app.tagline}
-                        </p>
-
-                        {/* Flip hint */}
-                        <div
-                          className="absolute bottom-4 right-5 flex items-center gap-1"
-                          style={{ opacity: 0.3 }}
-                        >
-                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
-                            <path d="M1 4v6h6M23 20v-6h-6" /><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15" />
-                          </svg>
-                        </div>
-
-                        {/* Active indicator */}
-                        {isActive && (
-                          <div
-                            className="absolute top-4 left-5 w-2 h-2 rounded-full"
-                            style={{
-                              background: app.accentColor,
-                              boxShadow: `0 0 8px ${app.accentColor}`,
-                              animation: "activePulse 1.5s ease infinite",
-                            }}
-                          />
-                        )}
-                      </div>
-
-                      {/* BACK */}
-                      <div
-                        className="absolute inset-0 rounded-3xl flex flex-col items-center justify-center p-7"
-                        style={{
-                          backfaceVisibility: "hidden",
-                          WebkitBackfaceVisibility: "hidden",
-                          transform: "rotateY(180deg)",
-                          background:
-                            "linear-gradient(135deg, rgba(8,8,12,0.95) 0%, rgba(15,10,25,0.92) 100%)",
-                          backdropFilter: "blur(28px)",
-                          WebkitBackdropFilter: "blur(28px)",
-                          border: `1px solid ${app.accentColor}55`,
-                          boxShadow: `0 0 30px 3px ${app.glowColor}, inset 0 1px 0 rgba(255,255,255,0.08)`,
-                        }}
-                      >
-                        {/* Accent line */}
-                        <div
-                          className="absolute top-0 left-8 right-8 h-px"
-                          style={{
-                            background: `linear-gradient(90deg, transparent, ${app.accentColor}, transparent)`,
-                          }}
-                        />
-
-                        <h3
-                          className="mb-4 text-center"
-                          style={{
-                            color: app.accentColor,
-                            fontFamily: "'Bebas Neue', sans-serif",
-                            fontSize: 22,
-                            letterSpacing: "0.12em",
-                          }}
-                        >
-                          {app.name}
-                        </h3>
-
-                        <p
-                          className="text-white/70 text-center leading-relaxed"
-                          style={{
-                            fontFamily: "'DM Mono', monospace",
-                            fontSize: 12,
-                            lineHeight: 1.8,
-                          }}
-                        >
-                          {app.description}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </div>
+        <h2 style={{
+          fontFamily: 'var(--font-display)',
+          fontSize: 'clamp(36px, 5vw, 64px)',
+          fontWeight: 900, color: '#fff', lineHeight: 1.05,
+        }}>
+          Three apps. One vision.
+        </h2>
       </div>
 
-      <style jsx global>{`
-        @keyframes activePulse {
-          0%, 100% { opacity: 1; transform: scale(1); }
-          50% { opacity: 0.6; transform: scale(1.4); }
-        }
-      `}</style>
+      {/* SVG sine wave + cards */}
+      <div
+        ref={wrapRef}
+        style={{ position: 'relative', width: '100%', maxWidth: '1200px', margin: '0 auto' }}
+      >
+        {/* Wave SVG */}
+        <svg
+          viewBox={`0 0 ${W} ${H}`}
+          preserveAspectRatio="none"
+          style={{ width: '100%', height: 'auto', display: 'block', overflow: 'visible' }}
+        >
+          {/* Glow filter */}
+          <defs>
+            <filter id="glow">
+              <feGaussianBlur stdDeviation="4" result="blur"/>
+              <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+            <filter id="dotglow">
+              <feGaussianBlur stdDeviation="6" result="blur"/>
+              <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+          </defs>
+
+          {/* Shadow wave */}
+          <path
+            d={buildPath()} fill="none"
+            stroke="rgba(255,255,255,0.06)" strokeWidth="6"
+          />
+
+          {/* Main glowing wave */}
+          <path
+            ref={pathRef}
+            d={buildPath()} fill="none"
+            stroke="white" strokeWidth="2"
+            filter="url(#glow)"
+          />
+
+          {/* Card anchor dots */}
+          {cardXs.map((x, i) => (
+            <g key={i}>
+              <circle
+                cx={x} cy={sineY(x)} r="8"
+                fill={i === activeIdx ? 'white' : 'rgba(255,255,255,0.2)'}
+                filter={i === activeIdx ? 'url(#dotglow)' : undefined}
+                style={{ transition: 'fill 0.4s ease' }}
+              />
+              <circle
+                cx={x} cy={sineY(x)} r="4"
+                fill={i === activeIdx ? '#000' : 'transparent'}
+              />
+            </g>
+          ))}
+
+          {/* Travelling dot */}
+          <circle
+            className="wave-dot"
+            cx={0} cy={sineY(0)} r="5"
+            fill="white" filter="url(#dotglow)"
+          />
+        </svg>
+
+        {/* Cards — positioned over wave peaks */}
+        <div style={{
+          position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
+          pointerEvents: 'none',
+        }}>
+          {APPS.map((app, i) => {
+            const xPct = (cardXs[i] / W) * 100
+            const y    = sineY(cardXs[i])
+            const yPct = (y / H) * 100
+            return (
+              <div
+                key={app.id}
+                style={{
+                  position: 'absolute',
+                  left: `${xPct}%`,
+                  top: `${yPct}%`,
+                  transform: 'translate(-50%, -110%)',
+                  pointerEvents: 'all',
+                }}
+              >
+                <FlipCard app={app} active={activeIdx === i} />
+              </div>
+            )
+          })}
+        </div>
+      </div>
     </section>
-  );
-            }
-                  
+  )
+        }
