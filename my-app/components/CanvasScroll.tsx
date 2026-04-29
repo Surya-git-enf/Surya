@@ -1,249 +1,238 @@
 
-"use client";
-import { useEffect, useRef } from "react";
-import { gsap } from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
+'use client'
 
-gsap.registerPlugin(ScrollTrigger);
+import { useEffect, useRef } from 'react'
 
-const TOTAL_FRAMES = 384;
-const FRAME_PATH = (i: number) =>
-  `/sequence/frame_${String(i).padStart(4, "0")}.jpg`;
-
-const panels = [
+const PANELS = [
   {
-    id: "personal",
-    title: "Peddishetti Surya",
-    lines: ["Age: 20", "I build full stack AI apps and design immersive 3D websites that convert visitors into customers."],
-    glowColor: "rgba(250,204,21,0.55)",
-    borderColor: "rgba(250,204,21,0.35)",
-    accentColor: "#facc15",
-    delay: 0,
+    id: 'personal',
+    label: 'About',
+    heading: 'Peddishetti Surya',
+    meta: 'Age 20',
+    body: 'I build full stack AI apps and design immersive 3D websites that convert visitors into customers.',
+    glow: 'rgba(250, 220, 80, 0.35)',
+    border: 'rgba(250, 220, 80, 0.22)',
+    tag: 'Full Stack · AI · 3D Web',
   },
   {
-    id: "education",
-    title: "Diploma in ECE",
-    lines: ["ESC Govt Polytechnic College", "2023 – 2026"],
-    glowColor: "rgba(59,130,246,0.55)",
-    borderColor: "rgba(59,130,246,0.35)",
-    accentColor: "#3b82f6",
-    delay: 0.18,
+    id: 'education',
+    label: 'Education',
+    heading: 'Diploma in ECE',
+    meta: 'ESC Govt Polytechnic College · 2023–2026',
+    body: 'Electronics & Communication Engineering — building bridges between hardware instincts and software ambition.',
+    glow: 'rgba(79, 195, 247, 0.35)',
+    border: 'rgba(79, 195, 247, 0.22)',
+    tag: 'Engineering · 2026',
   },
   {
-    id: "hobbies",
-    title: "Interests",
-    lines: ["🎵 Listening to music", "💻 Learning coding", "🎬 Watching movies"],
-    glowColor: "rgba(236,72,153,0.55)",
-    borderColor: "rgba(236,72,153,0.35)",
-    accentColor: "#ec4899",
-    delay: 0.36,
+    id: 'hobbies',
+    label: 'Interests',
+    heading: 'Beyond the Code',
+    meta: 'What drives the work',
+    body: 'Listening to music between builds. Learning new frameworks out of curiosity. Watching films for the cinematography, not just the story.',
+    glow: 'rgba(244, 114, 182, 0.35)',
+    border: 'rgba(244, 114, 182, 0.22)',
+    tag: 'Music · Film · Code',
   },
-];
+]
 
 export default function CanvasScroll() {
-  const sectionRef = useRef<HTMLDivElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const framesRef = useRef<HTMLImageElement[]>([]);
-  const currentFrameRef = useRef(0);
-  const panelRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const wrapRef    = useRef<HTMLDivElement>(null)
+  const canvasRef  = useRef<HTMLCanvasElement>(null)
+  const panelRefs  = useRef<(HTMLDivElement | null)[]>([])
 
   useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx2d = canvas.getContext("2d");
-    if (!ctx2d) return;
+    let mounted = true
+    let st: import('gsap/ScrollTrigger').ScrollTrigger
 
-    const resize = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-      drawFrame(currentFrameRef.current);
-    };
+    const run = async () => {
+      const { gsap }          = await import('gsap')
+      const { ScrollTrigger } = await import('gsap/ScrollTrigger')
+      gsap.registerPlugin(ScrollTrigger)
 
-    const drawFrame = (index: number) => {
-      const img = framesRef.current[Math.max(0, Math.min(index, TOTAL_FRAMES - 1))];
-      if (img && img.complete) {
-        ctx2d.clearRect(0, 0, canvas.width, canvas.height);
-        // Cover-fit the image
-        const scale = Math.max(canvas.width / img.naturalWidth, canvas.height / img.naturalHeight);
-        const w = img.naturalWidth * scale;
-        const h = img.naturalHeight * scale;
-        ctx2d.drawImage(img, (canvas.width - w) / 2, (canvas.height - h) / 2, w, h);
+      const wrap   = wrapRef.current
+      const canvas = canvasRef.current
+      if (!wrap || !canvas || !mounted) return
+
+      const ctx = canvas.getContext('2d')!
+      const TOTAL = 384
+
+      // ── Frame loader ──
+      const frames: HTMLImageElement[] = Array.from({ length: TOTAL }, (_, i) => {
+        const img = new Image()
+        img.src = `/sequence/frame_${String(i + 1).padStart(4, '0')}.jpg`
+        return img
+      })
+
+      const resize = () => {
+        canvas.width  = window.innerWidth
+        canvas.height = window.innerHeight
+        drawFrame(0)
       }
-    };
+      window.addEventListener('resize', resize)
+      resize()
 
-    // Preload frames with priority (first 60, then rest)
-    const loadFrames = () => {
-      for (let i = 1; i <= TOTAL_FRAMES; i++) {
-        const img = new Image();
-        img.src = FRAME_PATH(i);
-        img.onload = () => {
-          if (i === 1) drawFrame(0);
-        };
-        framesRef.current[i - 1] = img;
+      let currentFrame = 0
+      const drawFrame = (index: number) => {
+        const img = frames[Math.min(index, TOTAL - 1)]
+        if (!img.complete) return
+        ctx.clearRect(0, 0, canvas.width, canvas.height)
+        const scale = Math.max(canvas.width / img.naturalWidth, canvas.height / img.naturalHeight)
+        const w = img.naturalWidth  * scale
+        const h = img.naturalHeight * scale
+        const x = (canvas.width  - w) / 2
+        const y = (canvas.height - h) / 2
+        ctx.drawImage(img, x, y, w, h)
       }
-    };
 
-    resize();
-    loadFrames();
-    window.addEventListener("resize", resize);
+      // Draw first frame on load
+      frames[0].onload = () => drawFrame(0)
 
-    // ScrollTrigger for canvas scrub
-    const st = ScrollTrigger.create({
-      trigger: sectionRef.current,
-      start: "top top",
-      end: "bottom bottom",
-      scrub: 0.5,
-      onUpdate: (self) => {
-        const frame = Math.round(self.progress * (TOTAL_FRAMES - 1));
-        if (frame !== currentFrameRef.current) {
-          currentFrameRef.current = frame;
-          drawFrame(frame);
-        }
-      },
-    });
+      st = ScrollTrigger.create({
+        trigger: wrap,
+        start: 'top top',
+        end: '+=500%',
+        pin: true,
+        scrub: 1,
+        onUpdate(self) {
+          const p = self.progress
 
-    // Staggered panel reveals
-    panelRefs.current.forEach((panel, i) => {
-      if (!panel) return;
-      gsap.fromTo(
-        panel,
-        { y: 80, opacity: 0, filter: "blur(12px)", scale: 0.96 },
-        {
-          y: 0,
-          opacity: 1,
-          filter: "blur(0px)",
-          scale: 1,
-          duration: 1.0,
-          ease: "cubic-bezier(0.16,1,0.3,1)",
-          scrollTrigger: {
-            trigger: sectionRef.current,
-            start: `${20 + i * 22}% center`,
-            end: `${40 + i * 22}% center`,
-            scrub: false,
-            toggleActions: "play none none reverse",
-          },
-          delay: panels[i].delay,
-        }
-      );
-    });
+          // Frame scrub
+          const idx = Math.round(p * (TOTAL - 1))
+          if (idx !== currentFrame) {
+            currentFrame = idx
+            drawFrame(idx)
+          }
 
+          // Panel reveals — each at 33%, 55%, 77% progress
+          const thresholds = [0.28, 0.52, 0.74]
+          panelRefs.current.forEach((panel, i) => {
+            if (!panel) return
+            if (p >= thresholds[i]) {
+              const pp = Math.min((p - thresholds[i]) / 0.12, 1)
+              panel.style.opacity   = `${pp}`
+              panel.style.transform = `translateY(${(1 - pp) * 48}px)`
+            } else {
+              panel.style.opacity   = '0'
+              panel.style.transform = 'translateY(48px)'
+            }
+          })
+        },
+      })
+    }
+
+    run()
     return () => {
-      st.kill();
-      window.removeEventListener("resize", resize);
-    };
-  }, []);
+      mounted = false
+      st?.kill()
+    }
+  }, [])
 
   return (
-    <section
-      ref={sectionRef}
-      className="relative"
-      style={{ height: "400vh" }}
-    >
-      {/* Sticky canvas + panels wrapper */}
-      <div className="sticky top-0 w-full h-screen overflow-hidden">
-        {/* Image sequence canvas */}
-        <canvas
-          ref={canvasRef}
-          className="absolute inset-0 w-full h-full"
-          style={{ objectFit: "cover" }}
-        />
+    <section ref={wrapRef} style={{ position: 'relative', height: '100vh', overflow: 'hidden', background: '#000' }}>
+      {/* Canvas */}
+      <canvas
+        ref={canvasRef}
+        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}
+      />
 
-        {/* Dark overlay so panels read well */}
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            background:
-              "linear-gradient(180deg, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.55) 100%)",
-          }}
-        />
+      {/* Dark vignette */}
+      <div style={{
+        position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 2,
+        background: 'radial-gradient(ellipse at center, transparent 30%, rgba(0,0,0,0.7) 100%)',
+      }} />
 
-        {/* Panels container */}
-        <div className="absolute inset-0 flex items-end justify-center pb-12 px-6 pointer-events-none">
-          <div className="w-full max-w-5xl flex flex-col sm:flex-row gap-4 sm:gap-6 items-end justify-center">
-            {panels.map((panel, i) => (
-              <div
-                key={panel.id}
-                ref={(el) => { panelRefs.current[i] = el; }}
-                className="pointer-events-auto flex-1 min-w-0 group cursor-default"
-                style={{ opacity: 0 }}
-              >
-                <div
-                  className="relative rounded-2xl p-5 sm:p-6 overflow-hidden transition-all duration-500"
-                  style={{
-                    background: "rgba(10,10,10,0.55)",
-                    backdropFilter: "blur(28px) saturate(160%)",
-                    WebkitBackdropFilter: "blur(28px) saturate(160%)",
-                    border: `1px solid ${panel.borderColor}`,
-                    boxShadow: `0 0 0 0 ${panel.glowColor}, inset 0 1px 0 rgba(255,255,255,0.06)`,
-                    transition: "box-shadow 0.4s cubic-bezier(0.16,1,0.3,1), transform 0.4s cubic-bezier(0.16,1,0.3,1)",
-                  }}
-                  onMouseEnter={(e) => {
-                    (e.currentTarget as HTMLElement).style.boxShadow = `0 0 40px 8px ${panel.glowColor}, 0 20px 60px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1)`;
-                    (e.currentTarget as HTMLElement).style.transform = "translateY(-4px) scale(1.01)";
-                  }}
-                  onMouseLeave={(e) => {
-                    (e.currentTarget as HTMLElement).style.boxShadow = `0 0 0 0 ${panel.glowColor}, inset 0 1px 0 rgba(255,255,255,0.06)`;
-                    (e.currentTarget as HTMLElement).style.transform = "translateY(0) scale(1)";
-                  }}
-                >
-                  {/* Noise texture overlay */}
-                  <div
-                    className="absolute inset-0 rounded-2xl pointer-events-none opacity-[0.03]"
-                    style={{
-                      backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E")`,
-                    }}
-                  />
+      {/* Panels container */}
+      <div style={{
+        position: 'absolute', inset: 0, zIndex: 10,
+        display: 'flex', alignItems: 'flex-end',
+        padding: 'clamp(24px, 4vw, 64px)',
+        gap: 'clamp(16px, 2vw, 28px)',
+      }}>
+        {PANELS.map((panel, i) => (
+          <div
+            key={panel.id}
+            ref={el => { panelRefs.current[i] = el }}
+            className="glass noise"
+            style={{
+              flex: 1,
+              padding: 'clamp(20px, 2.5vw, 36px)',
+              opacity: 0,
+              transform: 'translateY(48px)',
+              transition: 'opacity 0.5s ease, transform 0.5s ease',
+              position: 'relative',
+              boxShadow: `0 0 40px ${panel.glow}, 0 0 0 1px ${panel.border}`,
+              border: `1px solid ${panel.border}`,
+            }}
+            onMouseEnter={e => {
+              (e.currentTarget as HTMLDivElement).style.boxShadow =
+                `0 0 70px ${panel.glow}, 0 0 0 1px ${panel.border}`
+            }}
+            onMouseLeave={e => {
+              (e.currentTarget as HTMLDivElement).style.boxShadow =
+                `0 0 40px ${panel.glow}, 0 0 0 1px ${panel.border}`
+            }}
+          >
+            {/* Tag */}
+            <p style={{
+              fontFamily: 'var(--font-body)', fontSize: '10px',
+              fontWeight: 500, letterSpacing: '0.35em',
+              textTransform: 'uppercase',
+              color: 'rgba(255,255,255,0.3)', marginBottom: '16px',
+              position: 'relative', zIndex: 1,
+            }}>
+              {panel.label}
+            </p>
 
-                  {/* Accent top bar */}
-                  <div
-                    className="absolute top-0 left-6 right-6 h-px rounded-full"
-                    style={{
-                      background: `linear-gradient(90deg, transparent, ${panel.accentColor}, transparent)`,
-                      opacity: 0.7,
-                    }}
-                  />
+            {/* Heading */}
+            <h3 style={{
+              fontFamily: 'var(--font-display)',
+              fontSize: 'clamp(18px, 2vw, 26px)',
+              fontWeight: 700, color: '#fff', lineHeight: 1.2,
+              marginBottom: '6px', position: 'relative', zIndex: 1,
+            }}>
+              {panel.heading}
+            </h3>
 
-                  {/* Panel number */}
-                  <span
-                    className="text-xs font-mono mb-3 block"
-                    style={{ color: panel.accentColor, letterSpacing: "0.2em", opacity: 0.7, fontFamily: "'DM Mono', monospace" }}
-                  >
-                    0{i + 1}
-                  </span>
+            {/* Meta */}
+            <p style={{
+              fontFamily: 'var(--font-body)', fontSize: '12px',
+              color: 'rgba(255,255,255,0.35)', marginBottom: '16px',
+              position: 'relative', zIndex: 1,
+            }}>
+              {panel.meta}
+            </p>
 
-                  {/* Title */}
-                  <h3
-                    className="font-bold text-white mb-3 leading-tight"
-                    style={{
-                      fontFamily: "'Bebas Neue', sans-serif",
-                      fontSize: "clamp(18px, 2.5vw, 26px)",
-                      letterSpacing: "0.05em",
-                    }}
-                  >
-                    {panel.title}
-                  </h3>
+            {/* Divider */}
+            <div style={{
+              height: '1px', marginBottom: '16px',
+              background: 'linear-gradient(to right, rgba(255,255,255,0.12), transparent)',
+              position: 'relative', zIndex: 1,
+            }} />
 
-                  {/* Lines */}
-                  <div className="space-y-1.5">
-                    {panel.lines.map((line, j) => (
-                      <p
-                        key={j}
-                        className="text-white/60 leading-relaxed"
-                        style={{
-                          fontFamily: "'DM Mono', monospace",
-                          fontSize: "clamp(11px, 1.2vw, 13px)",
-                        }}
-                      >
-                        {line}
-                      </p>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            ))}
+            {/* Body */}
+            <p style={{
+              fontFamily: 'var(--font-body)',
+              fontSize: 'clamp(13px, 1.2vw, 15px)',
+              lineHeight: 1.75, color: 'rgba(255,255,255,0.55)',
+              position: 'relative', zIndex: 1,
+            }}>
+              {panel.body}
+            </p>
+
+            {/* Bottom tag */}
+            <p style={{
+              fontFamily: 'var(--font-body)', fontSize: '10px',
+              fontWeight: 500, letterSpacing: '0.25em',
+              textTransform: 'uppercase',
+              color: 'rgba(255,255,255,0.18)', marginTop: '20px',
+              position: 'relative', zIndex: 1,
+            }}>
+              {panel.tag}
+            </p>
           </div>
-        </div>
+        ))}
       </div>
     </section>
-  );
-}
+  )
+                }
