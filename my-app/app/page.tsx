@@ -1,18 +1,18 @@
 
-import HeroReveal from '@/components/HeroReveal';
-import CanvasScroll from '@/components/TestScroll';
-import SkillsCarousel from '@/components/SkillsCarousel';
-import AppsSineWave from '@/components/AppsSineWave';
-import FooterGallery from '@/components/FooterGallery';
+import HeroReveal from "@/components/HeroReveal";
+import CanvasScroll from "@/components/CanvasScroll";
+import SkillsOrbit from "@/components/SkillsOrbit";
+import AppsSineWave from "@/components/AppsSineWave";
+import Footer from "@/components/Footer";
 
 export default function Home() {
   return (
-    <main className="bg-black min-h-screen text-white overflow-x-hidden font-sans">
+    <main className="bg-black min-h-screen">
       <HeroReveal />
       <CanvasScroll />
-      <SkillsCarousel />
+      <SkillsOrbit />
       <AppsSineWave />
-      <FooterGallery />
+      <Footer />
     </main>
   );
 }
