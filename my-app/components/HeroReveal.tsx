@@ -6,8 +6,8 @@ import { gsap } from "gsap";
 export default function HeroReveal() {
   const containerRef = useRef<HTMLDivElement>(null);
   const aRef = useRef<HTMLSpanElement>(null);
-  const suryaRef = useRef<HTMLSpanElement>(null);
-  const peddishettiRef = useRef<HTMLSpanElement>(null);
+  const suryaRef = useRef<HTMLDivElement>(null);
+  const peddishettiRef = useRef<HTMLDivElement>(null);
   const subtitleRef = useRef<HTMLDivElement>(null);
   const scrollHintRef = useRef<HTMLDivElement>(null);
 
@@ -247,4 +247,4 @@ export default function HeroReveal() {
       `}</style>
     </section>
   );
-        }
+}
