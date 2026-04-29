@@ -1,50 +1,89 @@
 
+@import url("https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cormorant+Garamond:wght@300;400;500&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&display=swap");
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-body {
-  background-color: #000000;
-  color: #ffffff;
+/* ─── Base ─────────────────────────────────────────── */
+:root {
+  --bg: #000000;
+  --white: #ffffff;
+  --purple: #8b5cf6;
+  --pink: #ec4899;
+  --blue: #3b82f6;
+  --yellow: #facc15;
+  --green: #22c55e;
+  --ease-premium: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
   overflow-x: hidden;
 }
 
-/* 3D Carousel Utilities */
-.perspective-1200 {
-  perspective: 1200px;
+body {
+  background: var(--bg);
+  color: var(--white);
+  font-family: "DM Mono", monospace;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
 }
+
+/* ─── Custom Scrollbar ──────────────────────────────── */
+::-webkit-scrollbar {
+  width: 4px;
+}
+::-webkit-scrollbar-track {
+  background: #0a0a0a;
+}
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #8b5cf6, #ec4899);
+  border-radius: 99px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #a78bfa, #f472b6);
+}
+
+/* ─── Selection ─────────────────────────────────────── */
+::selection {
+  background: rgba(139, 92, 246, 0.35);
+  color: white;
+}
+
+/* ─── Global link reset ─────────────────────────────── */
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* ─── GSAP default hidden helper ────────────────────── */
+.gsap-hidden {
+  opacity: 0;
+  visibility: hidden;
+}
+
+/* ─── Smooth image render ───────────────────────────── */
+canvas,
+img {
+  display: block;
+  image-rendering: -webkit-optimize-contrast;
+}
+
+/* ─── Perspective helpers ───────────────────────────── */
 .preserve-3d {
   transform-style: preserve-3d;
 }
-
-/* Flip Card Utilities - Ensures exact same size */
-.flip-card {
-  perspective: 1000px;
-}
-.flip-card-inner {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  transform-style: preserve-3d;
-}
-.flip-card.flipped .flip-card-inner {
-  transform: rotateY(180deg);
-}
-.flip-card-front, .flip-card-back {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  -webkit-backface-visibility: hidden;
+.backface-hidden {
   backface-visibility: hidden;
-  border-radius: 1rem;
-}
-.flip-card-back {
-  transform: rotateY(180deg);
-}
-
-/* SVG Sine Wave Animation */
-.path-line {
-  stroke-dasharray: 2000;
-  stroke-dashoffset: 2000;
+  -webkit-backface-visibility: hidden;
 }
