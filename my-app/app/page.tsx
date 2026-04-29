@@ -1,6 +1,6 @@
 
 import HeroReveal from '@/components/HeroReveal';
-import CanvasScroll from '@/components/CanvasScroll';
+import CanvasScroll from '@/components/TestScroll';
 import SkillsCarousel from '@/components/SkillsCarousel';
 import AppsSineWave from '@/components/AppsSineWave';
 import FooterGallery from '@/components/FooterGallery';
