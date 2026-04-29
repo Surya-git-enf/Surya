@@ -1,405 +1,221 @@
 
-"use client";
-import { useEffect, useRef, useState } from "react";
-import { gsap } from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
+'use client'
 
-gsap.registerPlugin(ScrollTrigger);
+import { useRef, useEffect } from 'react'
 
-// All SVG skill icons — pure white, no text labels
-const skills = [
+const SKILLS = [
   {
-    id: "python",
-    label: "Python",
-    color: "#3b82f6",
+    name: 'Python',
+    glow: '#3B82F6',
     svg: (
-      <svg viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M63.5 4C44.3 4 45.6 12.3 45.6 12.3V21h18.3v2.8H38.5S27 22.3 27 41.7c0 19.4 10.7 18.7 10.7 18.7h6.4v-9c0-10.8 9.4-10.2 9.4-10.2h16.2s9-.1 9-8.7V21c0 0 1.4-17-15.2-17zm-9 10.3c1.6 0 2.9 1.3 2.9 2.9s-1.3 2.9-2.9 2.9-2.9-1.3-2.9-2.9 1.3-2.9 2.9-2.9z" fill="white" fillOpacity="0.9"/>
-        <path d="M64.5 124C83.7 124 82.4 115.7 82.4 115.7V107H64.1v-2.8H89.5S101 105.7 101 86.3c0-19.4-10.7-18.7-10.7-18.7H84v9c0 10.8-9.4 10.2-9.4 10.2H58.4s-9 .1-9 8.7v10.2c0 0-1.4 17 15.1 17zm9-10.3c-1.6 0-2.9-1.3-2.9-2.9s1.3-2.9 2.9-2.9 2.9 1.3 2.9 2.9-1.3 2.9-2.9 2.9z" fill="white" fillOpacity="0.7"/>
+      <svg viewBox="0 0 128 128" width="52" height="52">
+        <path fill="white" d="M49.33 62h29.34C86.53 62 93 55.55 93 47.66V27.86C93 20.14 86.2 14.3 78.44 13.06a103.6 103.6 0 0 0-14.92-1c-5.27 0-10.22.37-14.2 1.06C41.78 14.29 35 20.14 35 27.86V38h29.33v4H23.5c-7.78 0-14.59 4.68-16.72 13.56C4.06 65.83 4 69.75 4 73.33c0 3.65.11 7.48 2.78 10.15C9.47 86.16 12.57 87 15.5 87H25v-12c0-8.79 7.61-16.5 16.5-16.5zM50 31.5c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"/>
+        <path fill="white" d="M78.67 66H49.33C41.47 66 35 72.45 35 80.34v19.8c0 7.72 6.8 13.56 14.56 14.8a103.6 103.6 0 0 0 14.92 1c5.27 0 10.22-.37 14.2-1.06 7.54-1.23 14.32-7.08 14.32-14.8V90H64v-4h41.5c7.78 0 14.59-4.68 16.72-13.56C124 63.17 124 59.25 124 55.67c0-3.65-.11-7.48-2.78-10.15C118.53 42.84 115.43 42 112.5 42H103v12c0 8.79-7.61 16.5-16.5 16.5zM78 96.5c2.76 0 5 2.24 5 5s-2.24 5-5 5-5-2.24-5-5 2.24-5 5-5z"/>
       </svg>
     ),
   },
   {
-    id: "fastapi",
-    label: "FastAPI",
-    color: "#10b981",
+    name: 'FastAPI',
+    glow: '#10B981',
     svg: (
-      <svg viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="64" cy="64" r="56" stroke="white" strokeOpacity="0.85" strokeWidth="5"/>
-        <path d="M72 28L40 68h28l-12 32 40-44H72z" fill="white" fillOpacity="0.9"/>
+      <svg viewBox="0 0 128 128" width="52" height="52">
+        <path fill="white" d="M64 0C28.7 0 0 28.7 0 64s28.7 64 64 64 64-28.7 64-64S99.3 0 64 0zm-4 98.8L62 67H40.5L68 29.2 66 61h20.5L58 98.8z"/>
       </svg>
     ),
   },
   {
-    id: "n8n",
-    label: "n8n",
-    color: "#f97316",
+    name: 'n8n',
+    glow: '#F97316',
     svg: (
-      <svg viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <rect x="10" y="50" width="28" height="28" rx="14" fill="white" fillOpacity="0.85"/>
-        <rect x="50" y="50" width="28" height="28" rx="14" stroke="white" strokeOpacity="0.85" strokeWidth="4"/>
-        <rect x="90" y="50" width="28" height="28" rx="14" fill="white" fillOpacity="0.85"/>
-        <line x1="38" y1="64" x2="50" y2="64" stroke="white" strokeOpacity="0.6" strokeWidth="3"/>
-        <line x1="78" y1="64" x2="90" y2="64" stroke="white" strokeOpacity="0.6" strokeWidth="3"/>
-        <line x1="64" y1="36" x2="64" y2="50" stroke="white" strokeOpacity="0.5" strokeWidth="2.5" strokeDasharray="4 3"/>
-        <line x1="64" y1="78" x2="64" y2="92" stroke="white" strokeOpacity="0.5" strokeWidth="2.5" strokeDasharray="4 3"/>
+      <svg viewBox="0 0 128 128" width="52" height="52">
+        <circle cx="24" cy="64" r="16" fill="white" />
+        <circle cx="64" cy="32" r="16" fill="white" />
+        <circle cx="104" cy="64" r="16" fill="white" />
+        <circle cx="64" cy="96" r="16" fill="white" />
+        <line x1="24" y1="64" x2="64" y2="32" stroke="white" strokeWidth="5" />
+        <line x1="64" y1="32" x2="104" y2="64" stroke="white" strokeWidth="5" />
+        <line x1="104" y1="64" x2="64" y2="96" stroke="white" strokeWidth="5" />
+        <line x1="64" y1="96" x2="24" y2="64" stroke="white" strokeWidth="5" />
       </svg>
     ),
   },
   {
-    id: "c-lang",
-    label: "C",
-    color: "#6366f1",
+    name: 'C Language',
+    glow: '#6366F1',
     svg: (
-      <svg viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M100 28C88 16 70 10 52 14 34 18 20 32 14 50 8 68 12 88 24 102c12 14 30 20 48 16 14-3 26-12 34-24l-14-8c-6 9-14 16-24 18-12 3-25-1-33-10-9-10-12-24-8-37 4-12 14-22 26-25 10-3 21-1 29 5z" fill="white" fillOpacity="0.88"/>
+      <svg viewBox="0 0 128 128" width="52" height="52">
+        <path fill="white" d="M64 4C32.3 4 6.6 29.7 6.6 61.4c0 31.7 25.7 57.4 57.4 57.4s57.4-25.7 57.4-57.4C121.4 29.7 95.7 4 64 4zm-5.4 84.6c-15.6 0-26.2-10.6-26.2-27.2 0-16.6 10.6-27.2 26.2-27.2 7.8 0 14.2 2.8 19 7.8l-7.2 8.8c-3-3-6.4-4.8-10.8-4.8-8.4 0-14 6.4-14 15.4s5.6 15.4 14 15.4c4.4 0 7.8-1.8 10.8-4.8l7.2 8.8c-4.8 5-11.2 7.8-19 7.8zm44.2-2h-8v-8h8v8zm0-14h-8v-8h8v8z"/>
       </svg>
     ),
   },
   {
-    id: "webgl",
-    label: "3D/WebGL",
-    color: "#8b5cf6",
+    name: '3D WebGL',
+    glow: '#8B5CF6',
     svg: (
-      <svg viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <polygon points="64,10 118,42 118,86 64,118 10,86 10,42" stroke="white" strokeOpacity="0.85" strokeWidth="4" fill="none"/>
-        <polygon points="64,28 100,48 100,80 64,100 28,80 28,48" stroke="white" strokeOpacity="0.5" strokeWidth="2.5" fill="none"/>
-        <line x1="64" y1="10" x2="64" y2="28" stroke="white" strokeOpacity="0.5" strokeWidth="2"/>
-        <line x1="118" y1="42" x2="100" y2="48" stroke="white" strokeOpacity="0.5" strokeWidth="2"/>
-        <line x1="118" y1="86" x2="100" y2="80" stroke="white" strokeOpacity="0.5" strokeWidth="2"/>
-        <line x1="64" y1="118" x2="64" y2="100" stroke="white" strokeOpacity="0.5" strokeWidth="2"/>
-        <line x1="10" y1="86" x2="28" y2="80" stroke="white" strokeOpacity="0.5" strokeWidth="2"/>
-        <line x1="10" y1="42" x2="28" y2="48" stroke="white" strokeOpacity="0.5" strokeWidth="2"/>
-        <circle cx="64" cy="64" r="8" fill="white" fillOpacity="0.9"/>
+      <svg viewBox="0 0 128 128" width="52" height="52">
+        <polygon points="64,8 120,40 120,88 64,120 8,88 8,40" fill="none" stroke="white" strokeWidth="6"/>
+        <polygon points="64,28 100,48 100,80 64,100 28,80 28,48" fill="none" stroke="white" strokeWidth="3" strokeOpacity="0.5"/>
+        <line x1="64" y1="8"   x2="64"  y2="28"  stroke="white" strokeWidth="3"/>
+        <line x1="120" y1="40" x2="100" y2="48"  stroke="white" strokeWidth="3"/>
+        <line x1="120" y1="88" x2="100" y2="80"  stroke="white" strokeWidth="3"/>
+        <line x1="64"  y1="120" x2="64" y2="100" stroke="white" strokeWidth="3"/>
+        <line x1="8"   y1="88"  x2="28" y2="80"  stroke="white" strokeWidth="3"/>
+        <line x1="8"   y1="40"  x2="28" y2="48"  stroke="white" strokeWidth="3"/>
+        <circle cx="64" cy="64" r="10" fill="white"/>
       </svg>
     ),
   },
   {
-    id: "supabase",
-    label: "Supabase",
-    color: "#22c55e",
+    name: 'Supabase',
+    glow: '#22D3EE',
     svg: (
-      <svg viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M74 10L12 74h42v44l62-62H74z" fill="white" fillOpacity="0.88"/>
+      <svg viewBox="0 0 128 128" width="52" height="52">
+        <path fill="white" d="M73.27 116.84c-3.3 4.15-10.05 2-10.12-3.27L61.7 64H103c7.53 0 11.72 8.73 7 14.4z"/>
+        <path fill="white" fillOpacity=".6" d="M54.73 11.16c3.3-4.15 10.05-2 10.12 3.27L66.3 64H25c-7.53 0-11.72-8.73-7-14.4z"/>
       </svg>
     ),
   },
   {
-    id: "prompt",
-    label: "Prompt Eng.",
-    color: "#a855f7",
+    name: 'Prompt Engineering',
+    glow: '#F59E0B',
     svg: (
-      <svg viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M64 8l7 21h22l-18 13 7 21-18-13-18 13 7-21-18-13h22z" fill="white" fillOpacity="0.9"/>
-        <path d="M24 72l4 11h11l-9 7 4 11-10-7-10 7 4-11-9-7h11z" fill="white" fillOpacity="0.65"/>
-        <path d="M100 72l4 11h11l-9 7 4 11-10-7-10 7 4-11-9-7h11z" fill="white" fillOpacity="0.65"/>
+      <svg viewBox="0 0 128 128" width="52" height="52">
+        <path fill="white" d="M64 8l8.8 26.4L98 28.8l-18.4 21.4 18.4 21.4-25.2-5.6L64 92l-8.8-26.4L30 71.2l18.4-21.4L30 28.4l25.2 5.6z"/>
+        <circle cx="24" cy="104" r="8" fill="white" fillOpacity="0.4"/>
+        <circle cx="104" cy="16" r="6" fill="white" fillOpacity="0.3"/>
+        <circle cx="112" cy="96" r="10" fill="white" fillOpacity="0.25"/>
       </svg>
     ),
   },
   {
-    id: "fullstack",
-    label: "Full Stack",
-    color: "#ec4899",
+    name: 'Full Stack',
+    glow: '#EC4899',
     svg: (
-      <svg viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <rect x="16" y="16" width="96" height="20" rx="5" fill="white" fillOpacity="0.88"/>
-        <rect x="16" y="44" width="96" height="20" rx="5" fill="white" fillOpacity="0.65"/>
-        <rect x="16" y="72" width="96" height="20" rx="5" fill="white" fillOpacity="0.42"/>
-        <rect x="16" y="100" width="96" height="12" rx="5" fill="white" fillOpacity="0.22"/>
-        <circle cx="32" cy="26" r="5" fill="black" fillOpacity="0.5"/>
-        <circle cx="44" cy="26" r="5" fill="black" fillOpacity="0.4"/>
-        <circle cx="56" cy="26" r="5" fill="black" fillOpacity="0.3"/>
+      <svg viewBox="0 0 128 128" width="52" height="52">
+        <rect x="16" y="16" width="96" height="20" rx="4" fill="white"/>
+        <rect x="16" y="46" width="96" height="20" rx="4" fill="white" fillOpacity="0.65"/>
+        <rect x="16" y="76" width="96" height="20" rx="4" fill="white" fillOpacity="0.35"/>
+        <circle cx="108" cy="108" r="12" fill="white" fillOpacity="0.5"/>
+        <circle cx="20"  cy="108" r="8"  fill="white" fillOpacity="0.3"/>
       </svg>
     ),
   },
-];
-
-// Orbit configuration: 2 rings
-const innerOrbit = [0, 1, 2, 3]; // indices
-const outerOrbit = [4, 5, 6, 7];
+]
 
 export default function SkillsOrbit() {
-  const sectionRef = useRef<HTMLDivElement>(null);
-  const orbitRef = useRef<HTMLDivElement>(null);
-  const [hoveredId, setHoveredId] = useState<string | null>(null);
-  const innerRotRef = useRef(0);
-  const outerRotRef = useRef(0);
-  const rafRef = useRef<number>(0);
-  const iconRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const sectionRef = useRef<HTMLDivElement>(null)
+  const headRef    = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    // Animate orbit rotation
-    const animate = () => {
-      innerRotRef.current += 0.18;
-      outerRotRef.current -= 0.11;
-
-      const inner = document.getElementById("inner-orbit");
-      const outer = document.getElementById("outer-orbit");
-      if (inner) inner.style.transform = `rotate(${innerRotRef.current}deg)`;
-      if (outer) outer.style.transform = `rotate(${outerRotRef.current}deg)`;
-
-      // Counter-rotate icons so they stay upright
-      document.querySelectorAll(".orbit-icon-inner").forEach((el) => {
-        (el as HTMLElement).style.transform = `rotate(${-innerRotRef.current}deg)`;
-      });
-      document.querySelectorAll(".orbit-icon-outer").forEach((el) => {
-        (el as HTMLElement).style.transform = `rotate(${-outerRotRef.current}deg)`;
-      });
-
-      rafRef.current = requestAnimationFrame(animate);
-    };
-
-    rafRef.current = requestAnimationFrame(animate);
-
-    // Section reveal
-    gsap.fromTo(
-      sectionRef.current,
-      { opacity: 0, y: 60 },
-      {
-        opacity: 1,
-        y: 0,
-        duration: 1.2,
-        ease: "cubic-bezier(0.16,1,0.3,1)",
-        scrollTrigger: {
-          trigger: sectionRef.current,
-          start: "top 80%",
-          toggleActions: "play none none reverse",
-        },
-      }
-    );
-
-    return () => cancelAnimationFrame(rafRef.current);
-  }, []);
-
-  const renderOrbitIcons = (indices: number[], orbitClass: string, radius: number, size: number) => {
-    return indices.map((skillIdx, i) => {
-      const skill = skills[skillIdx];
-      const angle = (i / indices.length) * 360;
-      const rad = (angle * Math.PI) / 180;
-      const x = Math.cos(rad) * radius;
-      const y = Math.sin(rad) * radius;
-      const isHovered = hoveredId === skill.id;
-
-      return (
-        <div
-          key={skill.id}
-          className={`${orbitClass} absolute`}
-          style={{
-            left: "50%",
-            top: "50%",
-            transform: `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`,
-            width: size,
-            height: size,
-          }}
-        >
-          <div
-            className={orbitClass === "orbit-icon-inner" ? "orbit-icon-inner" : "orbit-icon-outer"}
-            style={{ width: "100%", height: "100%" }}
-          >
-            <div
-              ref={(el) => { iconRefs.current[skillIdx] = el; }}
-              onMouseEnter={() => setHoveredId(skill.id)}
-              onMouseLeave={() => setHoveredId(null)}
-              className="relative cursor-pointer rounded-2xl flex items-center justify-center"
-              style={{
-                width: "100%",
-                height: "100%",
-                background: isHovered
-                  ? `rgba(${hexToRgb(skill.color)},0.18)`
-                  : "rgba(255,255,255,0.04)",
-                border: `1px solid ${isHovered ? skill.color : "rgba(255,255,255,0.1)"}`,
-                backdropFilter: "blur(16px)",
-                transition: "all 0.4s cubic-bezier(0.16,1,0.3,1)",
-                transform: isHovered ? "scale(1.25)" : "scale(1)",
-                filter: isHovered
-                  ? `drop-shadow(0 0 18px ${skill.color}) drop-shadow(0 0 40px ${skill.color}88)`
-                  : "none",
-                boxShadow: isHovered
-                  ? `0 0 40px 4px ${skill.color}55, inset 0 1px 0 rgba(255,255,255,0.15)`
-                  : "inset 0 1px 0 rgba(255,255,255,0.05)",
-                padding: size * 0.18,
-              }}
-            >
-              {skill.svg}
-            </div>
-          </div>
-        </div>
-      );
-    });
-  };
-
-  const orbitSize = 520;
-  const innerRadius = 120;
-  const outerRadius = 220;
-  const innerIconSize = 72;
-  const outerIconSize = 80;
+    const el = sectionRef.current
+    if (!el) return
+    const io = new IntersectionObserver(
+      ([e]) => {
+        if (e.isIntersecting && headRef.current) {
+          headRef.current.style.opacity   = '1'
+          headRef.current.style.transform = 'translateY(0)'
+        }
+      },
+      { threshold: 0.1 }
+    )
+    io.observe(el)
+    return () => io.disconnect()
+  }, [])
 
   return (
     <section
       ref={sectionRef}
-      className="relative py-32 overflow-hidden bg-black"
-      style={{ opacity: 0 }}
+      style={{
+        background: '#000',
+        padding: 'clamp(80px, 10vw, 140px) clamp(24px, 6vw, 96px)',
+        position: 'relative',
+        overflow: 'hidden',
+      }}
     >
       {/* Background glow */}
+      <div style={{
+        position: 'absolute', top: '50%', left: '50%',
+        transform: 'translate(-50%,-50%)',
+        width: '600px', height: '600px',
+        background: 'radial-gradient(circle, rgba(99,102,241,0.06) 0%, transparent 70%)',
+        pointerEvents: 'none',
+      }} />
+
+      {/* Header */}
       <div
-        className="absolute pointer-events-none"
+        ref={headRef}
         style={{
-          width: 800,
-          height: 800,
-          borderRadius: "50%",
-          background:
-            "radial-gradient(circle, rgba(139,92,246,0.06) 0%, transparent 70%)",
-          top: "50%",
-          left: "50%",
-          transform: "translate(-50%,-50%)",
-          filter: "blur(40px)",
+          textAlign: 'center', marginBottom: '80px',
+          opacity: 0, transform: 'translateY(28px)',
+          transition: 'opacity 0.8s ease, transform 0.8s ease',
+          position: 'relative', zIndex: 1,
         }}
-      />
-
-      <div className="max-w-6xl mx-auto px-6">
-        {/* Section heading */}
-        <div className="text-center mb-16">
-          <p
-            className="text-white/25 tracking-[0.4em] uppercase mb-3"
-            style={{ fontFamily: "'DM Mono', monospace", fontSize: 11 }}
-          >
-            Tech Stack
-          </p>
-          <h2
-            className="text-white"
-            style={{
-              fontFamily: "'Bebas Neue', sans-serif",
-              fontSize: "clamp(48px, 8vw, 90px)",
-              letterSpacing: "0.05em",
-              lineHeight: 1,
-            }}
-          >
-            Skills &amp; Tools
-          </h2>
-          <div
-            className="mx-auto mt-4"
-            style={{
-              width: 80,
-              height: 1,
-              background:
-                "linear-gradient(90deg, transparent, rgba(139,92,246,0.8), transparent)",
-            }}
-          />
-        </div>
-
-        {/* Orbit */}
-        <div className="flex items-center justify-center">
-          <div
-            ref={orbitRef}
-            className="relative"
-            style={{ width: orbitSize, height: orbitSize }}
-          >
-            {/* Orbit ring 1 */}
-            <div
-              className="absolute rounded-full pointer-events-none"
-              style={{
-                width: innerRadius * 2 + innerIconSize,
-                height: innerRadius * 2 + innerIconSize,
-                top: "50%",
-                left: "50%",
-                transform: "translate(-50%, -50%)",
-                border: "1px dashed rgba(255,255,255,0.07)",
-              }}
-            />
-            {/* Orbit ring 2 */}
-            <div
-              className="absolute rounded-full pointer-events-none"
-              style={{
-                width: outerRadius * 2 + outerIconSize,
-                height: outerRadius * 2 + outerIconSize,
-                top: "50%",
-                left: "50%",
-                transform: "translate(-50%, -50%)",
-                border: "1px dashed rgba(255,255,255,0.05)",
-              }}
-            />
-
-            {/* Center pulsing orb */}
-            <div
-              className="absolute"
-              style={{
-                top: "50%",
-                left: "50%",
-                transform: "translate(-50%, -50%)",
-                width: 64,
-                height: 64,
-              }}
-            >
-              <div
-                className="w-full h-full rounded-full"
-                style={{
-                  background:
-                    "radial-gradient(circle, rgba(139,92,246,0.6) 0%, rgba(236,72,153,0.3) 60%, transparent 100%)",
-                  animation: "pulse 2.8s ease-in-out infinite",
-                }}
-              />
-            </div>
-
-            {/* Inner orbit ring container */}
-            <div
-              id="inner-orbit"
-              className="absolute"
-              style={{
-                width: "100%",
-                height: "100%",
-                top: 0,
-                left: 0,
-              }}
-            >
-              {renderOrbitIcons(innerOrbit, "orbit-icon-inner", innerRadius, innerIconSize)}
-            </div>
-
-            {/* Outer orbit ring container */}
-            <div
-              id="outer-orbit"
-              className="absolute"
-              style={{
-                width: "100%",
-                height: "100%",
-                top: 0,
-                left: 0,
-              }}
-            >
-              {renderOrbitIcons(outerOrbit, "orbit-icon-outer", outerRadius, outerIconSize)}
-            </div>
-          </div>
-        </div>
-
-        {/* Skill name tooltip */}
-        <div
-          className="text-center mt-10 h-8"
-          style={{ transition: "opacity 0.3s ease" }}
-        >
-          {hoveredId && (
-            <span
-              className="text-white/80 tracking-[0.3em] uppercase"
-              style={{ fontFamily: "'DM Mono', monospace", fontSize: 12 }}
-            >
-              {skills.find((s) => s.id === hoveredId)?.label}
-            </span>
-          )}
-        </div>
+      >
+        <p style={{
+          fontFamily: 'var(--font-body)', fontSize: '11px',
+          fontWeight: 500, letterSpacing: '0.4em',
+          textTransform: 'uppercase', color: 'rgba(255,255,255,0.3)',
+          marginBottom: '16px',
+        }}>
+          The Stack
+        </p>
+        <h2 style={{
+          fontFamily: 'var(--font-display)',
+          fontSize: 'clamp(36px, 5vw, 64px)',
+          fontWeight: 900, color: '#fff', lineHeight: 1.05,
+        }}>
+          Tools of the craft.
+        </h2>
       </div>
 
-      <style jsx global>{`
-        @keyframes pulse {
-          0%, 100% { opacity: 0.8; transform: scale(1); }
-          50% { opacity: 1; transform: scale(1.15); }
-        }
-      `}</style>
+      {/* Skill icons grid */}
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))',
+        gap: 'clamp(20px, 3vw, 40px)',
+        maxWidth: '900px',
+        margin: '0 auto',
+        position: 'relative', zIndex: 1,
+      }}>
+        {SKILLS.map((skill) => (
+          <div
+            key={skill.name}
+            title={skill.name}
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '32px 20px',
+              borderRadius: '20px',
+              background: 'rgba(255,255,255,0.03)',
+              border: '1px solid rgba(255,255,255,0.06)',
+              cursor: 'pointer',
+              transition: 'transform 0.3s var(--ease), box-shadow 0.3s ease, background 0.3s ease',
+            }}
+            onMouseEnter={e => {
+              const d = e.currentTarget as HTMLDivElement
+              d.style.transform  = 'scale(1.1) translateY(-4px)'
+              d.style.background = 'rgba(255,255,255,0.06)'
+              d.style.boxShadow  = `0 0 40px ${skill.glow}55, 0 0 80px ${skill.glow}22`
+              const svg = d.querySelector('svg') as SVGElement
+              if (svg) svg.style.filter = `drop-shadow(0 0 12px ${skill.glow})`
+            }}
+            onMouseLeave={e => {
+              const d = e.currentTarget as HTMLDivElement
+              d.style.transform  = 'scale(1) translateY(0)'
+              d.style.background = 'rgba(255,255,255,0.03)'
+              d.style.boxShadow  = 'none'
+              const svg = d.querySelector('svg') as SVGElement
+              if (svg) svg.style.filter = 'none'
+            }}
+          >
+            <div style={{ transition: 'filter 0.3s ease' }}>
+              {skill.svg}
+            </div>
+          </div>
+        ))}
+      </div>
     </section>
-  );
+  )
 }
-
-function hexToRgb(hex: string): string {
-  const r = parseInt(hex.slice(1, 3), 16);
-  const g = parseInt(hex.slice(3, 5), 16);
-  const b = parseInt(hex.slice(5, 7), 16);
-  return `${r},${g},${b}`;
-                                     }
-              
