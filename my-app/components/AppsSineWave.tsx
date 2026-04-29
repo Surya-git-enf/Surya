@@ -1,353 +1,126 @@
 
-'use client'
+"use client";
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef } from 'react';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
-const APPS = [
+gsap.registerPlugin(ScrollTrigger);
+
+// Pure, massive SVGs - No text
+const skillsData = [
   {
-    id: 'mailmate',
-    name: 'Mailmate',
-    description:
-      'Email agent that filters priority business correspondence and dispatches real-time Telegram alerts — so nothing critical falls through the noise.',
-    frontColor: '#3B82F6',
-    icon: (
-      <svg viewBox="0 0 80 80" width="64" height="64" fill="none">
-        <rect x="8" y="20" width="64" height="44" rx="6" stroke="white" strokeWidth="3"/>
-        <path d="M8 26l32 20 32-20" stroke="white" strokeWidth="3" strokeLinecap="round"/>
-        <circle cx="62" cy="22" r="8" fill="#EF4444"/>
-        <path d="M59 22h6M62 19v6" stroke="white" strokeWidth="2" strokeLinecap="round"/>
-      </svg>
-    ),
+    name: "Python",
+    color: "rgba(59, 130, 246, 0.8)", // Blue glow
+    svg: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-16 h-16"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>
   },
   {
-    id: 'slide',
-    name: 'Slide',
-    description:
-      'AI news aggregator that distils complex global articles into high-impact briefings — the signal, never the noise. Built for people who think in first principles.',
-    frontColor: '#8B5CF6',
-    icon: (
-      <svg viewBox="0 0 80 80" width="64" height="64" fill="none">
-        <rect x="10" y="10" width="60" height="12" rx="4" fill="white"/>
-        <rect x="10" y="30" width="44" height="12" rx="4" fill="white" fillOpacity="0.6"/>
-        <rect x="10" y="50" width="30" height="12" rx="4" fill="white" fillOpacity="0.35"/>
-        <circle cx="64" cy="60" r="10" fill="white" fillOpacity="0.2" stroke="white" strokeWidth="2"/>
-        <path d="M60 60h8M64 56v8" stroke="white" strokeWidth="2" strokeLinecap="round"/>
-      </svg>
-    ),
+    name: "FastAPI",
+    color: "rgba(16, 185, 129, 0.8)", // Emerald glow
+    svg: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-16 h-16"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
   },
   {
-    id: 'playful',
-    name: 'Playful',
-    description:
-      'Advanced AI game engine that transforms text prompts into fully playable, immersive browser environments — no code, no assets, just words becoming worlds.',
-    frontColor: '#F97316',
-    icon: (
-      <svg viewBox="0 0 80 80" width="64" height="64" fill="none">
-        <rect x="8" y="20" width="64" height="44" rx="10" stroke="white" strokeWidth="3"/>
-        <circle cx="28" cy="42" r="6" fill="white"/>
-        <circle cx="52" cy="42" r="6" fill="white" fillOpacity="0.4"/>
-        <path d="M37 34v16M29 42h16" stroke="white" strokeWidth="2.5" strokeLinecap="round"/>
-        <path d="M46 38l6 4-6 4" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-      </svg>
-    ),
+    name: "n8n",
+    color: "rgba(239, 68, 68, 0.8)", // Red glow
+    svg: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-16 h-16"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
   },
-]
-
-function FlipCard({ app, active }: { app: typeof APPS[number]; active: boolean }) {
-  const [flipped, setFlipped] = useState(false)
-
-  return (
-    <div
-      style={{
-        opacity: active ? 1 : 0.25,
-        transform: active ? 'scale(1)' : 'scale(0.88)',
-        transition: 'opacity 0.5s ease, transform 0.5s var(--ease)',
-      }}
-    >
-      <div
-        className="flip-scene"
-        style={{ width: '260px', height: '320px', cursor: 'pointer' }}
-        onClick={() => setFlipped(v => !v)}
-      >
-        <div className={`flip-inner${flipped ? ' flipped' : ''}`}>
-
-          {/* Front */}
-          <div className="flip-front glass" style={{
-            display: 'flex', flexDirection: 'column',
-            alignItems: 'center', justifyContent: 'center',
-            gap: '20px',
-            boxShadow: active
-              ? `0 0 50px ${app.frontColor}44, 0 0 0 1px ${app.frontColor}33`
-              : '0 0 0 1px rgba(255,255,255,0.08)',
-          }}>
-            <div style={{
-              width: '88px', height: '88px',
-              borderRadius: '22px',
-              background: `linear-gradient(135deg, ${app.frontColor}33, ${app.frontColor}11)`,
-              border: `1px solid ${app.frontColor}44`,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-            }}>
-              {app.icon}
-            </div>
-            <p style={{
-              fontFamily: 'var(--font-display)',
-              fontSize: '22px', fontWeight: 700, color: '#fff',
-            }}>
-              {app.name}
-            </p>
-            <div style={{
-              display: 'flex', alignItems: 'center', gap: '6px',
-            }}>
-              <div style={{ width: '16px', height: '1px', background: 'rgba(255,255,255,0.3)' }} />
-              <span style={{
-                fontFamily: 'var(--font-body)', fontSize: '10px',
-                letterSpacing: '0.25em', textTransform: 'uppercase',
-                color: 'rgba(255,255,255,0.35)',
-              }}>
-                Tap to read
-              </span>
-              <div style={{ width: '16px', height: '1px', background: 'rgba(255,255,255,0.3)' }} />
-            </div>
-          </div>
-
-          {/* Back */}
-          <div className="flip-back glass noise" style={{
-            padding: '28px 24px',
-            display: 'flex', flexDirection: 'column',
-            justifyContent: 'space-between',
-            boxShadow: `0 0 50px ${app.frontColor}55, 0 0 0 1px ${app.frontColor}44`,
-          }}>
-            <div>
-              <div style={{
-                height: '3px', borderRadius: '2px', marginBottom: '20px',
-                background: `linear-gradient(90deg, ${app.frontColor}, transparent)`,
-              }} />
-              <p style={{
-                fontFamily: 'var(--font-body)', fontSize: '10px',
-                fontWeight: 500, letterSpacing: '0.35em',
-                textTransform: 'uppercase', color: `${app.frontColor}`,
-                marginBottom: '12px',
-              }}>
-                {app.name}
-              </p>
-              <p style={{
-                fontFamily: 'var(--font-body)',
-                fontSize: '14px', lineHeight: 1.75,
-                color: 'rgba(255,255,255,0.65)',
-              }}>
-                {app.description}
-              </p>
-            </div>
-            <button
-              onClick={e => { e.stopPropagation(); setFlipped(false) }}
-              style={{
-                marginTop: '20px', padding: '10px',
-                background: 'rgba(255,255,255,0.06)',
-                border: '1px solid rgba(255,255,255,0.1)',
-                borderRadius: '8px',
-                fontFamily: 'var(--font-body)', fontSize: '11px',
-                letterSpacing: '0.2em', textTransform: 'uppercase',
-                color: 'rgba(255,255,255,0.4)', cursor: 'pointer',
-                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
-              }}
-            >
-              <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                <path d="M10 6H2M5 3L2 6L5 9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-              Back
-            </button>
-          </div>
-
-        </div>
-      </div>
-    </div>
-  )
-}
-
-export default function AppsSineWave() {
-  const wrapRef    = useRef<HTMLDivElement>(null)
-  const sectionRef = useRef<HTMLDivElement>(null)
-  const pathRef    = useRef<SVGPathElement>(null)
-  const [activeIdx, setActiveIdx] = useState(0)
-
-  // Sine wave path and card positions
-  const W = 1200, H = 260
-  const AMPLITUDE = 80, PERIOD = W / 2
-
-  const sineY = (x: number) =>
-    H / 2 - AMPLITUDE * Math.sin((2 * Math.PI * x) / PERIOD)
-
-  // Card x positions along wave
-  const cardXs = [W * 0.18, W * 0.5, W * 0.82]
-
-  const buildPath = () => {
-    const steps = 120
-    let d = `M 0 ${sineY(0)}`
-    for (let i = 1; i <= steps; i++) {
-      const x = (i / steps) * W
-      d += ` L ${x} ${sineY(x)}`
-    }
-    return d
+  {
+    name: "C Coding",
+    color: "rgba(139, 92, 246, 0.8)", // Purple glow
+    svg: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-16 h-16"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+  },
+  {
+    name: "3D Web Design",
+    color: "rgba(236, 72, 153, 0.8)", // Pink glow
+    svg: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-16 h-16"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+  },
+  {
+    name: "Supabase",
+    color: "rgba(34, 197, 94, 0.8)", // Green glow
+    svg: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-16 h-16"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+  },
+  {
+    name: "Prompt Engineering",
+    color: "rgba(234, 179, 8, 0.8)", // Yellow glow
+    svg: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-16 h-16"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/></svg>
+  },
+  {
+    name: "Full Stack",
+    color: "rgba(6, 182, 212, 0.8)", // Cyan glow
+    svg: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-16 h-16"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
   }
+];
+
+export default function SkillsOrbit() {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const carouselRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    let mounted = true
-    let st: import('gsap/ScrollTrigger').ScrollTrigger
+    const container = containerRef.current;
+    const carousel = carouselRef.current;
 
-    const run = async () => {
-      const { gsap }          = await import('gsap')
-      const { ScrollTrigger } = await import('gsap/ScrollTrigger')
-      gsap.registerPlugin(ScrollTrigger)
-
-      const wrap    = wrapRef.current
-      const section = sectionRef.current
-      if (!wrap || !section || !mounted) return
-
-      st = ScrollTrigger.create({
-        trigger: section,
-        start: 'top 60%',
-        end: 'bottom 40%',
-        scrub: 1,
-        onUpdate(self) {
-          // 0–0.33 → card 0 active, 0.33–0.66 → card 1, 0.66–1 → card 2
-          const idx = Math.min(Math.floor(self.progress * 3), 2)
-          if (mounted) setActiveIdx(idx)
-
-          // Glowing dot travels along wave
-          const dot = wrap.querySelector<SVGCircleElement>('.wave-dot')
-          if (dot) {
-            const x = self.progress * W
-            const y = sineY(x)
-            dot.setAttribute('cx', `${x}`)
-            dot.setAttribute('cy', `${y}`)
-          }
-        },
-      })
+    if (container && carousel) {
+      // Connect rotation strictly to the user's scroll
+      gsap.to(carousel, {
+        rotateY: -360, // Negative for a smoother right-to-left feel
+        ease: "none",
+        scrollTrigger: {
+          trigger: container,
+          start: "top bottom",
+          end: "bottom top",
+          scrub: 1.5, // The 1.5 gives it that fluid "magnetic" delay
+        }
+      });
     }
-
-    run()
-    return () => { mounted = false; st?.kill() }
-  }, [])
+  }, []);
 
   return (
-    <section
-      ref={sectionRef}
-      style={{
-        background: '#000',
-        padding: 'clamp(80px, 10vw, 140px) 0',
-        position: 'relative',
-        overflow: 'hidden',
-      }}
-    >
-      {/* Header */}
-      <div style={{
-        textAlign: 'center', marginBottom: '60px',
-        padding: '0 clamp(24px, 6vw, 96px)',
-      }}>
-        <p style={{
-          fontFamily: 'var(--font-body)', fontSize: '11px',
-          fontWeight: 500, letterSpacing: '0.4em',
-          textTransform: 'uppercase', color: 'rgba(255,255,255,0.3)',
-          marginBottom: '14px',
-        }}>
-          Products
-        </p>
-        <h2 style={{
-          fontFamily: 'var(--font-display)',
-          fontSize: 'clamp(36px, 5vw, 64px)',
-          fontWeight: 900, color: '#fff', lineHeight: 1.05,
-        }}>
-          Three apps. One vision.
-        </h2>
-      </div>
+    <section ref={containerRef} className="relative w-full h-[100vh] flex items-center justify-center bg-black overflow-hidden perspective-1200">
+      
+      {/* Central Core Glow */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-white/5 rounded-full blur-[100px] pointer-events-none" />
 
-      {/* SVG sine wave + cards */}
-      <div
-        ref={wrapRef}
-        style={{ position: 'relative', width: '100%', maxWidth: '1200px', margin: '0 auto' }}
-      >
-        {/* Wave SVG */}
-        <svg
-          viewBox={`0 0 ${W} ${H}`}
-          preserveAspectRatio="none"
-          style={{ width: '100%', height: 'auto', display: 'block', overflow: 'visible' }}
-        >
-          {/* Glow filter */}
-          <defs>
-            <filter id="glow">
-              <feGaussianBlur stdDeviation="4" result="blur"/>
-              <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-            </filter>
-            <filter id="dotglow">
-              <feGaussianBlur stdDeviation="6" result="blur"/>
-              <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-            </filter>
-          </defs>
-
-          {/* Shadow wave */}
-          <path
-            d={buildPath()} fill="none"
-            stroke="rgba(255,255,255,0.06)" strokeWidth="6"
-          />
-
-          {/* Main glowing wave */}
-          <path
-            ref={pathRef}
-            d={buildPath()} fill="none"
-            stroke="white" strokeWidth="2"
-            filter="url(#glow)"
-          />
-
-          {/* Card anchor dots */}
-          {cardXs.map((x, i) => (
-            <g key={i}>
-              <circle
-                cx={x} cy={sineY(x)} r="8"
-                fill={i === activeIdx ? 'white' : 'rgba(255,255,255,0.2)'}
-                filter={i === activeIdx ? 'url(#dotglow)' : undefined}
-                style={{ transition: 'fill 0.4s ease' }}
-              />
-              <circle
-                cx={x} cy={sineY(x)} r="4"
-                fill={i === activeIdx ? '#000' : 'transparent'}
-              />
-            </g>
-          ))}
-
-          {/* Travelling dot */}
-          <circle
-            className="wave-dot"
-            cx={0} cy={sineY(0)} r="5"
-            fill="white" filter="url(#dotglow)"
-          />
-        </svg>
-
-        {/* Cards — positioned over wave peaks */}
-        <div style={{
-          position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
-          pointerEvents: 'none',
-        }}>
-          {APPS.map((app, i) => {
-            const xPct = (cardXs[i] / W) * 100
-            const y    = sineY(cardXs[i])
-            const yPct = (y / H) * 100
-            return (
-              <div
-                key={app.id}
+      {/* The 3D Rotating Cylinder Container */}
+      <div ref={carouselRef} className="relative w-[200px] h-[200px] preserve-3d">
+        {skillsData.map((skill, index) => {
+          // Calculate exact angle to fan them out perfectly in 3D space
+          const angle = (360 / skillsData.length) * index;
+          
+          return (
+            <div
+              key={index}
+              className="absolute top-0 left-0 w-full h-full flex items-center justify-center group"
+              style={{
+                transform: `rotateY(${angle}deg) translateZ(350px)`,
+              }}
+            >
+              {/* The Glass Box - Perfectly square, thick glass, insane hover dynamics */}
+              <div 
+                className="relative w-32 h-32 rounded-3xl bg-black/50 backdrop-blur-xl border border-white/10 flex items-center justify-center transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-125 group-hover:-translate-y-4 group-hover:bg-white/10 group-hover:border-white/30"
                 style={{
-                  position: 'absolute',
-                  left: `${xPct}%`,
-                  top: `${yPct}%`,
-                  transform: 'translate(-50%, -110%)',
-                  pointerEvents: 'all',
+                  boxShadow: `0 0 0 rgba(0,0,0,0)`, // Default no shadow
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.boxShadow = `0 20px 50px ${skill.color}, inset 0 0 20px ${skill.color}`;
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.boxShadow = `0 0 0 rgba(0,0,0,0)`;
                 }}
               >
-                <FlipCard app={app} active={activeIdx === i} />
+                {/* SVG Icon Container */}
+                <div className="text-white/70 group-hover:text-white transition-colors duration-500">
+                  {skill.svg}
+                </div>
+                
+                {/* Under-card Reflection (Optional but incredibly premium) */}
+                <div className="absolute -bottom-8 left-0 w-full h-full opacity-0 group-hover:opacity-30 transition-opacity duration-500 blur-sm flex items-center justify-center" style={{ transform: 'scaleY(-1)' }}>
+                  <div className="text-white">{skill.svg}</div>
+                </div>
               </div>
-            )
-          })}
-        </div>
+            </div>
+          );
+        })}
       </div>
     </section>
-  )
-        }
+  );
+}
