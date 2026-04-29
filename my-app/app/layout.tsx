@@ -3,11 +3,10 @@ import type { Metadata } from "next";
 import { Ubuntu } from "next/font/google";
 import "./globals.css";
 
-// Configure the premium Ubuntu font
 const ubuntu = Ubuntu({
   weight: ['300', '400', '500', '700'],
   subsets: ["latin"],
-  variable: "--font-ubuntu", // Allows us to use it in Tailwind
+  variable: "--font-ubuntu",
 });
 
 export const metadata: Metadata = {
