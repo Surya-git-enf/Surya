@@ -1,240 +1,155 @@
 
 "use client";
 
-import React, { useLayoutEffect, useRef, useState } from "react";
-import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
+import React from "react";
 
-gsap.registerPlugin(ScrollTrigger);
-
-// APP DATA
-const apps = [
+// FOOTER DESIGNS DATA
+const footerDesigns = [
   {
     id: 1,
-    name: "Mailmate",
-    heading: "Mailmate",
-    imgSrc: "/mailmate.png",
-    description: "Intelligent email sorting assistant, automatically categorizing mail trends to identify priorities.",
+    name: "Transformers - Optimus prime",
+    imgSrc: "/transformers.png",
+    link: "https://playfulport.vercel.app/",
   },
   {
     id: 2,
-    name: "Slide",
-    heading: "Slide",
-    imgSrc: "/slide.png",
-    description: "Content dip analyzer, using AI to uncover hidden opportunities in trend engagement data.",
+    name: "Amazing spider man",
+    imgSrc: "/spiderman.png",
+    link: "https://spiderman-three-iota.vercel.app/",
   },
   {
     id: 3,
-    name: "Playful",
-    heading: "Playful",
+    name: "Cream store",
+    imgSrc: "/cream.png",
+    link: "https://creamstore-demo.vercel.app/", //Placeholder link
+  },
+  {
+    id: 4,
+    name: "Playful - AI powered game engine",
     imgSrc: "/logo.png",
-    description: "Next-gen game asset generator, using text-to-3D models to achieve creation goals faster.",
+    link: "https://playfulport.vercel.app/", //Shared Placeholder link
   },
 ];
 
-export default function AppSineWave() {
-  const containerRef = useRef<HTMLElement>(null);
-  const sinePathRef = useRef<SVGPathElement>(null);
-  const cardsRef = useRef<HTMLDivElement[]>([]);
-  const numberRefs = useRef<HTMLSpanElement[]>([]);
-  const movingNumberRef = useRef<HTMLDivElement>(null);
+// SOCIAL LINKS DATA
+const socialLinks = [
+  {
+    name: "Instagram",
+    icon: (
+      <svg className="w-7 h-7" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 2c2.717 0 3.056.01 4.122.06 1.065.05 1.79.217 2.428.465.66.254 1.216.598 1.772 1.153a4.908 4.908 0 011.153 1.772c.247.637.415 1.363.465 2.428.047 1.066.06 1.405.06 4.122 0 2.717-.01 3.056-.06 4.122-.05 1.065-.218 1.79-.465 2.428a4.883 4.883 0 01-1.153 1.772 4.915 4.915 0 01-1.772 1.153c-.637.247-1.363.415-2.428.465-1.066.047-1.405.06-4.122.06-2.717 0-3.056-.01-4.122-.06-1.065-.05-1.79-.218-2.428-.465a4.89 4.89 0 01-1.772-1.153 4.904 4.904 0 01-1.153-1.772c-.248-.637-.415-1.363-.465-2.428C2.013 15.056 2 14.717 2 12c0-2.717.01-3.056.06-4.122.05-1.065.217-1.79.465-2.428a4.88 4.88 0 011.153-1.772A4.897 4.897 0 015.45 2.525c.638-.248 1.362-.415 2.428-.465C8.944 2.013 9.283 2 12 2zm0 5a5 5 0 100 10 5 5 0 000-10zm6.5-.25a1.25 1.25 0 100 2.5 1.25 1.25 0 000-2.5zM12 9a3 3 0 110 6 3 3 0 010-6z" />
+      </svg>
+    ),
+    link: "https://www.instagram.com/surya3ddev?igsh=bDIzODRjY2E0dG95",
+  },
+  {
+    name: "Linkedin",
+    icon: (
+      <svg className="w-7 h-7" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M19 3a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h14zM8.5 16V9.5a1.5 1.5 0 000 3v3h1.5zm6.5 0V9.5a1.5 1.5 0 000 3v3h1.5zm-5.5 1.5V17a.5.5 0 011 0v.5a.5.5 0 01-1 0zm3.5 0V17a.5.5 0 011 0v.5a.5.5 0 01-1 0zM12 8.5a1.5 1.5 0 10-1.5 1.5A1.5 1.5 0 0012 8.5z" />
+      </svg>
+    ),
+    link: "https://www.linkedin.com/in/surisurya-undefined-9113b829b?utm_source=share_via&utm_content=profile&utm_medium=member_android",
+  },
+  {
+    name: "Discord",
+    icon: (
+      <svg className="w-7 h-7" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M20.317 4.37a19.791 19.791 0 00-4.885-1.515a.074.074 0 00-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 00-5.487 0a12.64 12.64 0 00-.617-1.25a.077.077 0 00-.079-.037A19.736 19.736 0 004.68 4.37a.071.071 0 00-.032.027C1.504 9.125 0.639 13.755 1.057 18.263a.072.072 0 00.03.056c2.127 1.56 4.191 2.507 6.213 3.137a.077.077 0 00.084-.027c.48-.654.9-1.347 1.254-2.078a.073.073 0 00-.04-.103c-.708-.268-1.38-.6-2.024-.985a.074.074 0 01-.008-.123c.142-.107.284-.218.421-.33a.074.074 0 01.078-.01c4.082 1.868 8.508 1.868 12.512 0a.074.074 0 01.078.01c.137.111.279.223.421.33a.074.074 0 01-.008.123c-.645.385-1.317.717-2.024.985a.073.073 0 00-.04.103c.354.73.774 1.424 1.254 2.078a.076.076 0 00.084.028c2.022-.63 4.086-1.577 6.213-3.137a.072.072 0 00.03-.056C23.36 12.78 22.185 8.163 20.317 4.37zM8.02 15.33c-1.182 0-2.156-1.085-2.156-2.419c0-1.333.955-2.418 2.156-2.418c1.21 0 2.175 1.085 2.156 2.418c0 1.334-.955 2.419-2.156 2.419zm7.974 0c-1.182 0-2.156-1.085-2.156-2.419c0-1.333.955-2.418 2.156-2.418c1.21 0 2.175 1.085 2.156 2.418c0 1.334-.946 2.419-2.156 2.419z" />
+      </svg>
+    ),
+    link: "https://discord.com/users/ayrus0101",
+  },
+  {
+    name: "WhatsApp",
+    icon: (
+      <svg className="w-7 h-7" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.001 5.45-4.436 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.414 0 .018 5.393 0 12.029c0 2.119.549 4.188 1.591 6.019L0 24l6.135-1.61a11.771 11.771 0 005.915 1.594h.005c6.637 0 12.032-5.393 12.035-12.029a11.762 11.762 0 00-3.417-8.567l.001-.001z" />
+      </svg>
+    ),
+    link: "https://wa.me/", // Shared Placeholder link
+  },
+];
 
-  // States for flip
-  const [flippedCards, setFlippedCards] = useState<Record<number, boolean>>({});
-
-  const handleFlip = (id: number) => {
-    setFlippedCards((prev) => ({ ...prev, [id]: !prev[id] }));
-  };
-
-  useLayoutEffect(() => {
-    const ctx = gsap.context(() => {
-      // Pin the section
-      ScrollTrigger.create({
-        trigger: containerRef.current,
-        pin: true,
-        start: "top top",
-        end: "+=300%", // Scroll distance
-        scrub: 1,
-      });
-
-      // --- SINE WAVE DRAW ---
-      const sineTl = gsap.timeline({
-        scrollTrigger: {
-          trigger: containerRef.current,
-          start: "top top",
-          end: "+=100%", // Wave draws fully first
-          scrub: 1,
-        },
-      });
-
-      const pathLength = sinePathRef.current?.getTotalLength() || 0;
-      sineTl.fromTo(
-        sinePathRef.current,
-        { strokeDasharray: pathLength, strokeDashoffset: pathLength },
-        { strokeDashoffset: 0, ease: "none" }
-      );
-
-      // --- NUMBER 1 TRAJECTORY ---
-      const numTl = gsap.timeline({
-        scrollTrigger: {
-          trigger: containerRef.current,
-          start: "10% top",
-          end: "+=150%",
-          scrub: 1,
-        },
-      });
-
-      const movingNumberElement = movingNumberRef.current;
-      const textElement = movingNumberElement?.querySelector("p");
-
-      // Number moves from peak 1 to peak 2.
-      // Coordinates are based on the SVG viewBox "0 0 1000 500"
-      numTl.set(movingNumberElement, { x: 345, y: 55, opacity: 1 }); // Start pos (1)
-      numTl.to(movingNumberElement, {
-        duration: 1,
-        x: 655, // Midpoint between 2 and 3
-        y: 55, // Straight vertical path visual (or keep slightly arched)
-        ease: "power2.inOut",
-        onComplete: () => {
-          if (textElement) textElement.innerText = "2";
-        },
-      });
-      // Trajectory end
-      numTl.to(movingNumberElement, {
-        duration: 1,
-        x: 775,
-        y: 275,
-        onStart: () => {
-          // If we want a linear vertical jump appearance before this trajectory...
-          // Prompt states "1st number moves top to bottom turns 2", while images show path.
-          // This trajectory implements the path between visual locations shown in image_2.
-        },
-      });
-
-      // --- APP CARD SWITCH & LIGHT SEQUENCE ---
-      const switchTl = gsap.timeline({
-        scrollTrigger: {
-          trigger: containerRef.current,
-          start: "10% top",
-          end: "+=300%", // Match pinning
-          scrub: 1,
-        },
-      });
-
-      cardsRef.current.forEach((card, index) => {
-        // Light reference (direct focus light in card markup)
-        const light = card.querySelector(".focus-light");
-
-        if (index === 0) {
-          // Card 1 active at start
-          switchTl.set(card, { opacity: 1 });
-          switchTl.set(light, { opacity: 1 });
-          
-          // Card 1 Decents Out
-          switchTl.to(card, { opacity: 0, duration: 1, ease: "power2.in" });
-          switchTl.to(light, { opacity: 0, duration: 1, ease: "power2.in" }, "<");
-          
-        } else if (index === 1) {
-          // Card 2 Appears (as 1 goes, matches parallel request)
-          switchTl.fromTo(card, { opacity: 0 }, { opacity: 1, duration: 1, ease: "power2.out" }, "-=0.5");
-          switchTl.to(light, { opacity: 1, duration: 1, ease: "power2.out" }, "<"); // Light focuses
-          
-          // Card 2 Decents Out
-          switchTl.to(card, { opacity: 0, duration: 1, ease: "power2.in" });
-          switchTl.to(light, { opacity: 0, duration: 1, ease: "power2.in" }, "<");
-          
-        } else if (index === 2) {
-          // Card 3 Appears
-          switchTl.fromTo(card, { opacity: 0 }, { opacity: 1, duration: 1, ease: "power2.out" }, "-=0.5");
-          switchTl.to(light, { opacity: 1, duration: 1, ease: "power2.out" }, "<"); // Light focuses
-        }
-      });
-
-    }, containerRef);
-
-    return () => {
-      ctx.revert();
-      window.removeEventListener("resize", () => {}); // Canvas resize not applicable to fixed height section setup
-    };
-  }, []);
-
+export default function Footer() {
   return (
-    <section ref={containerRef} className="relative h-[100vh] w-full bg-white text-gray-900 overflow-hidden flex flex-col justify-center items-center">
-      {/* Background Gradient */}
-      <div className="absolute inset-0 bg-gradient-to-b from-gray-50 to-white z-0" />
+    <footer className="relative w-full bg-white text-gray-900 pt-20 pb-12 overflow-hidden border-t border-gray-100">
+      {/* Background Subtle Gradient */}
+      <div className="absolute inset-x-0 bottom-0 h-[40vh] bg-gradient-to-t from-gray-100 to-white z-0" />
 
-      {/* Heading */}
-      <div className="relative z-10 mb-[-50px] w-full max-w-7xl px-8 flex justify-end">
-        <h1 className="text-[6vw] font-black tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-gray-950 to-gray-800 drop-shadow-[0_0_15px_rgba(0,0,0,0.1)]">
-          AI APPS BUILT
-        </h1>
-      </div>
+      <div className="relative z-10 max-w-7xl mx-auto px-8">
+        {/* Carousel Heading - Optional or integrate with prompt visual */}
+        <h2 className="text-[2.8vw] font-bold tracking-tight text-gray-950 mb-10 pl-4">
+          RECENT CREATIONS
+        </h2>
 
-      {/* Sine Wave Background SVG */}
-      <div className="absolute inset-0 z-5 flex items-center justify-center opacity-70">
-        <svg viewBox="0 0 1000 500" className="w-full h-auto px-16" preserveAspectRatio="none">
-          <path
-            ref={sinePathRef}
-            d="M 50 150 Q 200 450 350 150 Q 500 450 650 150 T 950 150"
-            fill="none"
-            stroke="#00f"
-            strokeWidth="10"
-            strokeLinecap="round"
-            style={{ filter: "drop-shadow(0px 0px 20px #00f)" }}
-          />
-
-          {/* Numbers with white glows (background static numbers) */}
-          <circle cx="345" cy="55" r="25" fill="#fff" style={{ filter: "drop-shadow(0px 0px 15px #fff)" }} />
-          <circle cx="655" cy="55" r="25" fill="#fff" style={{ filter: "drop-shadow(0px 0px 15px #fff)" }} />
-          <circle cx="775" cy="275" r="25" fill="#fff" style={{ filter: "drop-shadow(0px 0px 15px #fff)" }} />
-        </svg>
-      </div>
-
-      {/* Trajectory Number */}
-      <div ref={movingNumberRef} className="absolute z-15 p-2 rounded-full flex justify-center items-center opacity-0 preserve-3d" style={{ top: "0%", left: "0%" }}>
-        <circle cx="25" cy="25" r="25" fill="black" stroke="white" strokeWidth="3" />
-        <p className="absolute text-xl font-bold text-white">1</p>
-      </div>
-
-      {/* Cards Container */}
-      <div className="relative z-20 flex justify-center items-center w-full max-w-[1200px] gap-12 mt-16 px-16 h-[500px]">
-        {apps.map((app, index) => (
-          <div
-            key={app.id}
-            ref={(el) => (cardsRef.current[index] = el!)}
-            className="w-[450px] h-[550px] group preserve-3d cursor-pointer opacity-0 absolute"
-            onClick={() => handleFlip(app.id)}
-          >
-            {/* Direct Focus Light (Neon Blue) */}
-            <div className="focus-light absolute -inset-6 opacity-0 transition-opacity duration-300 pointer-events-none rounded-[40px] bg-blue-500/10" style={{ filter: "blur(20px)" }}/>
-            <div className="focus-light absolute -inset-1 opacity-0 transition-opacity duration-300 pointer-events-none rounded-[40px] border-[5px] border-blue-400/30" style={{ filter: "drop-shadow(0px 0px 15px #00f)" }}/>
-            
-            {/* Card Inner (for Flip) */}
-            <div className={`relative w-full h-full transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] preserve-3d ${flippedCards[app.id] ? "rotate-y-180" : ""}`}>
-              
-              {/* PRIMARY SIDE */}
-              <div className="absolute inset-0 w-full h-full backface-hidden p-8 flex flex-col justify-between items-center rounded-3xl backdrop-blur-xl border border-white/20 shadow-[0_30px_80px_rgba(0,0,0,0.1)] transition-colors duration-500 hover:border-gray-200" style={{ background: "linear-gradient(135deg, rgba(255,255,255,0.7), rgba(255,255,255,0.1))" }}>
+        {/* 3D Rotating Carousel Container (Light Theme Olive Look) */}
+        <div className="flex items-center justify-center h-[350px] mb-20 overflow-visible preserve-3d">
+          <div className="w-full flex gap-10">
+            {footerDesigns.map((design, index) => (
+              <a
+                key={design.id}
+                href={design.link}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block flex-none w-[280px] h-[350px] rounded-3xl border border-gray-200 shadow-[0_20px_50px_rgba(0,0,0,0.06)] hover:shadow-[0_25px_60px_rgba(100,110,60,0.12)] hover:border-olive-300 transform transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-4"
+                style={{
+                  background:
+                    "linear-gradient(135deg, rgba(162,175,108,0.2), rgba(255,255,255,1))",
+                }}
+              >
                 {/* 80% Image */}
-                <div className="w-full h-[80%] flex justify-center items-center overflow-hidden rounded-xl bg-gray-100 p-8 border border-gray-200">
-                  <img src={app.imgSrc} alt={app.name} className="max-w-[70%] max-h-full object-contain" />
+                <div className="w-full h-[80%] p-6 flex justify-center items-center overflow-hidden rounded-t-3xl bg-gray-100 border-b border-gray-200">
+                  <img
+                    src={design.imgSrc}
+                    alt={design.name}
+                    className="max-w-[80%] max-h-full object-contain"
+                  />
                 </div>
                 {/* 20% White Bold Heading */}
-                <div className="w-full h-[20%] flex justify-end items-end">
-                  <h2 className="text-[3.2rem] font-bold text-gray-950 pr-4 leading-none">{app.heading}</h2>
+                <div className="w-full h-[20%] p-6 flex items-center bg-white rounded-b-3xl">
+                  <h3 className="text-xl font-bold text-gray-950 leading-tight">
+                    {design.name}
+                  </h3>
                 </div>
-              </div>
-
-              {/* SECOND SIDE (Flipped Description) */}
-              <div className="absolute inset-0 w-full h-full backface-hidden rotate-y-180 p-10 flex flex-col justify-center items-start rounded-3xl backdrop-blur-3xl border border-gray-300 shadow-[0_30px_80px_rgba(0,0,0,0.15)] bg-gradient-to-br from-gray-100/70 to-white/30">
-                <p className="text-xl font-bold text-gray-900 leading-relaxed pr-8">{app.description}</p>
-                <div className="absolute bottom-6 right-6 text-sm text-blue-600 font-medium">Click to flip back</div>
-              </div>
-
-            </div>
+              </a>
+            ))}
           </div>
-        ))}
+        </div>
+
+        {/* Footer Bottom Bar (Socials & Username) */}
+        <div className="border-t border-gray-100 pt-10 flex flex-col md:flex-row justify-between items-center gap-6">
+          
+          {/* Social Links */}
+          <div className="flex items-center gap-6">
+            {socialLinks.map((social) => (
+              <a
+                key={social.name}
+                href={social.link}
+                target="_blank"
+                rel="noopener noreferrer"
+                title={social.name}
+                className="p-3 bg-gray-100 hover:bg-gray-200 rounded-full text-gray-700 hover:text-gray-950 transition-colors duration-300 shadow-[0_5px_15px_rgba(0,0,0,0.03)]"
+              >
+                {social.icon}
+              </a>
+            ))}
+          </div>
+
+          {/* User Username with link (dynamic extend as requested) */}
+          <div className="text-center md:text-right">
+            <a
+              href="https://discord.com/users/ayrus0101" // Extendusername as link redirect to discord
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-lg font-mono tracking-wider font-bold text-gray-900 hover:text-gray-600 transition-colors"
+            >
+              @surya3ddev <span className="font-normal text-gray-400">| ayrus0101</span>
+            </a>
+            <p className="text-sm text-gray-500 mt-1">© 2026 Surya Peddishetti. All rights reserved.</p>
+          </div>
+        </div>
       </div>
-    </section>
+    </footer>
   );
-               }
-            
+}
