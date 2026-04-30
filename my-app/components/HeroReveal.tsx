@@ -1,199 +1,211 @@
+
 "use client";
 
 import { useEffect, useRef } from "react";
 import gsap from "gsap";
 
+function WalkingA() {
+  return (
+    <svg
+      viewBox="0 0 160 200"
+      className="h-[150px] w-[120px] drop-shadow-[0_0_28px_rgba(255,255,255,0.35)]"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden="true"
+    >
+      <g className="walk-body">
+        <path
+          d="M80 24C94 24 104 35 104 49C104 59 98 67 89 71V92C89 99 84 105 77 105C70 105 65 99 65 92V71C56 67 50 59 50 49C50 35 60 24 74 24H80Z"
+          fill="rgba(255,255,255,0.96)"
+        />
+        <path d="M60 106L48 150" stroke="rgba(255,255,255,0.96)" strokeWidth="10" strokeLinecap="round" />
+        <path d="M92 106L104 150" stroke="rgba(255,255,255,0.96)" strokeWidth="10" strokeLinecap="round" />
+        <path d="M48 150L35 184" stroke="rgba(255,255,255,0.96)" strokeWidth="10" strokeLinecap="round" />
+        <path d="M104 150L118 184" stroke="rgba(255,255,255,0.96)" strokeWidth="10" strokeLinecap="round" />
+        <path d="M54 56C61 61 67 63 80 63C93 63 99 61 106 56" stroke="#000" strokeWidth="5" strokeLinecap="round" />
+      </g>
+    </svg>
+  );
+}
+
 export default function HeroReveal() {
-  const containerRef = useRef<HTMLElement | null>(null);
-  const peddishettiRef = useRef<HTMLDivElement | null>(null);
-  const suryRefs = useRef<(HTMLSpanElement | null)[]>([]);
-  const letterARef = useRef<HTMLDivElement | null>(null);
-  const leftLegRef = useRef<SVGPathElement | null>(null);
-  const rightLegRef = useRef<SVGPathElement | null>(null);
-  const crossbarRef = useRef<SVGPathElement | null>(null);
+  const sectionRef = useRef<HTMLElement | null>(null);
+  const titleRef = useRef<HTMLDivElement | null>(null);
+  const walkerRef = useRef<HTMLDivElement | null>(null);
+  const glowRef = useRef<HTMLDivElement | null>(null);
+  const crossbarRef = useRef<HTMLSpanElement | null>(null);
+  const lettersRef = useRef<(HTMLSpanElement | null)[]>([]);
 
   useEffect(() => {
     const ctx = gsap.context(() => {
-      const legs = [leftLegRef.current, rightLegRef.current].filter(
-        Boolean
-      ) as SVGPathElement[];
-
-      if (!letterARef.current || !peddishettiRef.current || legs.length < 2) return;
-
-      const walkCycle = gsap.timeline({ repeat: -1, yoyo: true, defaults: { ease: "sine.inOut" } });
-
-      walkCycle.to(
-        leftLegRef.current,
-        {
-          rotation: 22,
-          duration: 0.28,
-          transformOrigin: "50% 50%",
-        },
-        0
-      );
-
-      walkCycle.to(
-        rightLegRef.current,
-        {
-          rotation: -22,
-          duration: 0.28,
-          transformOrigin: "50% 50%",
-        },
-        0
-      );
-
-      walkCycle.to(
-        letterARef.current,
-        {
-          y: -2,
-          duration: 0.28,
-          ease: "sine.inOut",
-        },
-        0
-      );
-
-      const mainTl = gsap.timeline();
-
-      gsap.set(letterARef.current, {
-        x: "-58vw",
-        opacity: 1,
+      const tl = gsap.timeline({
+        defaults: { ease: "power4.out" },
       });
 
-      gsap.set([leftLegRef.current, rightLegRef.current, crossbarRef.current], {
-        transformOrigin: "50% 50%",
-      });
-
-      mainTl.to(letterARef.current, {
-        x: 0,
-        duration: 3,
-        ease: "power2.inOut",
-        onComplete: () => {
-          walkCycle.kill();
-
-          gsap.to([leftLegRef.current, rightLegRef.current], {
-            rotation: 0,
-            duration: 0.35,
-            ease: "back.out(2)",
-          });
-
-          gsap.to(crossbarRef.current, {
+      tl.fromTo(
+        glowRef.current,
+        { opacity: 0, scale: 0.7 },
+        { opacity: 1, scale: 1, duration: 1.2 }
+      )
+        .fromTo(
+          titleRef.current,
+          { y: 40, opacity: 0 },
+          { y: 0, opacity: 1, duration: 0.9 },
+          0.05
+        )
+        .fromTo(
+          lettersRef.current,
+          { y: 38, opacity: 0, filter: "blur(10px)" },
+          {
+            y: 0,
             opacity: 1,
-            scaleX: 1,
-            duration: 0.45,
+            filter: "blur(0px)",
+            stagger: 0.12,
+            duration: 0.75,
+          },
+          0.2
+        )
+        .fromTo(
+          walkerRef.current,
+          { x: -220, y: 12, scale: 0.92, opacity: 0 },
+          {
+            x: 0,
+            y: 12,
+            opacity: 1,
+            scale: 1,
+            duration: 2.6,
+            ease: "none",
+          },
+          0.2
+        )
+        .to(
+          walkerRef.current,
+          {
+            x: 0,
+            rotateY: 0,
+            duration: 0.35,
             ease: "power2.out",
-          });
-        },
+          },
+          ">-0.1"
+        )
+        .fromTo(
+          crossbarRef.current,
+          { scaleX: 0, opacity: 0 },
+          { scaleX: 1, opacity: 1, duration: 0.45, ease: "expo.out" },
+          ">-0.05"
+        );
+
+      gsap.to(walkerRef.current, {
+        y: 6,
+        repeat: -1,
+        yoyo: true,
+        duration: 1.05,
+        ease: "sine.inOut",
       });
 
-      mainTl.to(
-        suryRefs.current.filter(Boolean),
-        {
-          opacity: 1,
-          x: 0,
-          filter: "blur(0px)",
-          duration: 0.6,
-          stagger: 0.12,
-          ease: "power2.out",
-        },
-        "-=2.2"
-      );
+      gsap.to(".walk-body", {
+        rotate: -2,
+        transformOrigin: "50% 50%",
+        repeat: -1,
+        yoyo: true,
+        duration: 0.9,
+        ease: "sine.inOut",
+      });
 
-      mainTl.to(
-        peddishettiRef.current,
-        {
-          y: 0,
-          opacity: 1,
-          filter: "blur(0px)",
-          duration: 1,
-          ease: "power3.out",
-        },
-        "-=0.7"
-      );
-    }, containerRef);
+      gsap.to(".leg-left", {
+        rotate: 18,
+        transformOrigin: "50% 0%",
+        repeat: -1,
+        yoyo: true,
+        duration: 0.42,
+        ease: "sine.inOut",
+      });
+
+      gsap.to(".leg-right", {
+        rotate: -18,
+        transformOrigin: "50% 0%",
+        repeat: -1,
+        yoyo: true,
+        duration: 0.42,
+        ease: "sine.inOut",
+        delay: 0.21,
+      });
+    }, sectionRef);
 
     return () => ctx.revert();
   }, []);
 
-  const suryLetters = ["S", "U", "R", "Y"];
-
   return (
     <section
-      ref={containerRef}
-      className="relative flex h-screen w-full flex-col items-center justify-center overflow-hidden bg-black"
+      ref={sectionRef}
+      className="relative min-h-[120vh] overflow-hidden bg-black px-6 pt-10 text-white md:px-10"
       style={{ perspective: "1200px" }}
     >
-      <div className="pointer-events-none absolute left-1/2 top-1/2 h-[50vw] w-[50vw] -translate-x-1/2 -translate-y-1/2 rounded-full bg-orange-600/10 blur-[120px]" />
+      <div
+        ref={glowRef}
+        className="pointer-events-none absolute left-1/2 top-16 h-[38rem] w-[38rem] -translate-x-1/2 rounded-full bg-[radial-gradient(circle,rgba(234,88,12,0.55)_0%,rgba(234,88,12,0.2)_22%,rgba(0,0,0,0)_68%)] blur-3xl"
+      />
 
-      <div className="relative z-10 flex w-full flex-col items-center justify-center">
-        <div
-          ref={peddishettiRef}
-          className="mb-[-1vw] text-sm font-light uppercase tracking-[0.6em] text-orange-200 opacity-0 md:text-[2.2vw]"
-          style={{ transform: "translateY(24px)", filter: "blur(10px)" }}
-        >
+      <div
+        ref={titleRef}
+        className="relative mx-auto max-w-7xl pt-16 text-center [transform-style:preserve-3d]"
+      >
+        <div className="mb-6 text-sm uppercase tracking-[0.55em] text-white/45">
           Peddishetti
         </div>
 
-        <div className="flex items-center text-[18vw] font-black leading-none text-transparent bg-clip-text bg-gradient-to-br from-orange-400 to-orange-600 drop-shadow-[0_0_25px_rgba(234,88,12,0.6)]">
-          {suryLetters.map((letter, index) => (
-            <span
-              key={letter}
-              ref={(el) => {
-                suryRefs.current[index] = el;
-              }}
-              className="inline-block opacity-0"
-              style={{ transform: "translateX(-30px)", filter: "blur(8px)" }}
-            >
-              {letter}
-            </span>
-          ))}
+        <div className="relative mx-auto inline-flex items-end justify-center gap-1 sm:gap-2">
+          <span
+            ref={(el) => {
+              lettersRef.current[0] = el;
+            }}
+            className="text-[clamp(4rem,12vw,10rem)] font-bold leading-none tracking-[0.03em] text-white"
+          >
+            S
+          </span>
+          <span
+            ref={(el) => {
+              lettersRef.current[1] = el;
+            }}
+            className="text-[clamp(4rem,12vw,10rem)] font-bold leading-none tracking-[0.03em] text-white"
+          >
+            U
+          </span>
+          <span
+            ref={(el) => {
+              lettersRef.current[2] = el;
+            }}
+            className="text-[clamp(4rem,12vw,10rem)] font-bold leading-none tracking-[0.03em] text-white"
+          >
+            R
+          </span>
+          <span
+            ref={(el) => {
+              lettersRef.current[3] = el;
+            }}
+            className="text-[clamp(4rem,12vw,10rem)] font-bold leading-none tracking-[0.03em] text-white"
+          >
+            Y
+          </span>
 
           <div
-            ref={letterARef}
-            className="relative inline-flex h-[1em] w-[0.8em] items-center justify-center [transform-style:preserve-3d]"
-            style={{ opacity: 0 }}
+            ref={walkerRef}
+            className="relative -ml-2 flex items-center justify-center will-change-transform"
+            style={{ transformStyle: "preserve-3d" }}
           >
-            <svg
-              viewBox="0 0 100 100"
-              className="absolute h-full w-full overflow-visible drop-shadow-[0_0_20px_rgba(234,88,12,0.8)]"
-              style={{
-                stroke: "url(#orangeGradient)",
-                strokeWidth: 14,
-                strokeLinecap: "round",
-                strokeLinejoin: "round",
-                fill: "none",
-              }}
-            >
-              <defs>
-                <linearGradient id="orangeGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#fb923c" />
-                  <stop offset="100%" stopColor="#ea580c" />
-                </linearGradient>
-              </defs>
-
-              <path
-                ref={leftLegRef}
-                d="M50 10 L20 90"
-                style={{ transformBox: "fill-box", transformOrigin: "50% 50%" }}
-              />
-              <path
-                ref={rightLegRef}
-                d="M50 10 L80 90"
-                style={{ transformBox: "fill-box", transformOrigin: "50% 50%" }}
-              />
-              <path
-                ref={crossbarRef}
-                d="M32 60 L68 60"
-                opacity={0}
-                scale={1}
-                style={{
-                  transformBox: "fill-box",
-                  transformOrigin: "50% 50%",
-                }}
-              />
-            </svg>
+            <WalkingA />
+            <span
+              ref={crossbarRef}
+              className="absolute left-1/2 top-[92px] h-[10px] w-[76px] -translate-x-1/2 rounded-full bg-white opacity-0 shadow-[0_0_26px_rgba(255,255,255,0.75)]"
+            />
           </div>
+        </div>
+
+        <div className="mx-auto mt-10 max-w-2xl text-balance text-sm leading-7 text-white/68 md:text-base">
+          A cinematic portfolio built around full stack AI products, immersive
+          3D interfaces, and high-conversion digital experiences.
         </div>
       </div>
     </section>
   );
-}
+      }
