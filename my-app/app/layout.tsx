@@ -1,20 +1,19 @@
 
+// app/layout.tsx
 import type { Metadata } from "next";
 import { Ubuntu } from "next/font/google";
 import "./globals.css";
 
 const ubuntu = Ubuntu({
-  subsets: ["latin"],
   weight: ["300", "400", "500", "700"],
+  subsets: ["latin"],
   variable: "--font-ubuntu",
-  display: "swap",
 });
 
 export const metadata: Metadata = {
-  title: "Peddishetti Surya — Portfolio",
+  title: "Peddishetti Surya | Creative Developer",
   description:
-    "Peddishetti Surya builds full stack AI apps and immersive 3D websites that convert visitors into customers.",
-  metadataBase: new URL("https://example.com"),
+    "I build full stack AI apps and design immersive 3D websites that convert visitors into customers.",
 };
 
 export default function RootLayout({
@@ -23,8 +22,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={ubuntu.variable}>
-      <body className="bg-black text-white antialiased font-sans">
+    <html lang="en">
+      <body
+        className={`${ubuntu.variable} font-sans antialiased bg-white text-gray-900 overflow-x-hidden`}
+      >
         {children}
       </body>
     </html>
