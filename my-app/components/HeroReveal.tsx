@@ -1,117 +1,197 @@
-
 "use client";
 
-import { useEffect, useRef } from 'react';
-import gsap from 'gsap';
+import { useEffect, useRef } from "react";
+import gsap from "gsap";
 
 export default function HeroReveal() {
-  const containerRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLElement | null>(null);
+  const peddishettiRef = useRef<HTMLDivElement | null>(null);
   const suryRefs = useRef<(HTMLSpanElement | null)[]>([]);
-  const peddishettiRef = useRef<HTMLDivElement>(null);
-  
-  // SVG 'A' Refs for the walking and turning cycle
-  const letterAContainer = useRef<HTMLDivElement>(null);
-  const leftLeg = useRef<SVGPathElement>(null);
-  const rightLeg = useRef<SVGPathElement>(null);
+  const letterARef = useRef<HTMLDivElement | null>(null);
+  const leftLegRef = useRef<SVGPathElement | null>(null);
+  const rightLegRef = useRef<SVGPathElement | null>(null);
+  const crossbarRef = useRef<SVGPathElement | null>(null);
 
   useEffect(() => {
-    // 1. Walking Character Cycle (Character is faced right, no crossbar)
-    const walkCycle = gsap.timeline({ repeat: -1, yoyo: true });
-    
-    // Character looks like '/ \' in profile, walking right.
-    walkCycle.to(leftLeg.current, { 
-      rotationZ: 25, transformOrigin: "50px 10px", duration: 0.3, ease: "sine.inOut" 
-    }, 0);
-    walkCycle.to(rightLeg.current, { 
-      rotationZ: -25, transformOrigin: "50px 10px", duration: 0.3, ease: "sine.inOut" 
-    }, 0);
+    const ctx = gsap.context(() => {
+      const legs = [leftLegRef.current, rightLegRef.current].filter(
+        Boolean
+      ) as SVGPathElement[];
 
-    // 2. Main Revelation Timeline
-    const mainTl = gsap.timeline();
+      if (!letterARef.current || !peddishettiRef.current || legs.length < 2) return;
 
-    // The character '/ \' walks right across the screen
-    mainTl.fromTo(letterAContainer.current, 
-      { x: "-60vw" }, 
-      { 
-        x: "0vw", 
-        duration: 3, 
+      const walkCycle = gsap.timeline({ repeat: -1, yoyo: true, defaults: { ease: "sine.inOut" } });
+
+      walkCycle.to(
+        leftLegRef.current,
+        {
+          rotation: 22,
+          duration: 0.28,
+          transformOrigin: "50% 50%",
+        },
+        0
+      );
+
+      walkCycle.to(
+        rightLegRef.current,
+        {
+          rotation: -22,
+          duration: 0.28,
+          transformOrigin: "50% 50%",
+        },
+        0
+      );
+
+      walkCycle.to(
+        letterARef.current,
+        {
+          y: -2,
+          duration: 0.28,
+          ease: "sine.inOut",
+        },
+        0
+      );
+
+      const mainTl = gsap.timeline();
+
+      gsap.set(letterARef.current, {
+        x: "-58vw",
+        opacity: 1,
+      });
+
+      gsap.set([leftLegRef.current, rightLegRef.current, crossbarRef.current], {
+        transformOrigin: "50% 50%",
+      });
+
+      mainTl.to(letterARef.current, {
+        x: 0,
+        duration: 3,
         ease: "power2.inOut",
         onComplete: () => {
-          // When it reaches the end, stop the walk and trigger the spin
           walkCycle.kill();
-          gsap.to([leftLeg.current, rightLeg.current], { 
-            rotationZ: 0, duration: 0.4, ease: "back.out(2)" 
+
+          gsap.to([leftLegRef.current, rightLegRef.current], {
+            rotation: 0,
+            duration: 0.35,
+            ease: "back.out(2)",
           });
-          
-          // 3D flip towards user to reveal full 'A' (crossbar is now present)
-          gsap.to(letterAContainer.current, { 
-            rotateY: 180, duration: 1, ease: "cubic-bezier(0.16,1,0.3,1)" 
+
+          gsap.to(crossbarRef.current, {
+            opacity: 1,
+            scaleX: 1,
+            duration: 0.45,
+            ease: "power2.out",
           });
-        }
-      }
-    );
+        },
+      });
 
-    // Fade in S-U-R-Y sequentially behind the walking '/ \'
-    mainTl.fromTo(suryRefs.current, 
-      { opacity: 0, x: -30 }, 
-      { opacity: 1, x: 0, duration: 0.6, stagger: 0.6, ease: "power2.out" }, 
-      "-=2.5" // Start while walking
-    );
+      mainTl.to(
+        suryRefs.current.filter(Boolean),
+        {
+          opacity: 1,
+          x: 0,
+          filter: "blur(0px)",
+          duration: 0.6,
+          stagger: 0.12,
+          ease: "power2.out",
+        },
+        "-=2.2"
+      );
 
-    // Finally, the names Peddishetti (smaller) and Surya rise above
-    mainTl.fromTo([peddishettiRef.current],
-      { y: 40, opacity: 0, filter: "blur(10px)" },
-      { y: 0, opacity: 1, filter: "blur(0px)", duration: 1.2, ease: "power3.out" },
-      "+=1" // Start after A finishes its turn
-    );
+      mainTl.to(
+        peddishettiRef.current,
+        {
+          y: 0,
+          opacity: 1,
+          filter: "blur(0px)",
+          duration: 1,
+          ease: "power3.out",
+        },
+        "-=0.7"
+      );
+    }, containerRef);
 
+    return () => ctx.revert();
   }, []);
 
   const suryLetters = ["S", "U", "R", "Y"];
 
   return (
-    <section 
-      ref={containerRef} 
-      className="relative w-full h-screen flex flex-col items-center justify-center bg-black overflow-hidden perspective-1200"
+    <section
+      ref={containerRef}
+      className="relative flex h-screen w-full flex-col items-center justify-center overflow-hidden bg-black"
+      style={{ perspective: "1200px" }}
     >
-      {/* Background Cosmic Orange Glow */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[50vw] h-[50vw] bg-orange-600/10 rounded-full blur-[120px] pointer-events-none" />
+      <div className="pointer-events-none absolute left-1/2 top-1/2 h-[50vw] w-[50vw] -translate-x-1/2 -translate-y-1/2 rounded-full bg-orange-600/10 blur-[120px]" />
 
-      <div className="relative z-10 flex flex-col items-center justify-center w-full">
-        
-        {/* NAMES: Peddishetti is small, wide track, sitting purely above */}
-        <div ref={peddishettiRef} className="mb-[-1vw] text-orange-200 text-sm md:text-[2.2vw] tracking-[0.6em] uppercase font-light opacity-0">
+      <div className="relative z-10 flex w-full flex-col items-center justify-center">
+        <div
+          ref={peddishettiRef}
+          className="mb-[-1vw] text-sm font-light uppercase tracking-[0.6em] text-orange-200 opacity-0 md:text-[2.2vw]"
+          style={{ transform: "translateY(24px)", filter: "blur(10px)" }}
+        >
           Peddishetti
         </div>
-        
-        {/* LAST NAME CONTAINER: Massive, Cosmic Orange */}
+
         <div className="flex items-center text-[18vw] font-black leading-none text-transparent bg-clip-text bg-gradient-to-br from-orange-400 to-orange-600 drop-shadow-[0_0_25px_rgba(234,88,12,0.6)]">
-          
-          {/* HTML Letters: S U R Y */}
           {suryLetters.map((letter, index) => (
-            <span key={index} ref={(el) => { suryRefs.current[index] = el; }} className="inline-block opacity-0">
+            <span
+              key={letter}
+              ref={(el) => {
+                suryRefs.current[index] = el;
+              }}
+              className="inline-block opacity-0"
+              style={{ transform: "translateX(-30px)", filter: "blur(8px)" }}
+            >
               {letter}
             </span>
           ))}
 
-          {/* SVG Letter: The Walking 'A' (Faced right, turn cycle) */}
-          <div ref={letterAContainer} className="relative inline-flex items-center justify-center h-[1em] w-[0.8em] preserve-3d">
-            <svg viewBox="0 0 100 100" className="absolute w-full h-full overflow-visible drop-shadow-[0_0_20px_rgba(234,88,12,0.8)]" style={{ stroke: "url(#orangeGradient)", strokeWidth: "14", strokeLinecap: "round", strokeLinejoin: "round", fill: "none" }}>
+          <div
+            ref={letterARef}
+            className="relative inline-flex h-[1em] w-[0.8em] items-center justify-center [transform-style:preserve-3d]"
+            style={{ opacity: 0 }}
+          >
+            <svg
+              viewBox="0 0 100 100"
+              className="absolute h-full w-full overflow-visible drop-shadow-[0_0_20px_rgba(234,88,12,0.8)]"
+              style={{
+                stroke: "url(#orangeGradient)",
+                strokeWidth: 14,
+                strokeLinecap: "round",
+                strokeLinejoin: "round",
+                fill: "none",
+              }}
+            >
               <defs>
                 <linearGradient id="orangeGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#fb923c" /> {/* Tailwind orange-400 */}
-                  <stop offset="100%" stopColor="#ea580c" /> {/* Tailwind orange-600 */}
+                  <stop offset="0%" stopColor="#fb923c" />
+                  <stop offset="100%" stopColor="#ea580c" />
                 </linearGradient>
               </defs>
-              
-              {/* Handcrafted Legs for walking cycle */}
-              <path ref={leftLeg} d="M 50 10 L 20 90" />
-              <path ref={rightLeg} d="M 50 10 L 80 90" />
-              {/* The crossbar is present in the SVG but hidden/back-facing, will reveal on turn */}
-              <path d="M 32 60 L 68 60" style={{ [flippedCards[app.id] ? '[backface-visibility:visible]' : '[backface-visibility:hidden]'] }} />
+
+              <path
+                ref={leftLegRef}
+                d="M50 10 L20 90"
+                style={{ transformBox: "fill-box", transformOrigin: "50% 50%" }}
+              />
+              <path
+                ref={rightLegRef}
+                d="M50 10 L80 90"
+                style={{ transformBox: "fill-box", transformOrigin: "50% 50%" }}
+              />
+              <path
+                ref={crossbarRef}
+                d="M32 60 L68 60"
+                opacity={0}
+                scale={1}
+                style={{
+                  transformBox: "fill-box",
+                  transformOrigin: "50% 50%",
+                }}
+              />
             </svg>
           </div>
-
         </div>
       </div>
     </section>
