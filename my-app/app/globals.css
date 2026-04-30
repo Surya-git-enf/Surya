@@ -1,0 +1,128 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #ffffff;
+  --foreground: #111827;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: Arial, Helvetica, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+::selection {
+  background: rgba(251, 146, 60, 0.28);
+  color: #111827;
+}
+
+.hero-grid {
+  background-image:
+    linear-gradient(rgba(17, 24, 39, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(17, 24, 39, 0.04) 1px, transparent 1px);
+  background-size: 56px 56px;
+  mask-image: linear-gradient(to bottom, rgba(0,0,0,0.85), transparent 92%);
+}
+
+.hero-title {
+  background-image: linear-gradient(135deg, #ffedd5 0%, #fb923c 18%, #f97316 45%, #f59e0b 70%, #111827 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-shadow: 0 0 1px rgba(0, 0, 0, 0.08);
+}
+
+.walker-wrap {
+  position: relative;
+  width: 120px;
+  height: 140px;
+  filter: drop-shadow(0 18px 30px rgba(0,0,0,0.24));
+}
+
+.walker-head {
+  position: absolute;
+  left: 50%;
+  top: 4px;
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  transform: translateX(-50%);
+  background: linear-gradient(180deg, #fff1e6 0%, #fb923c 100%);
+  box-shadow: 0 0 20px rgba(251, 146, 60, 0.25);
+}
+
+.walker-body {
+  position: absolute;
+  left: 50%;
+  top: 28px;
+  width: 12px;
+  height: 44px;
+  transform: translateX(-50%);
+  border-radius: 999px;
+  background: linear-gradient(180deg, #fb923c 0%, #f97316 100%);
+}
+
+.walker-arm,
+.walker-leg {
+  position: absolute;
+  left: 50%;
+  transform-origin: 50% 0%;
+  background: linear-gradient(180deg, #fb923c 0%, #f59e0b 100%);
+  border-radius: 999px;
+}
+
+.walker-arm {
+  top: 37px;
+  width: 8px;
+  height: 34px;
+}
+
+.walker-arm.left {
+  margin-left: -16px;
+  transform: rotate(18deg);
+}
+
+.walker-arm.right {
+  margin-left: 8px;
+  transform: rotate(-18deg);
+}
+
+.walker-leg {
+  top: 66px;
+  width: 9px;
+  height: 42px;
+}
+
+.walker-leg.left {
+  margin-left: -13px;
+  transform: rotate(-18deg);
+}
+
+.walker-leg.right {
+  margin-left: 5px;
+  transform: rotate(18deg);
+}
+
+.preserve-3d {
+  transform-style: preserve-3d;
+}
+
+.backface-hidden {
+  backface-visibility: hidden;
+}
+
+.rotate-y-180 {
+  transform: rotateY(180deg);
+}
