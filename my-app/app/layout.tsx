@@ -4,14 +4,17 @@ import { Ubuntu } from "next/font/google";
 import "./globals.css";
 
 const ubuntu = Ubuntu({
-  weight: ['300', '400', '500', '700'],
   subsets: ["latin"],
+  weight: ["300", "400", "500", "700"],
   variable: "--font-ubuntu",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
-  title: "Peddishetti Surya | Creative Developer",
-  description: "I build full stack AI apps and design immersive 3D websites.",
+  title: "Peddishetti Surya — Portfolio",
+  description:
+    "Peddishetti Surya builds full stack AI apps and immersive 3D websites that convert visitors into customers.",
+  metadataBase: new URL("https://example.com"),
 };
 
 export default function RootLayout({
@@ -20,8 +23,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="bg-black">
-      <body className={`${ubuntu.variable} font-sans antialiased bg-black text-white overflow-x-hidden`}>
+    <html lang="en" className={ubuntu.variable}>
+      <body className="bg-black text-white antialiased font-sans">
         {children}
       </body>
     </html>
