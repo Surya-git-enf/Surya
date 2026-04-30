@@ -1,15 +1,12 @@
+import HeroReveal from "@/components/HeroReveal";
+import CanvasScroll from "@/components/CanvasScroll";
+import SkillsOrbit from "@/components/SkillsOrbit";
+import AppsSineWave from "@/components/AppsSineWave";
+import Footer from "@/components/Footer";
 
-"use client";
-
-import HeroReveal from '@/components/HeroReveal';
-import CanvasScroll from '@/components/CanvasScroll';
-import SkillsOrbit from '@/components/SkillsOrbit';
-import AppsSineWave from '@/components/AppsSineWave';
-import Footer from '@/components/Footer';
-
-export default function Home() {
+export default function Page() {
   return (
-    <main className="relative flex flex-col w-full bg-black">
+    <main className="relative min-h-screen overflow-x-hidden bg-black text-white">
       <HeroReveal />
       <CanvasScroll />
       <SkillsOrbit />
