@@ -8,9 +8,46 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 gsap.registerPlugin(ScrollTrigger);
 
 // App data with detailed descriptions and massive SVGs
-const appsData = [
-  // ... Mailmate, Slide, Playful details ...
-  // Identical to previous component, but I've added distinct app IDs.
+const appsData: AppData[] = [
+  {
+    id: "mailmate",
+    title: "Mailmate",
+    description:
+      "Email agent that filters priority business correspondence and dispatches Telegram alerts.",
+    icon: (
+      <svg viewBox="0 0 64 64" className="h-16 w-16 text-white">
+        <path d="M8 18h48v28H8z" fill="none" stroke="currentColor" strokeWidth="3" />
+        <path d="M10 20l22 18 22-18" fill="none" stroke="currentColor" strokeWidth="3" />
+      </svg>
+    ),
+    accent: "from-blue-500/30",
+  },
+  {
+    id: "slide",
+    title: "Slide",
+    description:
+      "AI news aggregator distilling complex articles into high-impact briefings.",
+    icon: (
+      <svg viewBox="0 0 64 64" className="h-16 w-16 text-white">
+        <rect x="10" y="12" width="44" height="40" rx="8" fill="none" stroke="currentColor" strokeWidth="3" />
+        <path d="M18 24h28M18 32h20M18 40h24" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+      </svg>
+    ),
+    accent: "from-cyan-500/30",
+  },
+  {
+    id: "playful",
+    title: "Playful",
+    description:
+      "Advanced AI game engine transforming text prompts into playable environments.",
+    icon: (
+      <svg viewBox="0 0 64 64" className="h-16 w-16 text-white">
+        <path d="M16 20h32l-6 24H22z" fill="none" stroke="currentColor" strokeWidth="3" />
+        <path d="M24 28h16M24 36h10" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+      </svg>
+    ),
+    accent: "from-pink-500/30",
+  },
 ];
 
 export default function AppsSineWave() {
