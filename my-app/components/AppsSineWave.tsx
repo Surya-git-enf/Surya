@@ -1,239 +1,352 @@
+
 "use client";
 
-import React, { useLayoutEffect, useRef, useState } from "react";
+import { useRef, useEffect, useState } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { MotionPathPlugin } from "gsap/MotionPathPlugin";
 
-gsap.registerPlugin(ScrollTrigger);
+gsap.registerPlugin(ScrollTrigger, MotionPathPlugin);
 
-// APP DATA
-const apps = [
+/* ── App data ────────────────────────────────────────────── */
+const APPS = [
   {
-    id: 1,
-    name: "Mailmate",
-    heading: "Mailmate",
-    imgSrc: "/mailmate.png",
-    description: "Intelligent email sorting assistant, automatically categorizing mail trends to identify priorities.",
+    num: "1",
+    title: "Mailmate",
+    tagline: "AI Email Composer",
+    desc: "Zero-effort cold outreach. Mailmate studies your tone, learns your audience, and writes hyper-personalised emails that feel human — at scale.",
+    accent: "#3b82f6",
+    imgBg: "#dbeafe",
   },
   {
-    id: 2,
-    name: "Slide",
-    heading: "Slide",
-    imgSrc: "/slide.png",
-    description: "Content dip analyzer, using AI to uncover hidden opportunities in trend engagement data.",
+    num: "2",
+    title: "Slide",
+    tagline: "Deck Generator",
+    desc: "Drop a brief. Slide builds a polished presentation in seconds — slides, charts, and speaker notes, all brand-consistent and export-ready.",
+    accent: "#8b5cf6",
+    imgBg: "#ede9fe",
   },
   {
-    id: 3,
-    name: "Playful",
-    heading: "Playful",
-    imgSrc: "/logo.png",
-    description: "Next-gen game asset generator, using text-to-3D models to achieve creation goals faster.",
+    num: "3",
+    title: "Playful",
+    tagline: "AI Storyboard",
+    desc: "Story-driven content planning. Playful maps your narrative arc, generates scene scripts, and suggests visual hooks for every platform.",
+    accent: "#06b6d4",
+    imgBg: "#cffafe",
   },
-];
+] as const;
 
-export default function AppSineWave() {
-  const containerRef = useRef<HTMLElement>(null);
-  const sinePathRef = useRef<SVGPathElement>(null);
-  const cardsRef = useRef<HTMLDivElement[]>([]);
-  const numberRefs = useRef<HTMLSpanElement[]>([]);
-  const movingNumberRef = useRef<HTMLDivElement>(null);
+/* ── Wave math ───────────────────────────────────────────── */
+// SVG viewBox: 0 0 1200 300
+// One full sine wave with 3 key points: trough → peak → trough → peak (rough)
+const WAVE_D =
+  "M 0 150 C 100 150 150 50 300 50 C 450 50 500 250 600 250 C 700 250 750 50 900 50 C 1050 50 1100 250 1200 250";
 
-  // States for flip
-  const [flippedCards, setFlippedCards] = useState<Record<number, boolean>>({});
+// Key positions on the path (0–1 progress)
+const MARKER_STOPS = [0.13, 0.46, 0.79]; // ~peaks of each arch
 
-  const handleFlip = (id: number) => {
-    setFlippedCards((prev) => ({ ...prev, [id]: !prev[id] }));
-  };
+/* ── Card component ──────────────────────────────────────── */
+interface CardProps {
+  app: (typeof APPS)[number];
+  active: boolean;
+  index: number;
+}
 
-  useLayoutEffect(() => {
+function AppCard({ app, active, index }: CardProps) {
+  const [flipped, setFlipped] = useState(false);
+
+  return (
+    <div
+      className="relative"
+      style={{
+        width: "clamp(240px,22vw,300px)",
+        height: "clamp(320px,32vh,380px)",
+        perspective: "900px",
+        flexShrink: 0,
+      }}
+    >
+      {/* Glow backlight */}
+      <div
+        className="absolute inset-0 rounded-3xl transition-all duration-700"
+        style={{
+          background: app.accent,
+          filter: "blur(32px)",
+          opacity: active ? 0.2 : 0,
+          transform: "scale(0.85) translateY(10px)",
+        }}
+      />
+
+      {/* Card flipper */}
+      <div
+        onClick={() => setFlipped((f) => !f)}
+        className="relative w-full h-full cursor-pointer"
+        style={{
+          transformStyle: "preserve-3d",
+          transform: flipped ? "rotateY(180deg)" : "rotateY(0deg)",
+          transition: "transform 0.7s cubic-bezier(0.4,0,0.2,1)",
+        }}
+      >
+        {/* ── Front ── */}
+        <div
+          className="absolute inset-0 rounded-3xl overflow-hidden flex flex-col"
+          style={{ backfaceVisibility: "hidden" }}
+        >
+          {/* 80% image area */}
+          <div
+            className="flex-1 flex items-center justify-center"
+            style={{ background: app.imgBg, minHeight: "80%" }}
+          >
+            <svg viewBox="0 0 80 80" className="w-20 h-20 opacity-40" fill="none">
+              <rect x="10" y="10" width="60" height="60" rx="12" stroke={app.accent} strokeWidth="3" />
+              <circle cx="40" cy="40" r="16" fill={app.accent} opacity="0.5" />
+              <path d="M32 40l6 6 12-12" stroke={app.accent} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </div>
+          {/* 20% base */}
+          <div className="bg-white px-5 py-4 flex flex-col gap-0.5" style={{ minHeight: "20%" }}>
+            <span className="font-black text-gray-900 text-lg leading-tight">{app.title}</span>
+            <span className="text-xs font-semibold tracking-widest uppercase" style={{ color: app.accent }}>
+              {app.tagline}
+            </span>
+          </div>
+        </div>
+
+        {/* ── Back ── */}
+        <div
+          className="absolute inset-0 rounded-3xl flex flex-col justify-center gap-4 p-7"
+          style={{
+            backfaceVisibility: "hidden",
+            transform: "rotateY(180deg)",
+            background: "rgba(255,255,255,0.6)",
+            backdropFilter: "blur(24px)",
+            WebkitBackdropFilter: "blur(24px)",
+            border: "1px solid rgba(255,255,255,0.8)",
+            boxShadow: "0 20px 60px rgba(0,0,0,0.08)",
+          }}
+        >
+          <div
+            className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-black text-lg"
+            style={{ background: app.accent }}
+          >
+            {app.num}
+          </div>
+          <p className="text-gray-700 text-sm leading-relaxed font-medium">{app.desc}</p>
+          <span className="text-xs font-bold tracking-widest uppercase" style={{ color: app.accent }}>
+            Tap to flip back →
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── Main component ──────────────────────────────────────── */
+export default function AppsSineWave() {
+  const sectionRef = useRef<HTMLDivElement>(null);
+  const markerRef = useRef<SVGGElement>(null);
+  const markerNumRef = useRef<SVGTextElement>(null);
+  const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const [activeIndex, setActiveIndex] = useState(0);
+
+  useEffect(() => {
+    const section = sectionRef.current;
+    if (!section) return;
+
+    // Initial card states: only first visible
+    cardRefs.current.forEach((el, i) => {
+      if (!el) return;
+      gsap.set(el, { opacity: i === 0 ? 1 : 0, y: i === 0 ? 0 : 40 });
+    });
+
     const ctx = gsap.context(() => {
-      // Pin the section
-      ScrollTrigger.create({
-        trigger: containerRef.current,
-        pin: true,
-        start: "top top",
-        end: "+=300%", // Scroll distance
-        scrub: 1,
-      });
-
-      // --- SINE WAVE DRAW ---
-      const sineTl = gsap.timeline({
+      const tl = gsap.timeline({
         scrollTrigger: {
-          trigger: containerRef.current,
+          trigger: section,
           start: "top top",
-          end: "+=100%", // Wave draws fully first
-          scrub: 1,
+          end: "+=250%",
+          pin: true,
+          scrub: 1.4,
         },
       });
 
-      const pathLength = sinePathRef.current?.getTotalLength() || 0;
-      sineTl.fromTo(
-        sinePathRef.current,
-        { strokeDasharray: pathLength, strokeDashoffset: pathLength },
-        { strokeDashoffset: 0, ease: "none" }
+      /* ── Marker motion along wave path ── */
+      tl.to(
+        markerRef.current,
+        {
+          motionPath: {
+            path: WAVE_D,
+            align: WAVE_D,
+            alignOrigin: [0.5, 0.5],
+            autoRotate: false,
+            start: MARKER_STOPS[0],
+            end: MARKER_STOPS[1],
+          },
+          ease: "power2.inOut",
+          duration: 2,
+          onUpdate: function () {
+            const p = this.progress();
+            if (p > 0.45 && markerNumRef.current) {
+              markerNumRef.current.textContent = "2";
+            }
+          },
+        },
+        0
       );
 
-      // --- NUMBER 1 TRAJECTORY ---
-      const numTl = gsap.timeline({
-        scrollTrigger: {
-          trigger: containerRef.current,
-          start: "10% top",
-          end: "+=150%",
-          scrub: 1,
+      // Card 1 → out, Card 2 → in (parallel with marker move)
+      tl.to(cardRefs.current[0], { opacity: 0, y: -40, duration: 1, ease: "power2.in" }, 0.8);
+      tl.to(
+        cardRefs.current[1],
+        {
+          opacity: 1, y: 0, duration: 1, ease: "power2.out",
+          onStart: () => setActiveIndex(1),
         },
-      });
+        0.8
+      );
 
-      const movingNumberElement = movingNumberRef.current;
-      const textElement = movingNumberElement?.querySelector("p");
-
-      // Number moves from peak 1 to peak 2.
-      // Coordinates are based on the SVG viewBox "0 0 1000 500"
-      numTl.set(movingNumberElement, { x: 345, y: 55, opacity: 1 }); // Start pos (1)
-      numTl.to(movingNumberElement, {
-        duration: 1,
-        x: 655, // Midpoint between 2 and 3
-        y: 55, // Straight vertical path visual (or keep slightly arched)
-        ease: "power2.inOut",
-        onComplete: () => {
-          if (textElement) textElement.innerText = "2";
+      /* ── Marker: stop 2 → stop 3 ── */
+      tl.to(
+        markerRef.current,
+        {
+          motionPath: {
+            path: WAVE_D,
+            align: WAVE_D,
+            alignOrigin: [0.5, 0.5],
+            autoRotate: false,
+            start: MARKER_STOPS[1],
+            end: MARKER_STOPS[2],
+          },
+          ease: "power2.inOut",
+          duration: 2,
+          onUpdate: function () {
+            const p = this.progress();
+            if (p > 0.45 && markerNumRef.current) {
+              markerNumRef.current.textContent = "3";
+            }
+          },
         },
-      });
-      // Trajectory end
-      numTl.to(movingNumberElement, {
-        duration: 1,
-        x: 775,
-        y: 275,
-        onStart: () => {
-          // If we want a linear vertical jump appearance before this trajectory...
-          // Prompt states "1st number moves top to bottom turns 2", while images show path.
-          // This trajectory implements the path between visual locations shown in image_2.
+        2
+      );
+
+      // Card 2 → out, Card 3 → in
+      tl.to(cardRefs.current[1], { opacity: 0, y: -40, duration: 1, ease: "power2.in" }, 2.8);
+      tl.to(
+        cardRefs.current[2],
+        {
+          opacity: 1, y: 0, duration: 1, ease: "power2.out",
+          onStart: () => setActiveIndex(2),
         },
-      });
+        2.8
+      );
+    }, section);
 
-      // --- APP CARD SWITCH & LIGHT SEQUENCE ---
-      const switchTl = gsap.timeline({
-        scrollTrigger: {
-          trigger: containerRef.current,
-          start: "10% top",
-          end: "+=300%", // Match pinning
-          scrub: 1,
-        },
-      });
-
-      cardsRef.current.forEach((card, index) => {
-        // Light reference (direct focus light in card markup)
-        const light = card.querySelector(".focus-light");
-
-        if (index === 0) {
-          // Card 1 active at start
-          switchTl.set(card, { opacity: 1 });
-          switchTl.set(light, { opacity: 1 });
-          
-          // Card 1 Decents Out
-          switchTl.to(card, { opacity: 0, duration: 1, ease: "power2.in" });
-          switchTl.to(light, { opacity: 0, duration: 1, ease: "power2.in" }, "<");
-          
-        } else if (index === 1) {
-          // Card 2 Appears (as 1 goes, matches parallel request)
-          switchTl.fromTo(card, { opacity: 0 }, { opacity: 1, duration: 1, ease: "power2.out" }, "-=0.5");
-          switchTl.to(light, { opacity: 1, duration: 1, ease: "power2.out" }, "<"); // Light focuses
-          
-          // Card 2 Decents Out
-          switchTl.to(card, { opacity: 0, duration: 1, ease: "power2.in" });
-          switchTl.to(light, { opacity: 0, duration: 1, ease: "power2.in" }, "<");
-          
-        } else if (index === 2) {
-          // Card 3 Appears
-          switchTl.fromTo(card, { opacity: 0 }, { opacity: 1, duration: 1, ease: "power2.out" }, "-=0.5");
-          switchTl.to(light, { opacity: 1, duration: 1, ease: "power2.out" }, "<"); // Light focuses
-        }
-      });
-
-    }, containerRef);
-
-    return () => {
-      ctx.revert();
-      window.removeEventListener("resize", () => {}); // Canvas resize not applicable to fixed height section setup
-    };
+    return () => ctx.revert();
   }, []);
 
   return (
-    <section ref={containerRef} className="relative h-[100vh] w-full bg-white text-gray-900 overflow-hidden flex flex-col justify-center items-center">
-      {/* Background Gradient */}
-      <div className="absolute inset-0 bg-gradient-to-b from-gray-50 to-white z-0" />
-
+    <section
+      ref={sectionRef}
+      className="relative w-full bg-white overflow-hidden"
+      style={{ height: "100vh" }}
+    >
       {/* Heading */}
-      <div className="relative z-10 mb-[-50px] w-full max-w-7xl px-8 flex justify-end">
-        <h1 className="text-[6vw] font-black tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-gray-950 to-gray-800 drop-shadow-[0_0_15px_rgba(0,0,0,0.1)]">
+      <div className="absolute top-[8vh] left-0 right-0 flex flex-col items-center z-10 select-none">
+        <h2
+          className="font-black text-gray-950 text-center leading-none"
+          style={{
+            fontSize: "clamp(2.5rem, 5vw, 6rem)",
+            letterSpacing: "-0.02em",
+            background: "linear-gradient(135deg, #111827 30%, #3b82f6 100%)",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+            backgroundClip: "text",
+          }}
+        >
           AI APPS BUILT
-        </h1>
+        </h2>
+        <div className="mt-2 h-0.5 w-24 rounded-full bg-gradient-to-r from-transparent via-blue-500 to-transparent" />
       </div>
 
-      {/* Sine Wave Background SVG */}
-      <div className="absolute inset-0 z-5 flex items-center justify-center opacity-70">
-        <svg viewBox="0 0 1000 500" className="w-full h-auto px-16" preserveAspectRatio="none">
+      {/* ── Wave SVG ── */}
+      <div className="absolute bottom-[30vh] left-0 right-0 px-0" style={{ zIndex: 2 }}>
+        <svg
+          viewBox="0 0 1200 300"
+          preserveAspectRatio="none"
+          className="w-full"
+          style={{ height: "200px", overflow: "visible" }}
+        >
+          <defs>
+            <filter id="neonBlue" x="-20%" y="-20%" width="140%" height="140%">
+              <feGaussianBlur in="SourceGraphic" stdDeviation="6" result="blur1" />
+              <feColorMatrix in="blur1" type="matrix" values="0 0 0 0 0.23  0 0 0 0 0.51  0 0 0 0 0.96  0 0 0 1 0" result="blue1" />
+              <feGaussianBlur in="SourceGraphic" stdDeviation="2" result="blur2" />
+              <feMerge>
+                <feMergeNode in="blue1" />
+                <feMergeNode in="blur2" />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
+          </defs>
+
+          {/* Glow layer */}
           <path
-            ref={sinePathRef}
-            d="M 50 150 Q 200 450 350 150 Q 500 450 650 150 T 950 150"
+            d={WAVE_D}
             fill="none"
-            stroke="#00f"
-            strokeWidth="10"
+            stroke="#3b82f6"
+            strokeWidth="12"
+            opacity="0.2"
             strokeLinecap="round"
-            style={{ filter: "drop-shadow(0px 0px 20px #00f)" }}
+          />
+          {/* Main wave */}
+          <path
+            d={WAVE_D}
+            fill="none"
+            stroke="#3b82f6"
+            strokeWidth="3.5"
+            strokeLinecap="round"
+            filter="url(#neonBlue)"
           />
 
-          {/* Numbers with white glows (background static numbers) */}
-          <circle cx="345" cy="55" r="25" fill="#fff" style={{ filter: "drop-shadow(0px 0px 15px #fff)" }} />
-          <circle cx="655" cy="55" r="25" fill="#fff" style={{ filter: "drop-shadow(0px 0px 15px #fff)" }} />
-          <circle cx="775" cy="275" r="25" fill="#fff" style={{ filter: "drop-shadow(0px 0px 15px #fff)" }} />
+          {/* Marker group — positioned at first stop initially */}
+          <g ref={markerRef} style={{ transform: `translate(156px, 50px)` }}>
+            <circle r="20" fill="#3b82f6" opacity="0.15" />
+            <circle r="14" fill="#3b82f6" />
+            <circle r="14" fill="#3b82f6" opacity="0.4" style={{ filter: "blur(6px)" }} />
+            <text
+              ref={markerNumRef}
+              textAnchor="middle"
+              dominantBaseline="central"
+              fill="white"
+              fontSize="14"
+              fontWeight="900"
+              fontFamily="system-ui"
+            >
+              1
+            </text>
+          </g>
         </svg>
       </div>
 
-      {/* Trajectory Number */}
-      <div ref={movingNumberRef} className="absolute z-15 p-2 rounded-full flex justify-center items-center opacity-0 preserve-3d" style={{ top: "0%", left: "0%" }}>
-        <circle cx="25" cy="25" r="25" fill="black" stroke="white" strokeWidth="3" />
-        <p className="absolute text-xl font-bold text-white">1</p>
-      </div>
-
-      {/* Cards Container */}
-      <div className="relative z-20 flex justify-center items-center w-full max-w-[1200px] gap-12 mt-16 px-16 h-[500px]">
-        {apps.map((app, index) => (
+      {/* ── Cards row ── */}
+      <div
+        className="absolute flex items-center justify-center gap-8"
+        style={{
+          bottom: "6vh",
+          left: 0,
+          right: 0,
+          zIndex: 10,
+        }}
+      >
+        {APPS.map((app, i) => (
           <div
-            key={app.id}
-            ref={(el) => (cardsRef.current[index] = el!)}
-            className="w-[450px] h-[550px] group preserve-3d cursor-pointer opacity-0 absolute"
-            onClick={() => handleFlip(app.id)}
+            key={app.title}
+            ref={(el) => { cardRefs.current[i] = el; }}
           >
-            {/* Direct Focus Light (Neon Blue) */}
-            <div className="focus-light absolute -inset-6 opacity-0 transition-opacity duration-300 pointer-events-none rounded-[40px] bg-blue-500/10" style={{ filter: "blur(20px)" }}/>
-            <div className="focus-light absolute -inset-1 opacity-0 transition-opacity duration-300 pointer-events-none rounded-[40px] border-[5px] border-blue-400/30" style={{ filter: "drop-shadow(0px 0px 15px #00f)" }}/>
-            
-            {/* Card Inner (for Flip) */}
-            <div className={`relative w-full h-full transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] preserve-3d ${flippedCards[app.id] ? "rotate-y-180" : ""}`}>
-              
-              {/* PRIMARY SIDE */}
-              <div className="absolute inset-0 w-full h-full backface-hidden p-8 flex flex-col justify-between items-center rounded-3xl backdrop-blur-xl border border-white/20 shadow-[0_30px_80px_rgba(0,0,0,0.1)] transition-colors duration-500 hover:border-gray-200" style={{ background: "linear-gradient(135deg, rgba(255,255,255,0.7), rgba(255,255,255,0.1))" }}>
-                {/* 80% Image */}
-                <div className="w-full h-[80%] flex justify-center items-center overflow-hidden rounded-xl bg-gray-100 p-8 border border-gray-200">
-                  <img src={app.imgSrc} alt={app.name} className="max-w-[70%] max-h-full object-contain" />
-                </div>
-                {/* 20% White Bold Heading */}
-                <div className="w-full h-[20%] flex justify-end items-end">
-                  <h2 className="text-[3.2rem] font-bold text-gray-950 pr-4 leading-none">{app.heading}</h2>
-                </div>
-              </div>
-
-              {/* SECOND SIDE (Flipped Description) */}
-              <div className="absolute inset-0 w-full h-full backface-hidden rotate-y-180 p-10 flex flex-col justify-center items-start rounded-3xl backdrop-blur-3xl border border-gray-300 shadow-[0_30px_80px_rgba(0,0,0,0.15)] bg-gradient-to-br from-gray-100/70 to-white/30">
-                <p className="text-xl font-bold text-gray-900 leading-relaxed pr-8">{app.description}</p>
-                <div className="absolute bottom-6 right-6 text-sm text-blue-600 font-medium">Click to flip back</div>
-              </div>
-
-            </div>
+            <AppCard app={app} active={activeIndex === i} index={i} />
           </div>
         ))}
       </div>
     </section>
   );
-        }
-              
+          }
+      
