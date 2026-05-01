@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useRef, useLayoutEffect } from "react";
@@ -9,13 +10,14 @@ import gsap from "gsap";
   TOP ROW:  "PEDDISHETTI"  — all cosmic orange, rises in LAST
   BOT ROW:  "S  U  R  Y  A" — all cosmic orange, letters appear sequentially
 
-  Walking stick figure (orange + glow):
-    1. Appears as | at far left
-    2. Sprouts legs (back + front)
-    3. Legs oscillate cleanly while body translates smoothly right (ease:none = no drag)
-    4. Letters S U R Y appear behind it one by one
-    5. Stops → rotateY flip → crossbar → becomes "A"
-    6. PEDDISHETTI rises in from below
+  Walking legs:
+    1. Sprout as a single vertical line at the far left.
+    2. Legs oscillate cleanly while translating right.
+    3. Letters S U R Y appear behind it one by one.
+    4. Stops → assumes the spread "A" stance.
+    5. Crossbar fades in to complete the "A" visual.
+    6. Replaced by the static "A" text.
+    7. PEDDISHETTI rises in from below.
 */
 
 const ORANGE = "#ea580c";
@@ -24,7 +26,6 @@ const LETTERS = ["S", "U", "R", "Y"];
 export default function HeroReveal() {
   const sectionRef  = useRef<HTMLDivElement>(null);
   const charWrapRef = useRef<HTMLDivElement>(null);
-  const charFlipRef = useRef<HTMLDivElement>(null);
   const backLegRef  = useRef<SVGLineElement>(null);
   const frontLegRef = useRef<SVGLineElement>(null);
   const crossbarRef = useRef<SVGLineElement>(null);
@@ -38,8 +39,8 @@ export default function HeroReveal() {
 
     const ctx = gsap.context(() => {
       // Initial states
-      gsap.set(backLegRef.current,  { opacity: 0 });
-      gsap.set(frontLegRef.current, { opacity: 0 });
+      gsap.set(backLegRef.current,  { opacity: 0, attr: { x2: 30, y2: 115 } });
+      gsap.set(frontLegRef.current, { opacity: 0, attr: { x2: 30, y2: 115 } });
       gsap.set(crossbarRef.current, { opacity: 0 });
       gsap.set(letterRefs.current,  { opacity: 0, y: 18 });
       gsap.set(aLetterRef.current,  { opacity: 0 });
@@ -48,26 +49,23 @@ export default function HeroReveal() {
 
       const tl = gsap.timeline({ defaults: { ease: "power2.out" } });
 
-      // 1 — sprout back leg
-      tl.to(backLegRef.current,  { opacity: 1, duration: 0.2 });
-      // 2 — sprout front leg
-      tl.to(frontLegRef.current, { opacity: 1, duration: 0.2 });
+      // 1 — sprout legs (start from vertical line)
+      tl.to([backLegRef.current, frontLegRef.current], { opacity: 1, duration: 0.2 });
 
-      // 3 — WALK: pure linear translate so there is zero ease-drag feel
+      // 2 — WALK: pure linear translate so there is zero ease-drag feel
       tl.to(charWrapRef.current, { x: "78vw", duration: 2.4, ease: "none" }, "+=0.1");
 
-      // 4 — leg oscillation PARALLEL to walk (back leg)
+      // 3 — leg oscillation PARALLEL to walk (scissor motion)
       tl.to(backLegRef.current, {
-        attr: { x2: "10", y2: "108" },
+        attr: { x2: "12", y2: "110" },
         duration: 0.22,
         repeat: 10,
         yoyo: true,
         ease: "power1.inOut",
       }, "<");
-
-      // front leg opposite phase
+      
       tl.to(frontLegRef.current, {
-        attr: { x2: "50", y2: "108" },
+        attr: { x2: "48", y2: "110" },
         duration: 0.22,
         repeat: 10,
         yoyo: true,
@@ -75,8 +73,7 @@ export default function HeroReveal() {
         delay: 0.11,
       }, "<");
 
-      // 5 — letters S U R Y fade in sequentially during walk
-      const WALK_START = 3; // tl position where walk starts (approx)
+      // 4 — letters S U R Y fade in sequentially during walk
       LETTERS.forEach((_, i) => {
         tl.to(
           letterRefs.current[i],
@@ -86,28 +83,27 @@ export default function HeroReveal() {
         );
       });
 
-      // 6 — close legs
-      tl.to([backLegRef.current, frontLegRef.current], {
-        attr: { x2: "30", y2: "108" },
+      // 5 — form the 'A' stance
+      tl.to(backLegRef.current, {
+        attr: { x2: "15", y2: "115" },
         duration: 0.2,
         ease: "power2.inOut",
       }, "+=0.05");
+      
+      tl.to(frontLegRef.current, {
+        attr: { x2: "45", y2: "115" },
+        duration: 0.2,
+        ease: "power2.inOut",
+      }, "<");
 
-      // 7 — flip
-      tl.to(charFlipRef.current, {
-        rotateY: 180,
-        duration: 0.5,
-        ease: "power3.inOut",
-      }, "+=0.12");
+      // 6 — crossbar appears to finish the 'A'
+      tl.to(crossbarRef.current, { opacity: 1, duration: 0.2 }, "+=0.1");
 
-      // 8 — crossbar
-      tl.to(crossbarRef.current, { opacity: 1, duration: 0.2 }, "-=0.08");
+      // 7 — show static A, hide svg animation
+      tl.to(aLetterRef.current,  { opacity: 1, duration: 0.25 }, "+=0.15");
+      tl.to(charWrapRef.current, { opacity: 0, duration: 0.15 }, "<");
 
-      // 9 — show static A, hide svg char
-      tl.to(aLetterRef.current,  { opacity: 1, duration: 0.25 }, "-=0.05");
-      tl.to(charWrapRef.current, { opacity: 0, duration: 0.15 }, "-=0.05");
-
-      // 10 — PEDDISHETTI rises
+      // 8 — PEDDISHETTI rises
       tl.to(topWordRef.current, {
         opacity: 1,
         y: 0,
@@ -185,7 +181,7 @@ export default function HeroReveal() {
             </span>
           ))}
 
-          {/* Static "A" — appears after flip */}
+          {/* Static "A" — appears after SVG animation finishes */}
           <span
             ref={aLetterRef}
             className="font-black leading-none"
@@ -200,7 +196,7 @@ export default function HeroReveal() {
         </div>
       </div>
 
-      {/* ── Walking Stick Figure ── */}
+      {/* ── Walking Legs Animation ── */}
       <div
         ref={charWrapRef}
         className="absolute"
@@ -213,7 +209,7 @@ export default function HeroReveal() {
           willChange: "transform",
         }}
       >
-        <div ref={charFlipRef} style={{ transformStyle: "preserve-3d" }}>
+        <div style={{ transformStyle: "preserve-3d" }}>
           <svg
             viewBox="0 0 60 130"
             overflow="visible"
@@ -235,38 +231,28 @@ export default function HeroReveal() {
             </defs>
 
             <g filter="url(#oglow)" stroke={ORANGE} strokeLinecap="round" fill="none">
-              {/* Head */}
-              <circle cx="30" cy="11" r="7" strokeWidth="5" fill={ORANGE} fillOpacity="0.15" />
-
-              {/* Spine / torso */}
-              <line x1="30" y1="18" x2="30" y2="75" strokeWidth="5" />
-
-              {/* Arms */}
-              <line x1="30" y1="40" x2="9"  y2="58" strokeWidth="4" />
-              <line x1="30" y1="40" x2="51" y2="58" strokeWidth="4" />
-
               {/* Back leg */}
               <line
                 ref={backLegRef}
-                x1="30" y1="75"
-                x2="14" y2="115"
-                strokeWidth="5"
+                x1="30" y1="20"
+                x2="30" y2="115"
+                strokeWidth="6"
               />
 
               {/* Front leg */}
               <line
                 ref={frontLegRef}
-                x1="30" y1="75"
-                x2="46" y2="115"
-                strokeWidth="5"
+                x1="30" y1="20"
+                x2="30" y2="115"
+                strokeWidth="6"
               />
 
               {/* Crossbar (A crossbar, hidden until end) */}
               <line
                 ref={crossbarRef}
-                x1="13" y1="62"
-                x2="47" y2="62"
-                strokeWidth="5"
+                x1="20" y1="75"
+                x2="40" y2="75"
+                strokeWidth="6"
               />
             </g>
           </svg>
