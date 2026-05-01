@@ -7,15 +7,8 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 gsap.registerPlugin(ScrollTrigger);
 
 /*
-  AppsSineWave — scroll-driven neon blue wave
+  AppsSineWave — scroll-driven neon blue wave & parallax cards
   ─────────────────────────────────────────────────────────────
-  Architecture (avoids MotionPathPlugin SVG coordinate issues):
-  • Wave is a decorative SVG — visual only
-  • Marker is an absolutely-positioned DOM circle that we move
-    by interpolating between pre-computed (x, y) screen points
-    tied to the scrub progress. This is 100% reliable.
-  • Cards stack in the centre. Scroll fades card 1 out / card 2
-    in, then card 2 out / card 3 in, exactly in sync with marker.
 */
 
 const APPS = [
@@ -45,38 +38,12 @@ const APPS = [
   },
 ] as const;
 
-/* ── sine-wave evaluation for marker x/y ── */
-// We move the marker along a logical sine path mapped to the SVG viewBox.
-// viewBox: 0 0 1200 300   height rendered: 180px
-// Three stops: left-peak (t=0), mid-trough (t=0.5), right-peak (t=1)
-function sinePoint(t: number): { px: number; py: number } {
-  // x goes 0→100 (percentage of section width)
-  const xPct = t * 100;
-  // y: sine oscillation.  t=0 → top (peak), t=0.5 → bottom (trough), t=1 → top
-  const rawY = Math.sin(t * Math.PI); // 0→1→0 for one arch; we want two arches
-  // Two full arches: 0→peak→trough→peak
-  const yNorm = -Math.cos(t * Math.PI * 2) * 0.5 + 0.5; // 0→1→0→1→0 but we want peaks at 0,0.5,1
-  // peaks at t=0, 0.5, 1 → yNorm = 0 at those points, 1 at troughs
-  // We want marker at peaks, so invert:
-  const yFrac = 1 - yNorm; // 1 at peaks, 0 at troughs
-  // map to wave strip (occupies bottom 55% of vh)
-  // waveTop in vh: 30vh from bottom, height 180px (~22vh on 800px screen) → centre at ~41vh from top
-  // We'll just return percentages and use CSS to position
-  return { px: xPct, py: yFrac };
-}
-
-/* Three marker stops (left peak, mid peak, right peak) */
-const STOPS = [
-  sinePoint(0.0),   // start left
-  sinePoint(0.5),   // mid
-  sinePoint(1.0),   // end right
-];
-
 /* ── AppCard ── */
 interface CardProps {
   app: (typeof APPS)[number];
   active: boolean;
 }
+
 function AppCard({ app, active }: CardProps) {
   const [flipped, setFlipped] = useState(false);
 
@@ -110,8 +77,8 @@ function AppCard({ app, active }: CardProps) {
       >
         {/* Front */}
         <div
-          className="absolute inset-0 rounded-3xl overflow-hidden flex flex-col"
-          style={{ backfaceVisibility: "hidden" }}
+          className="absolute inset-0 rounded-3xl overflow-hidden flex flex-col shadow-2xl"
+          style={{ backfaceVisibility: "hidden", border: "1px solid rgba(0,0,0,0.05)" }}
         >
           <div
             className="flex-1 flex items-center justify-center"
@@ -137,10 +104,10 @@ function AppCard({ app, active }: CardProps) {
           style={{
             backfaceVisibility: "hidden",
             transform: "rotateY(180deg)",
-            background: "rgba(255,255,255,0.72)",
+            background: "rgba(255,255,255,0.85)",
             backdropFilter: "blur(24px)",
             WebkitBackdropFilter: "blur(24px)",
-            border: "1px solid rgba(255,255,255,0.85)",
+            border: "1px solid rgba(0,0,0,0.08)",
             boxShadow: "0 20px 60px rgba(0,0,0,0.08)",
           }}
         >
@@ -173,91 +140,89 @@ export default function AppsSineWave() {
     const marker  = markerRef.current;
     if (!section || !marker) return;
 
-    // set initial card states
+    // set initial card states for parallax
     cardRefs.current.forEach((el, i) => {
       if (!el) return;
-      gsap.set(el, { opacity: i === 0 ? 1 : 0, y: i === 0 ? 0 : 30 });
+      gsap.set(el, { opacity: i === 0 ? 1 : 0, y: i === 0 ? 0 : 150, scale: i === 0 ? 1 : 0.9 });
     });
 
-    // initial marker position — left peak area
-    // We position the marker in % relative to section width/height via left/top
-    gsap.set(marker, { left: "12%", top: "55%" });
-
-    // Proxy object for progress
-    const proxy = { p: 0 };
+    /*
+      The SVG viewBox is 0 0 1200 280.
+      Peak 1 Y=40 (14.28%), X=300 (25%)
+      Trough Y=240 (85.71%), X=600 (50%)
+      Peak 2 Y=40 (14.28%), X=900 (75%)
+    */
+    gsap.set(marker, { left: "25%", top: "14.28%" });
 
     const ctx = gsap.context(() => {
       const tl = gsap.timeline({
         scrollTrigger: {
           trigger: section,
           start: "top top",
-          end: "+=260%",
+          end: "+=350%", // Enough scroll room for 3 cards + a pause
           pin: true,
-          scrub: 1.2,
-          onUpdate: (self) => {
-            // Keep proxy in sync for marker movement
-            proxy.p = self.progress;
-          },
+          scrub: 1,
         },
       });
 
-      /*
-        Timeline has 4 "beats" (duration units):
-          0→1: marker goes  left-peak → mid-peak
-               card1 fades out / card2 fades in (at beat 0.5)
-          1→2: marker goes  mid-peak  → right-peak
-               card2 fades out / card3 fades in (at beat 1.5)
-      */
+      // Marker Proxy tracks coordinates
+      const markerProxy = { x: 25, yFrac: 14.28 };
 
-      /* ── Marker: left-peak → mid → right-peak ── */
-      // We animate a proxy x/y and read it on update
-      const markerProxy = { x: 12, yFrac: 0.25 }; // percent values
-
+      /* ── Scene 1: Move to Trough (Card 1 out, Card 2 in) ── */
       tl.to(markerProxy, {
-        x: 50, yFrac: 0.72,   // trough position (mid screen, wave low)
+        x: 50, yFrac: 85.71,
         duration: 1,
-        ease: "power1.inOut",
+        ease: "sine.inOut",
         onUpdate: () => {
           if (marker) {
             marker.style.left = `${markerProxy.x}%`;
-            marker.style.top  = `${markerProxy.yFrac * 100}%`;
+            marker.style.top  = `${markerProxy.yFrac}%`;
           }
         },
       }, 0);
 
+      tl.add(() => {
+        if (markerNumRef.current) markerNumRef.current.textContent = "2";
+      }, 0.5);
+
+      // Card 1 scrolls up and fades
+      tl.to(cardRefs.current[0], { opacity: 0, y: -150, scale: 0.9, duration: 0.5, ease: "power2.in" }, 0.2);
+      
+      // Card 2 parallax scrolls in from bottom
+      tl.to(cardRefs.current[1], {
+        opacity: 1, y: 0, scale: 1, duration: 0.6, ease: "power2.out",
+        onStart: () => setActiveIndex(1),
+      }, 0.4);
+
+
+      /* ── Scene 2: Move to Peak 2 (Card 2 out, Card 3 in) ── */
       tl.to(markerProxy, {
-        x: 88, yFrac: 0.25,   // right peak
+        x: 75, yFrac: 14.28,
         duration: 1,
-        ease: "power1.inOut",
+        ease: "sine.inOut",
         onUpdate: () => {
           if (marker) {
             marker.style.left = `${markerProxy.x}%`;
-            marker.style.top  = `${markerProxy.yFrac * 100}%`;
+            marker.style.top  = `${markerProxy.yFrac}%`;
           }
         },
       }, 1);
 
-      /* ── Number changes ── */
-      tl.add(() => {
-        if (markerNumRef.current) markerNumRef.current.textContent = "2";
-      }, 0.9);
       tl.add(() => {
         if (markerNumRef.current) markerNumRef.current.textContent = "3";
-      }, 1.9);
+      }, 1.5);
 
-      /* ── Card 1 out / Card 2 in ── */
-      tl.to(cardRefs.current[0], { opacity: 0, y: -30, duration: 0.55, ease: "power2.in" }, 0.5);
-      tl.to(cardRefs.current[1], {
-        opacity: 1, y: 0, duration: 0.55, ease: "power2.out",
-        onStart: () => setActiveIndex(1),
-      }, 0.55);
-
-      /* ── Card 2 out / Card 3 in ── */
-      tl.to(cardRefs.current[1], { opacity: 0, y: -30, duration: 0.55, ease: "power2.in" }, 1.5);
+      // Card 2 scrolls up and fades
+      tl.to(cardRefs.current[1], { opacity: 0, y: -150, scale: 0.9, duration: 0.5, ease: "power2.in" }, 1.2);
+      
+      // Card 3 parallax scrolls in from bottom
       tl.to(cardRefs.current[2], {
-        opacity: 1, y: 0, duration: 0.55, ease: "power2.out",
+        opacity: 1, y: 0, scale: 1, duration: 0.6, ease: "power2.out",
         onStart: () => setActiveIndex(2),
-      }, 1.55);
+      }, 1.4);
+
+      /* ── Buffer: Hold the 3rd card on screen before unpinning ── */
+      tl.set({}, {}, 2.5);
 
     }, section);
 
@@ -288,16 +253,16 @@ export default function AppsSineWave() {
         <div className="mt-2 h-0.5 w-20 rounded-full bg-gradient-to-r from-transparent via-blue-500 to-transparent" />
       </div>
 
-      {/* ── Neon sine wave SVG (visual only) ── */}
+      {/* ── Neon sine wave SVG & Marker Wrapper ── */}
       <div
         className="absolute w-full"
-        style={{ bottom: "28vh", zIndex: 1 }}
+        style={{ bottom: "28vh", height: "180px", zIndex: 1 }}
       >
         <svg
           viewBox="0 0 1200 280"
           preserveAspectRatio="none"
-          className="w-full"
-          style={{ height: "180px", overflow: "visible" }}
+          className="w-full h-full"
+          style={{ overflow: "visible" }}
         >
           <defs>
             <filter id="nb" x="-20%" y="-60%" width="140%" height="220%">
@@ -326,30 +291,30 @@ export default function AppsSineWave() {
             filter="url(#nb)"
           />
         </svg>
-      </div>
 
-      {/* ── Floating DOM marker (absolutely positioned, GSAP moves it) ── */}
-      <div
-        ref={markerRef}
-        className="absolute z-20 -translate-x-1/2 -translate-y-1/2 pointer-events-none"
-        style={{ width: 48, height: 48 }}
-      >
-        {/* outer glow ring */}
+        {/* ── Floating DOM marker (Inside wave wrapper so % maps exactly to viewBox) ── */}
         <div
-          className="absolute inset-0 rounded-full"
-          style={{ background: "#3b82f6", filter: "blur(14px)", opacity: 0.35 }}
-        />
-        {/* solid circle */}
-        <div
-          className="absolute inset-0 rounded-full flex items-center justify-center"
-          style={{ background: "#3b82f6", boxShadow: "0 0 0 3px rgba(59,130,246,0.3)" }}
+          ref={markerRef}
+          className="absolute z-20 -translate-x-1/2 -translate-y-1/2 pointer-events-none"
+          style={{ width: 48, height: 48 }}
         >
-          <span
-            ref={markerNumRef}
-            className="text-white font-black text-sm select-none"
+          {/* outer glow ring */}
+          <div
+            className="absolute inset-0 rounded-full"
+            style={{ background: "#3b82f6", filter: "blur(14px)", opacity: 0.35 }}
+          />
+          {/* solid circle */}
+          <div
+            className="absolute inset-0 rounded-full flex items-center justify-center"
+            style={{ background: "#3b82f6", boxShadow: "0 0 0 3px rgba(59,130,246,0.3)" }}
           >
-            1
-          </span>
+            <span
+              ref={markerNumRef}
+              className="text-white font-black text-sm select-none"
+            >
+              1
+            </span>
+          </div>
         </div>
       </div>
 
@@ -361,6 +326,7 @@ export default function AppsSineWave() {
         {APPS.map((app, i) => (
           <div
             key={app.title}
+            className="absolute"
             ref={(el) => { cardRefs.current[i] = el; }}
           >
             <AppCard app={app} active={activeIndex === i} />
