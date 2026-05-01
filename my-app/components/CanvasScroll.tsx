@@ -1,9 +1,13 @@
 
 "use client";
 
-import { useRef, useEffect } from "react";
+import { useRef, useLayoutEffect } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+// IMPORTANT: Ensure you have saved the React Bits components in these files!
+// import Hyperspeed from "./Hyperspeed";
+// import SplashCursor from "./SplashCursor";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -15,7 +19,7 @@ const PANELS = [
     accentTo: "#3b82f6",
     badgeBg: "linear-gradient(135deg,#f97316,#fb923c)",
     icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
+      <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6">
         <circle cx="12" cy="7" r="4" /><path d="M3 21c0-4 4-7 9-7s9 3 9 7" />
       </svg>
     ),
@@ -32,7 +36,7 @@ const PANELS = [
     accentTo: "#a855f7",
     badgeBg: "linear-gradient(135deg,#22d3ee,#a855f7)",
     icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
+      <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6">
         <path d="M12 3L2 9l10 6 10-6-10-6z" /><path d="M2 9v6" /><path d="M6 12v5c2 1.5 8 1.5 12 0v-5" />
       </svg>
     ),
@@ -49,7 +53,7 @@ const PANELS = [
     accentTo: "#22d3ee",
     badgeBg: "linear-gradient(135deg,#ec4899,#22d3ee)",
     icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
+      <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6">
         <path d="M9 18V5l12-2v13" /><circle cx="6" cy="18" r="3" /><circle cx="18" cy="16" r="3" />
       </svg>
     ),
@@ -62,205 +66,143 @@ const PANELS = [
   },
 ] as const;
 
-const TOTAL_FRAMES = 384;
-const FRAME_PATH = (n: number) => `/frames/${String(n).padStart(4, "0")}.jpg`;
-
-// Outer wrapper positions
-const PANEL_POSITIONS = [
-  { left: "4%",  right: "auto", transform: "translateY(-50%)" },
-  { left: "50%", right: "auto", transform: "translate(-50%,-50%)" },
-  { left: "auto",right: "4%",  transform: "translateY(-50%)" },
-];
-
 export default function CanvasScroll() {
   const containerRef = useRef<HTMLDivElement>(null);
-  const sectionRef   = useRef<HTMLDivElement>(null);
-  const canvasRef    = useRef<HTMLCanvasElement>(null);
-  const panelRefs    = useRef<(HTMLDivElement | null)[]>([]);
-  const frameIndex   = useRef({ value: 0 });
-  const images       = useRef<HTMLImageElement[]>([]);
-  const hasFrames    = useRef(false);
+  const scrollWrapRef = useRef<HTMLDivElement>(null);
 
-  /* ── Pre-load frames ── */
-  useEffect(() => {
-    const imgs: HTMLImageElement[] = [];
-    let loaded = 0;
-    for (let i = 1; i <= TOTAL_FRAMES; i++) {
-      const img = new Image();
-      img.onload = () => {
-        loaded++;
-        if (loaded === 1) {
-          hasFrames.current = true;
-          drawFrame(0);
-        }
-      };
-      img.src = FRAME_PATH(i);
-      imgs.push(img);
-    }
-    images.current = imgs;
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  function drawFrame(index: number) {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    const img = images.current[Math.max(0, Math.min(index, TOTAL_FRAMES - 1))];
-    if (!ctx || !img || !img.complete || !img.naturalWidth) return;
-
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    const scale = Math.max(canvas.width / img.naturalWidth, canvas.height / img.naturalHeight);
-    const w = img.naturalWidth  * scale;
-    const h = img.naturalHeight * scale;
-    ctx.drawImage(img, (canvas.width - w) / 2, (canvas.height - h) / 2, w, h);
-  }
-
-  /* ── GSAP + ScrollTrigger ── */
-  useEffect(() => {
+  useLayoutEffect(() => {
     const container = containerRef.current;
-    const section = sectionRef.current;
-    if (!container || !section) return;
-
-    const resize = () => {
-      const canvas = canvasRef.current;
-      if (!canvas) return;
-      canvas.width  = window.innerWidth;
-      canvas.height = window.innerHeight;
-      drawFrame(Math.round(frameIndex.current.value));
-    };
-    resize();
-    window.addEventListener("resize", resize);
-
-    // Reset initial states on the INNER animating div
-    panelRefs.current.forEach((el) => {
-      if (el) gsap.set(el, { opacity: 0, y: 100 });
-    });
+    const scrollWrap = scrollWrapRef.current;
+    if (!container || !scrollWrap) return;
 
     const ctx = gsap.context(() => {
-      const tl = gsap.timeline({
+      // Calculate how far to scroll horizontally
+      const getScrollAmount = () => -(scrollWrap.scrollWidth - window.innerWidth + 80); // 80px buffer
+
+      gsap.to(scrollWrap, {
+        x: getScrollAmount,
+        ease: "none",
         scrollTrigger: {
-          trigger: container,     // Target the outer container wrapper
-          pin: section,           // Pin the inner section
+          trigger: container,
           start: "top top",
-          end: "+=450%",          // Length of the scroll
+          end: () => `+=${scrollWrap.scrollWidth}`, // Scroll duration based on total width
+          pin: true,
           scrub: 1,
-          anticipatePin: 1,
+          invalidateOnRefresh: true, // Recalculates on window resize
         },
       });
-
-      /* Canvas sequence scrub */
-      tl.to(frameIndex.current, {
-        value: TOTAL_FRAMES - 1,
-        ease: "none",
-        duration: 6,
-        onUpdate: () => drawFrame(Math.round(frameIndex.current.value)),
-      }, 0);
-
-      /* Panel 1 */
-      tl.to(panelRefs.current[0], { y: 0, opacity: 1, duration: 0.8, ease: "power3.out" }, 0.2);
-      tl.to(panelRefs.current[0], { y: -120, opacity: 0, duration: 0.7, ease: "power3.in" }, 2);
-
-      /* Panel 2 */
-      tl.to(panelRefs.current[1], { y: 0, opacity: 1, duration: 0.8, ease: "power3.out" }, 2);
-      tl.to(panelRefs.current[1], { y: -120, opacity: 0, duration: 0.7, ease: "power3.in" }, 4);
-
-      /* Panel 3 */
-      tl.to(panelRefs.current[2], { y: 0, opacity: 1, duration: 0.8, ease: "power3.out" }, 4);
-      
-      // Buffer so the user can read Panel 3 before it unpins and scrolls away
-      tl.set({}, {}, 7.5); 
-
     }, container);
 
-    return () => {
-      ctx.revert();
-      window.removeEventListener("resize", resize);
-    };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    return () => ctx.revert();
   }, []);
 
   return (
-    // Outer Wrapper secures the scroll trigger pin space without breaking layout
-    <div ref={containerRef} className="w-full">
-      <section
-        ref={sectionRef}
-        className="relative w-full overflow-hidden"
-        style={{ height: "100vh" }}
-      >
-        <div className="absolute inset-0 z-0" style={{ background: "linear-gradient(160deg,#050505 0%,#0d1117 50%,#000 100%)" }} />
-        <canvas ref={canvasRef} className="absolute inset-0 z-[1] w-full h-full" style={{ objectFit: "cover" }} />
-        
-        <div
-          className="absolute inset-0 z-[2] pointer-events-none"
-          style={{
-            background: [
-              "radial-gradient(ellipse 80% 70% at 50% 50%, transparent 30%, rgba(0,0,0,0.6) 100%)",
-              "linear-gradient(to bottom, rgba(0,0,0,0.25) 0%, transparent 20%, transparent 80%, rgba(0,0,0,0.4) 100%)",
-            ].join(", "),
-          }}
+    <div ref={containerRef} className="relative w-full overflow-hidden bg-black" style={{ height: "100vh" }}>
+      
+      {/* ── BACKGROUND: Hyperspeed ── */}
+      {/* Uncomment this once you add Hyperspeed.tsx */}
+      {/* <div className="absolute inset-0 z-0 opacity-60">
+        <Hyperspeed 
+          effectOptions={{
+            distortion: "xyDistortion",
+            length: 400,
+            roadWidth: 9,
+            islandWidth: 2,
+            lanesPerRoad: 3,
+            colors: {
+              roadColor: 0x080808,
+              islandColor: 0x0a0a0a,
+              background: 0x000000,
+              shoulderLines: 0xFFFFFF,
+              brokenLines: 0xFFFFFF,
+              leftCars: [0xD856BF, 0x6750A2, 0xC247AC],
+              rightCars: [0x03B3C3, 0x0E5EA5, 0x324555],
+              sticks: 0x03B3C3,
+            }
+          }} 
         />
+      </div> 
+      */}
 
-        {/* ── Floating Panels ── */}
-        {PANELS.map((panel, i) => (
-          // The outer div ONLY handles the static CSS centering. GSAP never touches this.
-          <div
-            key={panel.label}
-            className="absolute z-10 pointer-events-none"
-            style={{
-              top: "50%",
-              left: PANEL_POSITIONS[i].left,
-              right: PANEL_POSITIONS[i].right,
-              transform: PANEL_POSITIONS[i].transform,
-            }}
-          >
-            {/* The inner div ONLY handles the GSAP fade/slide. */}
+      {/* ── FOREGROUND: Splash Cursor ── */}
+      {/* Uncomment this once you add SplashCursor.tsx */}
+      {/* <div className="absolute inset-0 z-10 pointer-events-none">
+        <SplashCursor 
+          COLOR_UPDATE_SPEED={10} 
+          SPLAT_RADIUS={0.3} 
+          SPLAT_FORCE={6000} 
+          TRANSPARENT={true}
+        />
+      </div> 
+      */}
+
+      {/* Gradient Overlay to ensure text readability */}
+      <div className="absolute inset-0 z-[2] pointer-events-none bg-gradient-to-t from-black/80 via-transparent to-black/40" />
+
+      {/* ── CARDS (Horizontal Scroll) ── */}
+      <div className="absolute top-0 left-0 h-full w-full flex items-center z-20 overflow-hidden">
+        <div 
+          ref={scrollWrapRef} 
+          className="flex items-center gap-8 md:gap-16 px-[10vw]"
+          style={{ width: "max-content" }}
+        >
+          {PANELS.map((panel, i) => (
             <div
-              ref={(el) => { panelRefs.current[i] = el; }}
-              className="pointer-events-auto flex flex-col relative"
+              key={panel.label}
+              className="flex-shrink-0 flex flex-col relative"
               style={{
-                width: "clamp(240px, 24vw, 320px)",
-                background: `linear-gradient(145deg, rgba(255,255,255,0.13) 0%, rgba(255,255,255,0.06) 100%)`,
+                width: "clamp(320px, 35vw, 480px)", // Made cards significantly larger
+                background: `linear-gradient(145deg, rgba(20,20,20,0.8) 0%, rgba(10,10,10,0.9) 100%)`,
                 backdropFilter: "blur(32px) saturate(180%)",
                 WebkitBackdropFilter: "blur(32px) saturate(180%)",
-                border: "1px solid rgba(255,255,255,0.18)",
-                borderRadius: "24px",
-                boxShadow: `0 0 0 1px rgba(255,255,255,0.06), 0 8px 32px rgba(0,0,0,0.55), 0 32px 80px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.2), inset 0 -1px 0 rgba(0,0,0,0.3)`,
+                border: "1px solid rgba(255,255,255,0.1)",
+                borderRadius: "28px",
+                boxShadow: `0 32px 80px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.1)`,
+                transition: "transform 0.3s ease",
               }}
             >
-              <div style={{ height: "3px", borderRadius: "24px 24px 0 0", background: `linear-gradient(90deg, ${panel.accentFrom}, ${panel.accentTo})` }} />
-              <div className="flex flex-col gap-4 p-5">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg" style={{ background: panel.badgeBg, boxShadow: `0 4px 20px ${panel.accentFrom}55` }}>
+              {/* Top Colored Edge */}
+              <div style={{ height: "4px", borderRadius: "28px 28px 0 0", background: `linear-gradient(90deg, ${panel.accentFrom}, ${panel.accentTo})` }} />
+              
+              <div className="flex flex-col gap-6 p-8">
+                {/* Header */}
+                <div className="flex items-center gap-5">
+                  <div className="w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg" style={{ background: panel.badgeBg, boxShadow: `0 8px 30px ${panel.accentFrom}44` }}>
                     {panel.icon}
                   </div>
                   <div>
-                    <p className="text-white/40 text-[9px] font-bold uppercase tracking-[0.25em]">About me</p>
-                    <p className="text-white font-black text-base leading-tight tracking-wide">{panel.label}</p>
+                    <p className="text-white/40 text-[11px] font-bold uppercase tracking-[0.3em] mb-1">About me</p>
+                    <p className="text-white font-black text-2xl leading-tight tracking-wide">{panel.label}</p>
                   </div>
                 </div>
-                <div className="h-px w-full rounded-full" style={{ background: `linear-gradient(90deg, ${panel.accentFrom}60, ${panel.accentTo}60)` }} />
-                <div className="flex flex-col gap-3">
+
+                {/* Divider */}
+                <div className="h-px w-full rounded-full" style={{ background: `linear-gradient(90deg, ${panel.accentFrom}40, ${panel.accentTo}40)` }} />
+
+                {/* Data List */}
+                <div className="flex flex-col gap-5">
                   {panel.lines.map((row) => (
                     <div key={row.label} className="flex justify-between items-start gap-4">
-                      <span className="text-[10px] font-bold uppercase tracking-[0.2em] flex-shrink-0 mt-px" style={{ color: `${panel.accentFrom}bb` }}>{row.label}</span>
-                      <span className="text-white font-bold text-xs text-right leading-snug">{row.value}</span>
+                      <span className="text-[12px] font-bold uppercase tracking-[0.2em] flex-shrink-0 mt-1" style={{ color: `${panel.accentFrom}bb` }}>
+                        {row.label}
+                      </span>
+                      <span className="text-white font-medium text-sm text-right leading-relaxed">
+                        {row.value}
+                      </span>
                     </div>
                   ))}
                 </div>
-                <div className="self-start rounded-full px-3 py-0.5 text-[9px] font-black uppercase tracking-widest" style={{ background: `linear-gradient(90deg, ${panel.accentFrom}22, ${panel.accentTo}22)`, border: `1px solid ${panel.accentFrom}44`, color: panel.accentFrom }}>
-                  Surya · 2025
-                </div>
               </div>
-              <div className="absolute inset-0 rounded-[24px] pointer-events-none" style={{ background: "linear-gradient(135deg, rgba(255,255,255,0.12) 0%, transparent 45%)" }} />
             </div>
-          </div>
-        ))}
-
-        <div className="absolute bottom-7 left-1/2 -translate-x-1/2 z-10 flex flex-col items-center gap-2">
-          <span className="text-white/40 text-[9px] font-bold tracking-[0.4em] uppercase">Scroll</span>
-          <div className="w-px h-8 rounded-full" style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.5), transparent)" }} />
+          ))}
         </div>
-      </section>
+      </div>
+
+      {/* Scroll indicator */}
+      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-30 flex flex-col items-center gap-3">
+        <span className="text-white/50 text-[10px] font-bold tracking-[0.4em] uppercase">Scroll Right</span>
+        <div className="w-px h-10 rounded-full" style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.6), transparent)" }} />
+      </div>
     </div>
   );
-}
+              }
