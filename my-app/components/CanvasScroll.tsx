@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useRef, useEffect } from "react";
@@ -114,6 +115,7 @@ export default function CanvasScroll() {
     const ctx = canvas.getContext("2d");
     const img = images.current[Math.max(0, Math.min(index, TOTAL_FRAMES - 1))];
     if (!ctx || !img || !img.complete || !img.naturalWidth) return;
+
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     const scale = Math.max(canvas.width / img.naturalWidth, canvas.height / img.naturalHeight);
     const w = img.naturalWidth  * scale;
@@ -146,7 +148,7 @@ export default function CanvasScroll() {
         scrollTrigger: {
           trigger: section,
           start: "top top",
-          end: "+=380%",
+          end: "+=450%", // Extended scroll distance to hold the last panel longer
           pin: true,
           scrub: 1,
           anticipatePin: 1,
@@ -189,6 +191,10 @@ export default function CanvasScroll() {
         { y: 0,   opacity: 1, duration: 0.8, ease: "power3.out" },
         4
       );
+      
+      /* ADDED BUFFER: Gives the user time to read panel 3 before it unpins */
+      tl.set({}, {}, 7.5); 
+
     }, section);
 
     return () => {
@@ -241,10 +247,7 @@ export default function CanvasScroll() {
             transform: PANEL_POSITIONS[i].transform,
             width: "clamp(240px, 24vw, 320px)",
             opacity: 0,
-            /* Elevated glassmorphism */
-            background: `linear-gradient(145deg,
-              rgba(255,255,255,0.13) 0%,
-              rgba(255,255,255,0.06) 100%)`,
+            background: `linear-gradient(145deg, rgba(255,255,255,0.13) 0%, rgba(255,255,255,0.06) 100%)`,
             backdropFilter: "blur(32px) saturate(180%)",
             WebkitBackdropFilter: "blur(32px) saturate(180%)",
             border: "1px solid rgba(255,255,255,0.18)",
@@ -350,4 +353,4 @@ export default function CanvasScroll() {
       </div>
     </section>
   );
-}
+            }
