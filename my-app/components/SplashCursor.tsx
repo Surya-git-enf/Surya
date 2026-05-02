@@ -779,6 +779,7 @@ export default function SplashCursor({
     }
 
     function resizeCanvas(): boolean {
+      if (!canvas) return false;  // add this line
       const width = scaleByPixelRatio(canvas.clientWidth);
       const height = scaleByPixelRatio(canvas.clientHeight);
       if (canvas.width !== width || canvas.height !== height) {
