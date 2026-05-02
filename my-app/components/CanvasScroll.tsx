@@ -10,6 +10,24 @@ const SplashCursor = dynamic(() => import("./SplashCursor"), { ssr: false });
 
 gsap.registerPlugin(ScrollTrigger);
 
+// Add this OUTSIDE the CanvasScroll function, at the top of the file
+const HYPERSPEED_OPTIONS = {
+  distortion: "xyDistortion",
+  length: 400,
+  roadWidth: 9,
+  islandWidth: 2,
+  lanesPerRoad: 3,
+  colors: {
+    roadColor: 0x080808,
+    islandColor: 0x0a0a0a,
+    background: 0x000000,
+    shoulderLines: 0xFFFFFF,
+    brokenLines: 0xFFFFFF,
+    leftCars: [0xD856BF, 0x6750A2, 0xC247AC],
+    rightCars: [0x03B3C3, 0x0E5EA5, 0x324555],
+    sticks: 0x03B3C3,
+  },
+};
 /* ── Panel data ──────────────────────────────────────────── */
 const PANELS = [
   {
@@ -197,7 +215,7 @@ export default function CanvasScroll() {
           TRANSPARENT={true}
         />
       </div>
-
+      <Hyperspeed effectOptions={HYPERSPEED_OPTIONS} />
       {/* Gradient overlay for readability */}
       <div className="absolute inset-0 z-20 pointer-events-none bg-gradient-to-t from-black/80 via-black/20 to-black/60" />
 
