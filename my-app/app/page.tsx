@@ -1,5 +1,8 @@
 
 "use client";
+export default function Home() {
+  return <h1 style={{color:"black",padding:"40px"}}>Hello World</h1>;
+}
 import { useEffect } from "react";
 import dynamic from "next/dynamic";
 import Footer from "@/components/Footer";
