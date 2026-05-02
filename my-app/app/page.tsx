@@ -1,3 +1,4 @@
+
 "use client";
 
 import dynamic from "next/dynamic";
@@ -11,7 +12,7 @@ const AppsSineWave = dynamic(() => import("@/components/AppsSineWave"), { ssr: f
 
 export default function Home() {
   return (
-    <main className="relative flex flex-col w-full bg-white overflow-hidden">
+    <main className="relative flex flex-col w-full bg-white">
       <HeroReveal />
       <ErrorBoundary><CanvasScroll /></ErrorBoundary>
       <ErrorBoundary><SkillsOrbit /></ErrorBoundary>
