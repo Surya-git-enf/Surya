@@ -4,7 +4,8 @@ import { useRef, useLayoutEffect } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
-import Hyperspeed from "./Hyperspeed";
+import dynamic from "next/dynamic";
+const Hyperspeed = dynamic(() => import("./Hyperspeed"), { ssr: false });
 import SplashCursor from "./SplashCursor";
 
 gsap.registerPlugin(ScrollTrigger);
