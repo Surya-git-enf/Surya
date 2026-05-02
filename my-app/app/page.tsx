@@ -1,15 +1,21 @@
+'use client';
+import dynamic from 'next/dynamic';
+import HeroReveal from '@/components/HeroReveal';
+import Footer from '@/components/Footer';
+import ErrorBoundary from '@/components/ErrorBoundary';
 
-"use client";
-import dynamic from "next/dynamic";
-import HeroReveal from "@/components/HeroReveal";
-
-const CanvasScroll = dynamic(() => import("@/components/CanvasScroll"), { ssr: false });
+const CanvasScroll = dynamic(() => import('@/components/CanvasScroll'), { ssr: false });
+const SkillsOrbit  = dynamic(() => import('@/components/SkillsOrbit'),  { ssr: false });
+const AppsSineWave = dynamic(() => import('@/components/AppsSineWave'), { ssr: false });
 
 export default function Home() {
   return (
-    <main>
+    <main className="relative flex flex-col w-full bg-white overflow-hidden">
       <HeroReveal />
-      <CanvasScroll />
+      <ErrorBoundary><CanvasScroll /></ErrorBoundary>
+      <ErrorBoundary><SkillsOrbit /></ErrorBoundary>
+      <ErrorBoundary><AppsSineWave /></ErrorBoundary>
+      <Footer />
     </main>
   );
 }
