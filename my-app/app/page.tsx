@@ -1,5 +1,11 @@
 
 "use client";
+import HeroReveal from "@/components/HeroReveal";
+
 export default function Home() {
-  return <h1 style={{color:"black",padding:"40px"}}>Hello World</h1>;
+  return (
+    <main>
+      <HeroReveal />
+    </main>
+  );
 }
