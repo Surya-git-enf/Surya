@@ -534,14 +534,13 @@ class LightsSticks {
 class App {
   options: Required<EffectOptions>;
   container: HTMLElement;
-  renderer: THREE.WebGLRenderer;
-  composer: EffectComposer;
-  camera: THREE.PerspectiveCamera;
-  scene: THREE.Scene;
-  clock: THREE.Clock;
-  disposed: boolean;
-  hasValidSize: boolean;
-
+  renderer!: THREE.WebGLRenderer;
+  composer!: EffectComposer;
+  camera!: THREE.PerspectiveCamera;
+  scene!: THREE.Scene;
+  clock!: THREE.Clock;
+  disposed!: boolean;
+  hasValidSize!: boolean;
   road: Road;
   leftCarLights: CarLights;
   rightCarLights: CarLights;
