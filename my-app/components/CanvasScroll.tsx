@@ -6,7 +6,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 import dynamic from "next/dynamic";
 const Hyperspeed = dynamic(() => import("./Hyperspeed"), { ssr: false });
-import SplashCursor from "./SplashCursor";
+const SplashCursor = dynamic(() => import("./SplashCursor"), { ssr: false });
 
 gsap.registerPlugin(ScrollTrigger);
 
