@@ -584,7 +584,7 @@ class App {
     this.camera = new THREE.PerspectiveCamera(options.fov, w / h, 0.1, 10000);
     this.camera.position.set(0, 8, -5);
 
-    this.scene = new THREE.Scene();
+    this.renderer = new THREE.WebGLRenderer({ antialias: false, alpha: true });
     this.scene.background = null;
 
     const fog = new THREE.Fog(options.colors.background, options.length * 0.2, options.length * 500);
