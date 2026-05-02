@@ -136,8 +136,7 @@ export default function CanvasScroll() {
   }, []);
 
   return (
-    <div ref={containerRef} className="relative w-full overflow-hidden bg-black" style={{ height: "100vh" }}>
-
+    <div ref={containerRef} className="relative w-full overflow-hidden" style={{ height: "100vh", background: "transparent" }}>
       {/* ── Hyperspeed background ── */}
       <div className="absolute inset-0 z-0 opacity-80 pointer-events-none">
         <Hyperspeed effectOptions={HYPERSPEED_OPTIONS} />
