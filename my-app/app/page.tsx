@@ -1,9 +1,14 @@
+
 // app/page.tsx
+"use client";
+
+import dynamic from "next/dynamic";
 import HeroReveal from "@/components/HeroReveal";
-import CanvasScroll from "@/components/CanvasScroll";
-import SkillsOrbit from "@/components/SkillsOrbit";
-import AppsSineWave from "@/components/AppsSineWave";
 import Footer from "@/components/Footer";
+
+const CanvasScroll  = dynamic(() => import("@/components/CanvasScroll"),  { ssr: false });
+const SkillsOrbit   = dynamic(() => import("@/components/SkillsOrbit"),   { ssr: false });
+const AppsSineWave  = dynamic(() => import("@/components/AppsSineWave"),  { ssr: false });
 
 export default function Home() {
   return (
