@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect, useRef, useState, useCallback } from "react";
@@ -12,7 +13,7 @@ const NAV_SECTIONS = [
 const CONTACT_LINKS = [
   {
     name: "Instagram",
-    handle: "@plauful_123", // Update if this is a typo for playful_123!
+    handle: "@plauful_123", 
     url: "https://instagram.com/plauful_123",
     color: "#e1306c",
     svg: (
@@ -36,8 +37,7 @@ const CONTACT_LINKS = [
 
 export default function Header() {
   const [activeSection, setActiveSection] = useState<string>("personal");
-  const [isPastHero, setIsPastHero] = useState(false);
-  const [isScrolling, setIsScrolling] = useState(false);
+  const [isVisible, setIsVisible] = useState(true); // Default to true! (Always visible on load)
   
   const [photoOpen, setPhotoOpen] = useState(false);
   const [contactOpen, setContactOpen] = useState(false);
@@ -45,30 +45,21 @@ export default function Header() {
   
   const headerRef = useRef<HTMLElement>(null);
 
-  // ── Smart Scroll Mechanics (Hide on scroll, show on stop) ──
+  // ── Bulletproof Scroll Mechanics (Hide on scroll, show on stop) ──
   useEffect(() => {
     let scrollTimeout: NodeJS.Timeout;
 
     const handleScroll = () => {
-      const currentScrollY = window.scrollY;
+      setIsVisible(false); // Instantly hide when scrolling starts
+      clearTimeout(scrollTimeout);
       
-      // Determine if we are past the hero section
-      setIsPastHero(currentScrollY > 60);
-
-      if (currentScrollY > 60) {
-        setIsScrolling(true);
-        clearTimeout(scrollTimeout);
-        // Show header 250ms after the user completely stops scrolling
-        scrollTimeout = setTimeout(() => {
-          setIsScrolling(false);
-        }, 250); 
-      } else {
-        setIsScrolling(false);
-      }
+      // Wait 250ms after they stop scrolling, then show it again
+      scrollTimeout = setTimeout(() => {
+        setIsVisible(true);
+      }, 250); 
     };
 
     window.addEventListener("scroll", handleScroll, { passive: true });
-    handleScroll(); // Check on mount
     return () => {
       window.removeEventListener("scroll", handleScroll);
       clearTimeout(scrollTimeout);
@@ -84,14 +75,13 @@ export default function Header() {
       const el = document.getElementById(id);
       if (!el) return;
       
-      // Using IntersectionObserver to detect which section is on screen
       const obs = new IntersectionObserver(
         ([entry]) => {
           if (entry.isIntersecting) {
             setActiveSection(id);
           }
         },
-        { threshold: 0.3 } // Triggers when 30% of the section is visible
+        { threshold: 0.3 } 
       );
       obs.observe(el);
       observers.push(obs);
@@ -105,9 +95,6 @@ export default function Header() {
     if (el) el.scrollIntoView({ behavior: "smooth" });
     setMenuOpen(false);
   }, []);
-
-  // Only show the header if we are past the Hero section AND the user is NOT actively scrolling
-  const headerVisible = isPastHero && !isScrolling;
 
   return (
     <>
@@ -128,11 +115,12 @@ export default function Header() {
       {/* ── HEADER ── */}
       <header
         ref={headerRef}
-        className="fixed left-1/2 z-[200] flex items-center gap-2 px-3 py-2 select-none"
+        className="fixed left-1/2 flex items-center gap-2 px-3 py-2 select-none"
         style={{
-          top: "1rem", // 16px from top
-          transform: `translateX(-50%) translateY(${headerVisible ? "0" : "-150%"})`, // Slides up when hiding
-          opacity: headerVisible ? 1 : 0,
+          top: "1rem",
+          zIndex: 9999, // Super high z-index to stay above Canvas & Hero
+          transform: `translateX(-50%) translateY(${isVisible ? "0" : "-150%"})`, 
+          opacity: isVisible ? 1 : 0,
           transition: "transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s ease",
           background: "rgba(255,255,255,0.85)",
           backdropFilter: "blur(20px)",
@@ -182,7 +170,7 @@ export default function Header() {
                 onClick={() => scrollTo(s.id)}
                 className="relative px-3 py-1.5 rounded-full text-xs font-bold transition-all duration-300"
                 style={{
-                  color: isActive ? "#3b82f6" : "#555", // Blue text for active
+                  color: isActive ? "#3b82f6" : "#555", 
                   textShadow: isActive ? "0 0 12px rgba(59, 130, 246, 0.4)" : "none",
                 }}
               >
@@ -194,7 +182,7 @@ export default function Header() {
                     style={{
                       width: "60%",
                       background: "#3b82f6",
-                      boxShadow: "0 -2px 10px rgba(59, 130, 246, 0.8)", // Glowing effect
+                      boxShadow: "0 -2px 10px rgba(59, 130, 246, 0.8)",
                     }}
                   />
                 )}
@@ -228,9 +216,9 @@ export default function Header() {
       </header>
 
       {/* Mobile nav dropdown */}
-      {headerVisible && menuOpen && (
+      {isVisible && menuOpen && (
         <div
-          className="panel-enter fixed top-[72px] left-1/2 z-[199] flex flex-col rounded-2xl overflow-hidden sm:hidden"
+          className="panel-enter fixed top-[72px] left-1/2 z-[9998] flex flex-col rounded-2xl overflow-hidden sm:hidden"
           style={{
             transform: "translateX(-50%)",
             background: "rgba(255,255,255,0.95)",
@@ -260,9 +248,9 @@ export default function Header() {
       {/* Vertical Contact Panel */}
       {contactOpen && (
         <>
-          <div className="fixed inset-0 z-[198]" onClick={() => setContactOpen(false)} />
+          <div className="fixed inset-0 z-[9997]" onClick={() => setContactOpen(false)} />
           <div
-            className="panel-enter fixed top-[72px] right-4 z-[199] rounded-2xl overflow-hidden"
+            className="panel-enter fixed top-[72px] right-4 z-[9998] rounded-2xl overflow-hidden"
             style={{
               background: "rgba(255,255,255,0.96)",
               backdropFilter: "blur(24px)",
@@ -307,7 +295,7 @@ export default function Header() {
       {/* Floating Photo Lightbox */}
       {photoOpen && (
         <div
-          className="fixed inset-0 z-[300] flex items-center justify-center p-6"
+          className="fixed inset-0 z-[9999] flex items-center justify-center p-6"
           style={{ background: "rgba(0,0,0,0.7)", backdropFilter: "blur(12px)" }}
           onClick={() => setPhotoOpen(false)}
         >
@@ -355,5 +343,5 @@ export default function Header() {
       )}
     </>
   );
-        }
-            
+      }
+                
