@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useEffect, useRef, useState, useCallback } from "react";
@@ -10,11 +9,10 @@ const NAV_SECTIONS = [
   { id: "3dwebsite",  label: "3D Website" },
 ] as const;
 
-// Focused exclusively on Instagram and Discord exactly as requested
 const CONTACT_LINKS = [
   {
     name: "Instagram",
-    handle: "@plauful_123",
+    handle: "@plauful_123", // Update if this is a typo for playful_123!
     url: "https://instagram.com/plauful_123",
     color: "#e1306c",
     svg: (
@@ -38,21 +36,46 @@ const CONTACT_LINKS = [
 
 export default function Header() {
   const [activeSection, setActiveSection] = useState<string>("personal");
-  const [visible, setVisible] = useState(false);
+  const [isPastHero, setIsPastHero] = useState(false);
+  const [isScrolling, setIsScrolling] = useState(false);
+  
   const [photoOpen, setPhotoOpen] = useState(false);
   const [contactOpen, setContactOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  
   const headerRef = useRef<HTMLElement>(null);
 
+  // ── Smart Scroll Mechanics (Hide on scroll, show on stop) ──
   useEffect(() => {
-    const onScroll = () => {
-      setVisible(window.scrollY > 60);
+    let scrollTimeout: NodeJS.Timeout;
+
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      
+      // Determine if we are past the hero section
+      setIsPastHero(currentScrollY > 60);
+
+      if (currentScrollY > 60) {
+        setIsScrolling(true);
+        clearTimeout(scrollTimeout);
+        // Show header 250ms after the user completely stops scrolling
+        scrollTimeout = setTimeout(() => {
+          setIsScrolling(false);
+        }, 250); 
+      } else {
+        setIsScrolling(false);
+      }
     };
-    window.addEventListener("scroll", onScroll, { passive: true });
-    onScroll();
-    return () => window.removeEventListener("scroll", onScroll);
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll(); // Check on mount
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      clearTimeout(scrollTimeout);
+    };
   }, []);
 
+  // ── Scroll Spy (Tracks Active Section) ──
   useEffect(() => {
     const ids = NAV_SECTIONS.map((s) => s.id);
     const observers: IntersectionObserver[] = [];
@@ -60,11 +83,15 @@ export default function Header() {
     ids.forEach((id) => {
       const el = document.getElementById(id);
       if (!el) return;
+      
+      // Using IntersectionObserver to detect which section is on screen
       const obs = new IntersectionObserver(
         ([entry]) => {
-          if (entry.isIntersecting) setActiveSection(id);
+          if (entry.isIntersecting) {
+            setActiveSection(id);
+          }
         },
-        { threshold: 0.4 }
+        { threshold: 0.3 } // Triggers when 30% of the section is visible
       );
       obs.observe(el);
       observers.push(obs);
@@ -79,15 +106,12 @@ export default function Header() {
     setMenuOpen(false);
   }, []);
 
+  // Only show the header if we are past the Hero section AND the user is NOT actively scrolling
+  const headerVisible = isPastHero && !isScrolling;
+
   return (
     <>
       <style>{`
-        @keyframes headerSlideDown {
-          from { opacity: 0; transform: translateY(-20px) translateX(-50%); }
-          to   { opacity: 1; transform: translateY(0) translateX(-50%); }
-        }
-        .header-enter { animation: headerSlideDown 0.5s cubic-bezier(0.16,1,0.3,1) forwards; }
-
         @keyframes panelFadeIn {
           from { opacity: 0; transform: scale(0.95) translateY(-8px); }
           to   { opacity: 1; transform: scale(1) translateY(0); }
@@ -102,94 +126,109 @@ export default function Header() {
       `}</style>
 
       {/* ── HEADER ── */}
-      {visible && (
-        <header
-          ref={headerRef}
-          className="header-enter fixed top-4 left-1/2 z-[200] flex items-center gap-2 px-3 py-2 select-none"
-          style={{
-            background: "rgba(255,255,255,0.82)",
-            backdropFilter: "blur(20px)",
-            WebkitBackdropFilter: "blur(20px)",
-            border: "1px solid rgba(0,0,0,0.08)",
-            borderRadius: "9999px",
-            boxShadow: "0 4px 32px rgba(0,0,0,0.10), 0 1px 0 rgba(255,255,255,0.9) inset",
-            width: "max-content",
-            maxWidth: "92vw",
-          }}
+      <header
+        ref={headerRef}
+        className="fixed left-1/2 z-[200] flex items-center gap-2 px-3 py-2 select-none"
+        style={{
+          top: "1rem", // 16px from top
+          transform: `translateX(-50%) translateY(${headerVisible ? "0" : "-150%"})`, // Slides up when hiding
+          opacity: headerVisible ? 1 : 0,
+          transition: "transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s ease",
+          background: "rgba(255,255,255,0.85)",
+          backdropFilter: "blur(20px)",
+          WebkitBackdropFilter: "blur(20px)",
+          border: "1px solid rgba(0,0,0,0.08)",
+          borderRadius: "9999px",
+          boxShadow: "0 4px 32px rgba(0,0,0,0.10), 0 1px 0 rgba(255,255,255,0.9) inset",
+          width: "max-content",
+          maxWidth: "92vw",
+        }}
+      >
+        {/* Avatar (Left Corner) */}
+        <button
+          onClick={() => setPhotoOpen(true)}
+          className="w-9 h-9 rounded-full overflow-hidden flex-shrink-0 ring-2 ring-[#3b82f6] ring-offset-1 transition-all duration-200 hover:scale-105 active:scale-95"
+          aria-label="View profile photo"
         >
-          {/* Avatar (Left Corner) */}
-          <button
-            onClick={() => setPhotoOpen(true)}
-            className="w-9 h-9 rounded-full overflow-hidden flex-shrink-0 ring-2 ring-[#6b8c5a] ring-offset-1 transition-all duration-200 hover:scale-105 active:scale-95"
-            aria-label="View profile photo"
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/surya.png"
+            alt="Surya"
+            className="w-full h-full object-cover"
+            onError={(e) => {
+              const t = e.currentTarget;
+              t.style.display = "none";
+              const fb = t.nextElementSibling as HTMLElement;
+              if (fb) fb.style.display = "flex";
+            }}
+          />
+          <div
+            className="w-full h-full hidden items-center justify-center text-white font-black text-sm"
+            style={{ background: "linear-gradient(135deg,#3b82f6,#60a5fa)", display: "none" }}
           >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/surya.png"
-              alt="Surya"
-              className="w-full h-full object-cover"
-              onError={(e) => {
-                const t = e.currentTarget;
-                t.style.display = "none";
-                const fb = t.nextElementSibling as HTMLElement;
-                if (fb) fb.style.display = "flex";
-              }}
-            />
-            <div
-              className="w-full h-full hidden items-center justify-center text-white font-black text-sm"
-              style={{ background: "linear-gradient(135deg,#6b8c5a,#a8c48a)", display: "none" }}
-            >
-              S
-            </div>
-          </button>
+            S
+          </div>
+        </button>
 
-          <div className="w-px h-5 bg-black/10 flex-shrink-0" />
+        <div className="w-px h-5 bg-black/10 flex-shrink-0" />
 
-          {/* Center Navigation Links */}
-          <nav className="hidden sm:flex items-center gap-0.5">
-            {NAV_SECTIONS.map((s) => (
+        {/* Center Navigation Links with Blue Light Tracker */}
+        <nav className="hidden sm:flex items-center gap-0.5 relative">
+          {NAV_SECTIONS.map((s) => {
+            const isActive = activeSection === s.id;
+            return (
               <button
                 key={s.id}
                 onClick={() => scrollTo(s.id)}
-                className="px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-200"
+                className="relative px-3 py-1.5 rounded-full text-xs font-bold transition-all duration-300"
                 style={{
-                  background: activeSection === s.id ? "rgba(107,140,90,0.15)" : "transparent",
-                  color: activeSection === s.id ? "#4a6b38" : "#555",
-                  borderBottom: activeSection === s.id ? "2px solid #6b8c5a" : "2px solid transparent",
+                  color: isActive ? "#3b82f6" : "#555", // Blue text for active
+                  textShadow: isActive ? "0 0 12px rgba(59, 130, 246, 0.4)" : "none",
                 }}
               >
                 {s.label}
+                {/* The "Blue Light" Bottom Indicator */}
+                {isActive && (
+                  <span 
+                    className="absolute bottom-0 left-1/2 -translate-x-1/2 h-[3px] rounded-t-md transition-all duration-300"
+                    style={{
+                      width: "60%",
+                      background: "#3b82f6",
+                      boxShadow: "0 -2px 10px rgba(59, 130, 246, 0.8)", // Glowing effect
+                    }}
+                  />
+                )}
               </button>
-            ))}
-          </nav>
+            );
+          })}
+        </nav>
 
-          <button
-            onClick={() => setMenuOpen((v) => !v)}
-            className="sm:hidden flex flex-col gap-1 w-8 h-8 items-center justify-center rounded-full hover:bg-black/5 transition-colors"
-            aria-label="Menu"
-          >
-            <span className="w-4 h-0.5 bg-gray-600 rounded-full transition-all" style={{ transform: menuOpen ? "rotate(45deg) translateY(5px)" : "none" }} />
-            <span className="w-4 h-0.5 bg-gray-600 rounded-full transition-all" style={{ opacity: menuOpen ? 0 : 1 }} />
-            <span className="w-4 h-0.5 bg-gray-600 rounded-full transition-all" style={{ transform: menuOpen ? "rotate(-45deg) translateY(-5px)" : "none" }} />
-          </button>
+        <button
+          onClick={() => setMenuOpen((v) => !v)}
+          className="sm:hidden flex flex-col gap-1 w-8 h-8 items-center justify-center rounded-full hover:bg-black/5 transition-colors"
+          aria-label="Menu"
+        >
+          <span className="w-4 h-0.5 bg-gray-600 rounded-full transition-all" style={{ transform: menuOpen ? "rotate(45deg) translateY(5px)" : "none" }} />
+          <span className="w-4 h-0.5 bg-gray-600 rounded-full transition-all" style={{ opacity: menuOpen ? 0 : 1 }} />
+          <span className="w-4 h-0.5 bg-gray-600 rounded-full transition-all" style={{ transform: menuOpen ? "rotate(-45deg) translateY(-5px)" : "none" }} />
+        </button>
 
-          <div className="w-px h-5 bg-black/10 flex-shrink-0" />
+        <div className="w-px h-5 bg-black/10 flex-shrink-0" />
 
-          {/* Three-lines Contact Button (Right Corner) */}
-          <button
-            onClick={() => setContactOpen((v) => !v)}
-            className="flex flex-col gap-1 w-8 h-8 items-center justify-center rounded-full hover:bg-black/5 transition-colors flex-shrink-0"
-            aria-label="Contact"
-          >
-            <span className="w-4 h-0.5 bg-gray-600 rounded-full" />
-            <span className="w-3 h-0.5 bg-gray-600 rounded-full self-start ml-2" />
-            <span className="w-4 h-0.5 bg-gray-600 rounded-full" />
-          </button>
-        </header>
-      )}
+        {/* Three-lines Contact Button (Right Corner) */}
+        <button
+          onClick={() => setContactOpen((v) => !v)}
+          className="flex flex-col gap-1 w-8 h-8 items-center justify-center rounded-full hover:bg-black/5 transition-colors flex-shrink-0"
+          aria-label="Contact"
+        >
+          <span className="w-4 h-0.5 bg-gray-600 rounded-full" />
+          <span className="w-3 h-0.5 bg-gray-600 rounded-full self-start ml-2" />
+          <span className="w-4 h-0.5 bg-gray-600 rounded-full" />
+        </button>
+      </header>
 
       {/* Mobile nav dropdown */}
-      {visible && menuOpen && (
+      {headerVisible && menuOpen && (
         <div
           className="panel-enter fixed top-[72px] left-1/2 z-[199] flex flex-col rounded-2xl overflow-hidden sm:hidden"
           style={{
@@ -205,8 +244,12 @@ export default function Header() {
             <button
               key={s.id}
               onClick={() => scrollTo(s.id)}
-              className="px-5 py-3 text-sm font-semibold text-left transition-colors hover:bg-black/5"
-              style={{ color: activeSection === s.id ? "#4a6b38" : "#333", borderLeft: activeSection === s.id ? "3px solid #6b8c5a" : "3px solid transparent" }}
+              className="px-5 py-3 text-sm font-bold text-left transition-colors hover:bg-black/5"
+              style={{ 
+                color: activeSection === s.id ? "#3b82f6" : "#333", 
+                borderLeft: activeSection === s.id ? "3px solid #3b82f6" : "3px solid transparent",
+                background: activeSection === s.id ? "rgba(59, 130, 246, 0.05)" : "transparent"
+              }}
             >
               {s.label}
             </button>
@@ -214,7 +257,7 @@ export default function Header() {
         </div>
       )}
 
-      {/* Vertical Contact Panel attached to Three Lines */}
+      {/* Vertical Contact Panel */}
       {contactOpen && (
         <>
           <div className="fixed inset-0 z-[198]" onClick={() => setContactOpen(false)} />
@@ -251,7 +294,7 @@ export default function Header() {
                     <span className="text-xs font-bold text-gray-900">{link.name}</span>
                     <span className="text-[10px] text-gray-400">{link.handle}</span>
                   </div>
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-3.5 h-3.5 ml-auto text-gray-300 group-hover:text-gray-500 transition-colors">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-3.5 h-3.5 ml-auto text-gray-300 group-hover:text-blue-500 transition-colors">
                     <path d="M7 17L17 7M17 7H7M17 7v10" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
                 </a>
@@ -265,7 +308,7 @@ export default function Header() {
       {photoOpen && (
         <div
           className="fixed inset-0 z-[300] flex items-center justify-center p-6"
-          style={{ background: "rgba(0,0,0,0.6)", backdropFilter: "blur(8px)" }}
+          style={{ background: "rgba(0,0,0,0.7)", backdropFilter: "blur(12px)" }}
           onClick={() => setPhotoOpen(false)}
         >
           <div
@@ -285,7 +328,7 @@ export default function Header() {
               style={{ display: "block" }}
               onError={(e) => {
                 const t = e.currentTarget as HTMLImageElement;
-                t.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 500'%3E%3Crect fill='%236b8c5a' width='400' height='500'/%3E%3Ccircle cx='200' cy='180' r='80' fill='rgba(255,255,255,0.3)'/%3E%3Cpath d='M80 420c0-66 54-120 120-120s120 54 120 120' fill='rgba(255,255,255,0.2)'/%3E%3Ctext x='200' y='480' text-anchor='middle' fill='white' font-size='18' font-family='sans-serif'%3ESurya Peddishetti%3C/text%3E%3C/svg%3E";
+                t.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 500'%3E%3Crect fill='%233b82f6' width='400' height='500'/%3E%3Ccircle cx='200' cy='180' r='80' fill='rgba(255,255,255,0.3)'/%3E%3Cpath d='M80 420c0-66 54-120 120-120s120 54 120 120' fill='rgba(255,255,255,0.2)'/%3E%3Ctext x='200' y='480' text-anchor='middle' fill='white' font-size='18' font-family='sans-serif'%3ESurya Peddishetti%3C/text%3E%3C/svg%3E";
               }}
             />
             {/* Gradient overlay */}
@@ -312,5 +355,5 @@ export default function Header() {
       )}
     </>
   );
-          }
-                
+        }
+            
