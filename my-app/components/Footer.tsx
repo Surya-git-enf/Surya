@@ -5,32 +5,36 @@ import { useState } from "react";
 
 const CREATIONS = [
   {
-    title: "Spider-Man",
-    sub: "Cinematic Scroll · GSAP",
+    title: "Amazing Spider-Man",
+    sub: "Cinematic Scroll  ",
     tag: "Awwwards",
     accent: "#e11d48",
     img: "/Spiderman.png",
+    url: "https://spiderman-three-iota.vercel.app/",
   },
   {
     title: "Transformers",
-    sub: "Canvas Sequence · Motion",
+    sub: "Canvas Sequence ",
     tag: "Motion",
     accent: "#f97316",
     img: "/Transformers.png", 
+    url: "https://playfulport.vercel.app/",
   },
   {
     title: "Playful",
-    sub: "AI Game Builder · FastAPI",
+    sub: "AI Game Builder ",
     tag: "SaaS",
     accent: "#3b82f6",
     img: "/Playful.png",
+    url: "https://profound-fairy-27ff70.netlify.app/",
   },
   {
     title: "Ice Cream",
-    sub: "3D Product Viewer · WebGL",
+    sub: "3D Product Viewer",
     tag: "Concept",
     accent: "#6b8c5a",
     img: "/Icecream.png",
+    url: "#", // 👈 Change this to your demo link tomorrow!
   },
 ];
 
@@ -67,7 +71,7 @@ const SOCIALS = [
   },
   {
     name: "Twitter / X",
-    href: "@surya_builds",
+    href: "https://twitter.com/surya_builds", // Fixed to a valid URL!
     color: "#000",
     svg: (
       <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
@@ -173,11 +177,16 @@ export default function Footer() {
             }}
           >
             {[...CREATIONS, ...CREATIONS].map((c, i) => (
-              <div
+              <a
                 key={`${c.title}-${i}`}
+                href={c.url}
+                target={c.url !== "#" ? "_blank" : "_self"}
+                rel="noopener noreferrer"
                 onMouseEnter={() => setHovered(i)}
                 onMouseLeave={() => setHovered(null)}
                 style={{
+                  display: "block",
+                  textDecoration: "none",
                   position: "relative",
                   width: "280px",
                   flexShrink: 0,
@@ -267,7 +276,7 @@ export default function Footer() {
                     <path d="M7 17L17 7M17 7H7M17 7v10" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
                 </div>
-              </div>
+              </a>
             ))}
           </div>
         </div>
@@ -346,5 +355,5 @@ export default function Footer() {
       </div>
     </footer>
   );
-              }
-            
+                  }
+                  
