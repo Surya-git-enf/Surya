@@ -13,7 +13,6 @@ const APPS = [
     title: "Mailmate",
     tagline: "AI Email Assistant",
     desc: "Mailmate is an intelligent email assistant that automatically reads, sorts, and organizes your inbox into clear categories like advertisements, friends and family, and important messages. It detects emails that need urgent attention and sends instant alerts through a Telegram bot, so you never miss something critical. Mailmate also includes Telegram automation features, allowing automatic message forwarding and channel-to-channel communication to keep your workflow fast, organized, and always connected.",
-    accent: "#3b82f6", // Blue
     imgSrc: "/mailmate.png",
   },
   {
@@ -21,7 +20,6 @@ const APPS = [
     title: "Slide",
     tagline: "AI News Summariser",
     desc: "Slide is an AI-powered news summariser that collects the latest stories from trusted sources like BBC, Times of India, and more, then transforms them into short, easy-to-read summaries. Instead of reading long articles, users get the key points in just two or three paragraphs. News is neatly organized into categories such as sports, entertainment, business, science, and technology, making it simple to stay informed without the overload.",
-    accent: "#8b5cf6", // Purple
     imgSrc: "/slide.png",
   },
   {
@@ -29,16 +27,15 @@ const APPS = [
     title: "Playful",
     tagline: "AI Powered Game Engine",
     desc: "Playful is an AI-powered game engine that turns simple prompts into playable games. Inspired by the speed and simplicity of modern AI builders, Playful helps creators bring game ideas to life without needing to start from scratch. Just describe the game you want, and Playful generates the experience for you, making game creation faster, easier, and more accessible for everyone.",
-    accent: "#06b6d4", // Cyan
     imgSrc: "/playful.png",
   },
 ] as const;
 
-// Wave Positions explicitly mapped to the SVG peaks and troughs
+// Mathematically perfect node coordinates matching the new SVG path
 const WAVE_POSITIONS = [
-  { leftPct: 15, topPct: 18 }, // Card 1: First Peak
-  { leftPct: 50, topPct: 82 }, // Card 2: Trough
-  { leftPct: 85, topPct: 18 }, // Card 3: Second Peak
+  { leftPct: 20.83, topPct: 13.63 }, // Card 1: First Peak
+  { leftPct: 50.00, topPct: 86.36 }, // Card 2: Trough
+  { leftPct: 79.16, topPct: 13.63 }, // Card 3: Second Peak
 ];
 
 function AppCard({ app, active, isTrough }: { app: (typeof APPS)[number]; active: boolean; isTrough: boolean }) {
@@ -46,61 +43,60 @@ function AppCard({ app, active, isTrough }: { app: (typeof APPS)[number]; active
 
   return (
     <div
-      className="relative"
+      className="relative pointer-events-auto"
       style={{
         width: "clamp(260px, 24vw, 340px)",
         height: "clamp(380px, 45vh, 480px)",
         perspective: "1200px",
+        // Pushes the card perfectly straight up or down from the glowing node
+        marginTop: isTrough ? "0" : "50px",
+        marginBottom: isTrough ? "50px" : "0",
       }}
     >
       {/* ── Visual Dotted Connector Line ── */}
-      {/* This spans the exact 60px gap between the card and the wave node */}
       <div 
-        className="absolute left-1/2 w-[2px] border-l-[3px] border-dotted border-blue-400 opacity-60 pointer-events-none transition-opacity duration-500 delay-300"
+        className="absolute left-1/2 w-[2px] border-l-[3px] border-dotted border-blue-300 pointer-events-none transition-all duration-500 delay-200"
         style={{
-          height: "60px",
-          top: isTrough ? "100%" : "-60px", // Trough goes down from card, Peak goes up from card
+          height: "50px",
+          top: isTrough ? "100%" : "-50px", 
           transform: "translateX(-50%)",
           opacity: active ? 1 : 0
-        }}
-      />
-
-      {/* Neon backlight for active state */}
-      <div
-        className="absolute inset-0 rounded-3xl pointer-events-none transition-all duration-700 ease-out"
-        style={{
-          background: app.accent,
-          filter: "blur(45px)",
-          opacity: active ? 0.25 : 0,
-          transform: active ? "scale(0.95) translateY(15px)" : "scale(0.8) translateY(0px)",
         }}
       />
 
       {/* 3D Flipper Container */}
       <div
         onClick={() => setFlipped((f) => !f)}
-        className="relative w-full h-full cursor-pointer"
+        className="relative w-full h-full cursor-pointer rounded-3xl transition-all duration-700 ease-out"
         style={{
           transformStyle: "preserve-3d",
           transform: flipped ? "rotateY(180deg)" : "rotateY(0deg)",
-          transition: "transform 0.8s cubic-bezier(0.34, 1.56, 0.64, 1)",
+          // Neon Olive Green Shadow/Border applied when active
+          boxShadow: active 
+            ? "0 15px 40px rgba(107, 140, 90, 0.25), 0 0 20px rgba(107, 140, 90, 0.15)" 
+            : "0 15px 35px rgba(0,0,0,0.05)",
+          border: active ? "2px solid rgba(107, 140, 90, 0.7)" : "1px solid rgba(0,0,0,0.05)",
         }}
       >
         {/* ── FRONT FACE (60% Image / 40% Text) ── */}
         <div
           className="absolute inset-0 rounded-3xl overflow-hidden flex flex-col bg-white"
-          style={{
-            backfaceVisibility: "hidden",
-            boxShadow: "0 25px 50px rgba(0,0,0,0.06), 0 0 0 1px rgba(0,0,0,0.04)",
-          }}
+          style={{ backfaceVisibility: "hidden" }}
         >
-          {/* 60% Image Section */}
-          <div className="h-[60%] w-full relative bg-gradient-to-b from-gray-50 to-white flex items-center justify-center p-6 border-b border-gray-100">
+          {/* Flip Icon (Top Right) */}
+          <div className="absolute top-4 right-4 z-10 text-gray-400 hover:text-gray-700 transition-colors">
+            <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+          </div>
+
+          {/* 60% Image Section - Perfectly Centered */}
+          <div className="h-[60%] w-full relative bg-gray-50 flex items-center justify-center p-8 border-b border-gray-100">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img 
               src={app.imgSrc} 
               alt={app.title} 
-              className="w-full h-full object-contain drop-shadow-xl transition-transform duration-500 hover:scale-105"
+              className="max-w-full max-h-full object-contain drop-shadow-lg transition-transform duration-500 hover:scale-105"
             />
           </div>
           
@@ -109,56 +105,43 @@ function AppCard({ app, active, isTrough }: { app: (typeof APPS)[number]; active
             <h3 className="font-black text-gray-900 tracking-tight" style={{ fontSize: "clamp(1.5rem, 2vw, 2rem)" }}>
               {app.title}
             </h3>
-            <p className="font-bold tracking-[0.2em] uppercase mt-2" style={{ color: app.accent, fontSize: "clamp(10px, 1vw, 12px)" }}>
+            <p className="font-bold tracking-[0.2em] uppercase mt-2 text-[#6b8c5a]" style={{ fontSize: "clamp(10px, 1vw, 12px)" }}>
               {app.tagline}
             </p>
-            <span className="text-[10px] font-semibold text-gray-400 mt-4 uppercase tracking-wider">
-              Tap to read more ↺
-            </span>
           </div>
         </div>
 
         {/* ── BACK FACE (Description) ── */}
         <div
-          className="absolute inset-0 rounded-3xl flex flex-col gap-4 p-6 overflow-hidden"
+          className="absolute inset-0 rounded-3xl flex flex-col gap-4 p-6 overflow-hidden bg-white"
           style={{
             backfaceVisibility: "hidden",
             transform: "rotateY(180deg)",
-            background: "rgba(255,255,255,0.95)",
-            backdropFilter: "blur(24px)",
-            border: "1px solid rgba(255,255,255,1)",
-            boxShadow: "0 25px 60px rgba(0,0,0,0.1)",
           }}
         >
-          <div className="flex items-center gap-3 border-b border-gray-100 pb-4">
-            <div
-              className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-black text-lg shadow-md flex-shrink-0"
-              style={{ background: app.accent }}
-            >
+          {/* Flip Icon (Top Right) */}
+          <div className="absolute top-4 right-4 z-10 text-gray-400 hover:text-gray-700 transition-colors">
+            <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+          </div>
+
+          <div className="flex items-center gap-3 border-b border-gray-100 pb-3 mt-1">
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center text-white font-black text-sm bg-[#6b8c5a] shadow-md flex-shrink-0">
               {app.num}
             </div>
             <span className="font-black text-gray-900 text-lg">{app.title}</span>
           </div>
           
-          {/* Scrollable text container with clamp font size */}
+          {/* Scrollable text container */}
           <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar">
-            <p 
-              className="text-gray-600 leading-relaxed font-medium text-justify"
-              style={{ fontSize: "clamp(12px, 1.4vh, 15px)" }}
-            >
+            <p className="text-gray-600 leading-relaxed font-medium text-justify" style={{ fontSize: "clamp(12px, 1.4vh, 15px)" }}>
               {app.desc}
             </p>
-          </div>
-
-          <div className="pt-2 text-center border-t border-gray-100">
-            <span className="text-[10px] font-bold tracking-widest uppercase" style={{ color: app.accent }}>
-              Tap to return ↺
-            </span>
           </div>
         </div>
       </div>
 
-      {/* Global style for thin scrollbar on back card */}
       <style>{`
         .custom-scrollbar::-webkit-scrollbar { width: 4px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
@@ -180,12 +163,10 @@ export default function AppsSineWave() {
     const marker = markerRef.current;
     if (!section || !marker) return;
 
-    // Reset initial card states (push them slightly further away on Y axis to start)
     cardWrappers.current.forEach((el, i) => {
       if (!el) return;
       const isTrough = i === 1;
-      // Start hidden, pushed away
-      gsap.set(el, { opacity: i === 0 ? 1 : 0, y: i === 0 ? 0 : (isTrough ? -40 : 40) });
+      gsap.set(el, { opacity: i === 0 ? 1 : 0, y: i === 0 ? 0 : (isTrough ? 40 : -40) });
     });
 
     gsap.set(marker, {
@@ -203,82 +184,75 @@ export default function AppsSineWave() {
         scrollTrigger: {
           trigger: section,
           start: "top top",
-          end: "+=700%", // Massive scroll duration strictly keeps the pin locked
+          end: "+=700%", 
           pin: true,
-          scrub: 1.2, // Smooth interpolation
+          scrub: 1.2, 
           anticipatePin: 1,
         },
       });
 
       // === BEAT 1: Node 1 -> Node 2 ===
+      // Elite Trick: Animate X linearly and Y with Sine.inOut to flawlessly trace the SVG curve!
       tl.to(markerProxy, {
         left: WAVE_POSITIONS[1].leftPct,
+        duration: 1.5,
+        ease: "none", // X moves straight
+        onUpdate: () => { if (marker) marker.style.left = `${markerProxy.left}%`; },
+      }, 0);
+      tl.to(markerProxy, {
         top: WAVE_POSITIONS[1].topPct,
         duration: 1.5,
-        ease: "sine.inOut", // Mimics the physical curve of the wave
-        onUpdate: () => {
-          if (marker) {
-            marker.style.left = `${markerProxy.left}%`;
-            marker.style.top = `${markerProxy.top}%`;
-          }
-        },
+        ease: "sine.inOut", // Y moves in a curve
+        onUpdate: () => { if (marker) marker.style.top = `${markerProxy.top}%`; },
       }, 0);
 
-      // Card 1 fades out and pulls away
-      tl.to(cardWrappers.current[0], { opacity: 0, y: 40, duration: 0.5, ease: "power2.in" }, 0.2);
+      // Card 1 out
+      tl.to(cardWrappers.current[0], { opacity: 0, y: -40, duration: 0.5, ease: "power2.in" }, 0.2);
       
-      // Number flips cleanly at the halfway point
+      // Number Flip
       tl.to({ val: 1 }, {
         val: 2, duration: 0.1, onUpdate: function () {
           if (markerNumRef.current) markerNumRef.current.textContent = Math.round(this.targets()[0].val).toString();
         }
       }, 0.75); 
 
-      // Card 2 fades in and settles into its Y offset
+      // Card 2 in
       tl.to(cardWrappers.current[1], {
-        opacity: 1,
-        y: 0,
-        duration: 0.7,
-        ease: "back.out(1.2)",
+        opacity: 1, y: 0, duration: 0.7, ease: "back.out(1.2)",
         onStart: () => setActiveIndex(1),
       }, 0.8);
-      
 
       // === BEAT 2: Node 2 -> Node 3 ===
       tl.to(markerProxy, {
         left: WAVE_POSITIONS[2].leftPct,
+        duration: 1.5,
+        ease: "none",
+        onUpdate: () => { if (marker) marker.style.left = `${markerProxy.left}%`; },
+      }, 1.5);
+      tl.to(markerProxy, {
         top: WAVE_POSITIONS[2].topPct,
         duration: 1.5,
         ease: "sine.inOut",
-        onUpdate: () => {
-          if (marker) {
-            marker.style.left = `${markerProxy.left}%`;
-            marker.style.top = `${markerProxy.top}%`;
-          }
-        },
+        onUpdate: () => { if (marker) marker.style.top = `${markerProxy.top}%`; },
       }, 1.5);
 
-      // Card 2 fades out and pulls away
-      tl.to(cardWrappers.current[1], { opacity: 0, y: -40, duration: 0.5, ease: "power2.in" }, 1.7);
+      // Card 2 out
+      tl.to(cardWrappers.current[1], { opacity: 0, y: 40, duration: 0.5, ease: "power2.in" }, 1.7);
       
-      // Number flips at halfway point
+      // Number Flip
       tl.to({ val: 2 }, {
         val: 3, duration: 0.1, onUpdate: function () {
           if (markerNumRef.current) markerNumRef.current.textContent = Math.round(this.targets()[0].val).toString();
         }
       }, 2.25); 
 
-      // Card 3 fades in
+      // Card 3 in
       tl.to(cardWrappers.current[2], {
-        opacity: 1,
-        y: 0,
-        duration: 0.7,
-        ease: "back.out(1.2)",
+        opacity: 1, y: 0, duration: 0.7, ease: "back.out(1.2)",
         onStart: () => setActiveIndex(2),
       }, 2.3);
 
-      // === BEAT 3: HOLD THE FINAL CARD ===
-      // Forces the pin to stay active so the user can read card 3 before scrolling to footer
+      // Hold final card
       tl.to({}, { duration: 2.0 });
 
     }, section);
@@ -287,7 +261,6 @@ export default function AppsSineWave() {
   }, []);
 
   return (
-    /* CRITICAL FIX: Z-Index Wrapper (Like CanvasScroll) to prevent Footer bleed-through */
     <div className="relative w-full z-40 bg-white">
       <section
         id="builtapps"
@@ -312,50 +285,38 @@ export default function AppsSineWave() {
           <div className="mt-4 h-[3px] w-20 rounded-full bg-gradient-to-r from-transparent via-blue-500 to-transparent" />
         </div>
 
-        {/* Wave Container */}
+        {/* Professional SVG Wave Canvas Area */}
         <div className="absolute top-[30vh] left-0 right-0 h-[40vh] z-0 pointer-events-none">
           <svg
             viewBox="0 0 1200 220"
             preserveAspectRatio="none"
             className="w-full h-full overflow-visible"
           >
-            <defs>
-              <filter id="waveGlow" x="-20%" y="-80%" width="140%" height="260%">
-                <feGaussianBlur in="SourceGraphic" stdDeviation="6" result="blur" />
-                <feColorMatrix in="blur" type="matrix" values="0 0 0 0 0.23  0 0 0 0 0.51  0 0 0 0 0.96  0 0 0 1 0" result="blueGlow" />
-                <feMerge>
-                  <feMergeNode in="blueGlow" />
-                  <feMergeNode in="SourceGraphic" />
-                </feMerge>
-              </filter>
-            </defs>
-
-            {/* Background thick path */}
+            {/* Elegant, Mathematically smooth Cubic Bezier Sine Wave */}
             <path
-              d="M0 110 C180 110 220 24 350 24 C500 24 530 196 600 196 C670 196 700 24 850 24 C980 24 1020 110 1200 110"
-              fill="none" stroke="#3b82f6" strokeWidth="24" opacity="0.06" strokeLinecap="round"
+              d="M 0 110 C 100 110, 150 30, 250 30 C 400 30, 450 190, 600 190 C 750 190, 800 30, 950 30 C 1050 30, 1100 110, 1200 110"
+              fill="none" stroke="#e0e7ff" strokeWidth="20" opacity="0.4" strokeLinecap="round"
             />
-            {/* Neon core path */}
             <path
-              d="M0 110 C180 110 220 24 350 24 C500 24 530 196 600 196 C670 196 700 24 850 24 C980 24 1020 110 1200 110"
-              fill="none" stroke="#3b82f6" strokeWidth="3" strokeLinecap="round" filter="url(#waveGlow)"
+              d="M 0 110 C 100 110, 150 30, 250 30 C 400 30, 450 190, 600 190 C 750 190, 800 30, 950 30 C 1050 30, 1100 110, 1200 110"
+              fill="none" stroke="#3b82f6" strokeWidth="3" strokeLinecap="round"
             />
           </svg>
 
-          {/* The glowing marker node that rides the wave */}
+          {/* The glowing marker node */}
           <div
             ref={markerRef}
             className="absolute z-30 w-12 h-12 -translate-x-1/2 -translate-y-1/2 pointer-events-none"
           >
-            <div className="absolute inset-0 rounded-full bg-blue-500 blur-md opacity-60" />
-            <div className="absolute inset-0 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center shadow-[0_0_0_6px_rgba(59,130,246,0.25)]">
+            <div className="absolute inset-0 rounded-full bg-blue-500 blur-md opacity-50" />
+            <div className="absolute inset-0 rounded-full bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center shadow-[0_0_0_6px_rgba(59,130,246,0.2)] border-2 border-white">
               <span ref={markerNumRef} className="text-white font-black text-xl select-none">
                 1
               </span>
             </div>
           </div>
 
-          {/* Static placement of the 3 App Cards */}
+          {/* Card Layout: Perfectly aligned to the node vertically */}
           {APPS.map((app, i) => {
             const isTrough = i === 1; 
             return (
@@ -366,13 +327,9 @@ export default function AppsSineWave() {
                 style={{
                   left: `${WAVE_POSITIONS[i].leftPct}%`,
                   top: `${WAVE_POSITIONS[i].topPct}%`,
-                  /* CRITICAL FIX: Precise 60px padding away from the node.
-                    Trough (1): Pushes UP by 100% (its own height) plus 60px.
-                    Peaks (0, 2): Pushes DOWN by 60px.
-                  */
-                  transform: isTrough 
-                    ? `translate(-50%, calc(-100% - 60px))` 
-                    : `translate(-50%, 60px)`,
+                  // If it's the bottom wave (Trough), shift the entire container up by 100% so it sits above the node.
+                  // If it's the top wave (Peak), shift it down by 0% so it sits below the node.
+                  transform: `translate(-50%, ${isTrough ? "-100%" : "0%"})`,
                 }}
               >
                 <AppCard app={app} active={activeIndex === i} isTrough={isTrough} />
@@ -383,4 +340,4 @@ export default function AppsSineWave() {
       </section>
     </div>
   );
-      }
+}
