@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import gsap from "gsap";
 
 const CARD_COUNT = 9;
@@ -200,29 +200,110 @@ const skills = [
 
 export default function SkillsOrbit() {
   const sectionRef = useRef<HTMLDivElement>(null);
+  const orbitRef = useRef<HTMLDivElement>(null);
+  const ringRef = useRef<HTMLDivElement>(null);
+  const glowRef = useRef<HTMLDivElement>(null);
+
+  const skillCards = useMemo(
+    () =>
+      skills.map((skill, i) => ({
+        ...skill,
+        angle: ANGLE_PER_CARD * i,
+      })),
+    []
+  );
 
   useEffect(() => {
-    gsap.fromTo(
-      sectionRef.current,
-      { opacity: 0, y: 60 },
-      { opacity: 1, y: 0, duration: 1, ease: "power3.out" }
-    );
+    if (sectionRef.current) {
+      gsap.fromTo(
+        sectionRef.current,
+        { opacity: 0, y: 60 },
+        { opacity: 1, y: 0, duration: 1.1, ease: "power3.out" }
+      );
+    }
+
+    const section = sectionRef.current;
+    const orbit = orbitRef.current;
+    const glow = glowRef.current;
+    if (!section || !orbit || !glow) return;
+
+    let raf = 0;
+    const target = { x: 0, y: 0 };
+    const current = { x: 0, y: 0 };
+
+    const onMove = (e: PointerEvent) => {
+      const rect = section.getBoundingClientRect();
+      const px = (e.clientX - rect.left) / rect.width;
+      const py = (e.clientY - rect.top) / rect.height;
+
+      target.x = (px - 0.5) * 18;
+      target.y = (0.5 - py) * 12;
+      glow.style.opacity = "1";
+      glow.style.transform = `translate(${(px - 0.5) * 35}px, ${(py - 0.5) * 35}px) scale(1.05)`;
+    };
+
+    const onLeave = () => {
+      target.x = 0;
+      target.y = 0;
+      glow.style.opacity = "0.72";
+      glow.style.transform = "translate(0px, 0px) scale(1)";
+    };
+
+    const tick = () => {
+      current.x += (target.x - current.x) * 0.085;
+      current.y += (target.y - current.y) * 0.085;
+
+      orbit.style.transform = `rotateX(${current.y}deg) rotateY(${current.x}deg) translateY(-2px)`;
+      raf = requestAnimationFrame(tick);
+    };
+
+    section.addEventListener("pointermove", onMove);
+    section.addEventListener("pointerleave", onLeave);
+    raf = requestAnimationFrame(tick);
+
+    return () => {
+      section.removeEventListener("pointermove", onMove);
+      section.removeEventListener("pointerleave", onLeave);
+      cancelAnimationFrame(raf);
+    };
   }, []);
 
   return (
     <>
       <style>{`
         @keyframes orbitSpin {
-          from { transform: rotateY(0deg); }
-          to   { transform: rotateY(360deg); }
+          0% { transform: rotateY(0deg) rotateX(0deg); }
+          25% { transform: rotateY(90deg) rotateX(4deg); }
+          50% { transform: rotateY(180deg) rotateX(0deg); }
+          75% { transform: rotateY(270deg) rotateX(-4deg); }
+          100% { transform: rotateY(360deg) rotateX(0deg); }
+        }
+
+        @keyframes floatCard {
+          0%, 100% { transform: translateY(0px) scale(1); }
+          50% { transform: translateY(-10px) scale(1.03); }
+        }
+
+        @keyframes haloPulse {
+          0%, 100% { transform: scale(1); opacity: 0.55; }
+          50% { transform: scale(1.08); opacity: 0.85; }
+        }
+
+        @keyframes gridShift {
+          0% { background-position: 0 0; }
+          100% { background-position: 72px 72px; }
         }
 
         .orbit-ring {
-          animation: orbitSpin 22s linear infinite;
+          animation: orbitSpin 28s linear infinite;
           transform-style: preserve-3d;
           width: 0;
           height: 0;
           position: relative;
+        }
+
+        .orbit-card {
+          animation: floatCard 4.8s ease-in-out infinite;
         }
 
         @media (hover: hover) {
@@ -235,7 +316,10 @@ export default function SkillsOrbit() {
       <section
         ref={sectionRef}
         className="relative w-full overflow-hidden bg-white"
-        style={{ minHeight: "100vh", paddingBottom: "4rem" }}
+        style={{
+          minHeight: "100vh",
+          paddingBottom: "4rem",
+        }}
       >
         <div
           className="pointer-events-none absolute inset-0"
@@ -243,6 +327,27 @@ export default function SkillsOrbit() {
             backgroundImage:
               "radial-gradient(circle, rgba(0,0,0,0.055) 1px, transparent 1px)",
             backgroundSize: "36px 36px",
+            animation: "gridShift 18s linear infinite",
+          }}
+        />
+
+        <div
+          className="pointer-events-none absolute left-1/2 top-1/2 h-[34rem] w-[34rem] -translate-x-1/2 -translate-y-[42%] rounded-full blur-3xl"
+          style={{
+            background:
+              "radial-gradient(circle, rgba(59,130,246,0.20) 0%, rgba(168,85,247,0.12) 36%, rgba(255,255,255,0) 72%)",
+            animation: "haloPulse 6s ease-in-out infinite",
+          }}
+        />
+
+        <div
+          ref={glowRef}
+          className="pointer-events-none absolute left-1/2 top-[54%] h-[22rem] w-[22rem] -translate-x-1/2 -translate-y-1/2 rounded-full blur-3xl"
+          style={{
+            background:
+              "radial-gradient(circle, rgba(59,130,246,0.22) 0%, rgba(34,197,94,0.10) 35%, rgba(236,72,153,0.10) 58%, rgba(255,255,255,0) 78%)",
+            opacity: 0.72,
+            transition: "transform 180ms ease, opacity 180ms ease",
           }}
         />
 
@@ -253,6 +358,7 @@ export default function SkillsOrbit() {
               fontSize: "clamp(2.2rem, 4vw, 5.5rem)",
               color: "#1e3a8a",
               textShadow: "0 0 40px #3b82f688, 0 0 80px #3b82f644",
+              letterSpacing: "0.18em",
             }}
           >
             TECHSTACK
@@ -262,10 +368,11 @@ export default function SkillsOrbit() {
             style={{
               background:
                 "linear-gradient(90deg, transparent, #3b82f6, #60a5fa, #3b82f6, transparent)",
+              boxShadow: "0 0 18px rgba(59,130,246,0.55)",
             }}
           />
-          <p className="mt-3 text-gray-400 text-sm tracking-widest uppercase">
-            Hover to pause
+          <p className="mt-3 text-gray-400 text-sm tracking-[0.35em] uppercase">
+            Move your finger or mouse
           </p>
         </div>
 
@@ -273,35 +380,42 @@ export default function SkillsOrbit() {
           className="orbit-stage relative flex items-center justify-center"
           style={{
             height: "68vh",
-            perspective: "1100px",
-            perspectiveOrigin: "50% 50%",
+            perspective: "1400px",
+            perspectiveOrigin: "50% 48%",
           }}
         >
-          <div className="orbit-ring">
-            {skills.map((skill, i) => {
-              const angle = ANGLE_PER_CARD * i;
-
-              return (
+          <div
+            ref={orbitRef}
+            style={{
+              transformStyle: "preserve-3d",
+              transition: "transform 120ms linear",
+              willChange: "transform",
+            }}
+          >
+            <div ref={ringRef} className="orbit-ring">
+              {skillCards.map((skill) => (
                 <div
                   key={skill.name}
+                  className="orbit-card"
                   style={{
                     position: "absolute",
                     top: "-85px",
                     left: "-85px",
                     width: "170px",
                     height: "170px",
-                    transform: `rotateY(${angle}deg) translateZ(${RADIUS}px)`,
+                    transform: `rotateY(${skill.angle}deg) translateZ(${RADIUS}px)`,
                     transformStyle: "preserve-3d",
                     backfaceVisibility: "hidden",
-                    borderRadius: "20px",
-                    background: "rgba(255,255,255,0.72)",
+                    borderRadius: "22px",
+                    background:
+                      "linear-gradient(145deg, rgba(255,255,255,0.86), rgba(255,255,255,0.62))",
                     backdropFilter: "blur(18px)",
                     WebkitBackdropFilter: "blur(18px)",
                     boxShadow: [
-                      "0 0 0 1.5px #1d4ed833",
+                      "0 0 0 1.5px rgba(37,99,235,0.18)",
                       `0 0 24px 4px ${skill.glow}22`,
                       "0 10px 30px rgba(0,0,0,0.07)",
-                      "inset 0 1px 0 rgba(255,255,255,0.85)",
+                      "inset 0 1px 0 rgba(255,255,255,0.88)",
                     ].join(", "),
                     display: "flex",
                     flexDirection: "column",
@@ -310,51 +424,74 @@ export default function SkillsOrbit() {
                     gap: "8px",
                     cursor: "pointer",
                     willChange: "transform",
-                    transition: "box-shadow 0.3s ease",
+                    transition:
+                      "box-shadow 0.3s ease, transform 0.3s ease, filter 0.3s ease",
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.boxShadow = `0 0 0 2px ${skill.glow}88, 0 0 40px 12px ${skill.glow}44, 0 16px 40px rgba(0,0,0,0.1)`;
+                    e.currentTarget.style.boxShadow = `0 0 0 2px ${skill.glow}88, 0 0 46px 14px ${skill.glow}44, 0 20px 40px rgba(0,0,0,0.1)`;
+                    e.currentTarget.style.filter = "saturate(1.15)";
                   }}
                   onMouseLeave={(e) => {
                     e.currentTarget.style.boxShadow = [
-                      "0 0 0 1.5px #1d4ed833",
+                      "0 0 0 1.5px rgba(37,99,235,0.18)",
                       `0 0 24px 4px ${skill.glow}22`,
                       "0 10px 30px rgba(0,0,0,0.07)",
-                      "inset 0 1px 0 rgba(255,255,255,0.85)",
+                      "inset 0 1px 0 rgba(255,255,255,0.88)",
                     ].join(", ");
+                    e.currentTarget.style.filter = "saturate(1)";
                   }}
                 >
                   <div
                     style={{
                       position: "absolute",
                       top: 0,
-                      left: "20%",
-                      right: "20%",
+                      left: "18%",
+                      right: "18%",
                       height: "2px",
                       borderRadius: "0 0 3px 3px",
                       background: `linear-gradient(90deg, transparent, ${skill.glow}, transparent)`,
-                      opacity: 0.7,
+                      opacity: 0.8,
+                      filter: `drop-shadow(0 0 6px ${skill.glow})`,
+                    }}
+                  />
+                  <div
+                    style={{
+                      position: "absolute",
+                      inset: "12px",
+                      borderRadius: "18px",
+                      border: `1px solid ${skill.glow}14`,
+                      boxShadow: `inset 0 1px 0 rgba(255,255,255,0.35), inset 0 0 30px ${skill.glow}08`,
                     }}
                   />
                   {skill.svg}
                   <span
                     style={{
                       fontSize: "11px",
-                      fontWeight: 700,
-                      letterSpacing: "0.1em",
+                      fontWeight: 800,
+                      letterSpacing: "0.12em",
                       textTransform: "uppercase",
                       color: skill.glow,
-                      textShadow: `0 0 8px ${skill.glow}88`,
+                      textShadow: `0 0 10px ${skill.glow}88`,
                     }}
                   >
                     {skill.name}
                   </span>
                 </div>
-              );
-            })}
+              ))}
+            </div>
+          </div>
+
+          <div
+            className="pointer-events-none absolute bottom-[7vh] left-1/2 -translate-x-1/2 rounded-full border border-blue-500/15 bg-white/70 px-4 py-2 text-[10px] font-bold uppercase tracking-[0.35em] text-slate-600 shadow-[0_10px_40px_rgba(59,130,246,0.08)] backdrop-blur-xl"
+            style={{
+              boxShadow:
+                "0 16px 40px rgba(0,0,0,0.07), inset 0 1px 0 rgba(255,255,255,0.65)",
+            }}
+          >
+            infinite orbit
           </div>
         </div>
       </section>
     </>
   );
-      }
+              }
