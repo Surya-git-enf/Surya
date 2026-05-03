@@ -1,226 +1,120 @@
+
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useRef, useLayoutEffect } from "react";
 import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
-import Header from "./Header";
 
-gsap.registerPlugin(ScrollTrigger);
+const ORANGE = "#ea580c";
+const LETTERS = ["S", "U", "R", "Y"]; 
 
 export default function HeroReveal() {
-  const heroRef    = useRef<HTMLDivElement>(null);
-  const titleRef   = useRef<HTMLDivElement>(null);
-  const subtitleRef = useRef<HTMLDivElement>(null);
-  const scrollHintRef = useRef<HTMLDivElement>(null);
-  const bgRef      = useRef<HTMLDivElement>(null);
-  const glowRef    = useRef<HTMLDivElement>(null);
+  const sectionRef = useRef<HTMLDivElement>(null);
+  const charGroupRef = useRef<HTMLDivElement>(null);
+  const legRef = useRef<SVGLineElement>(null);
+  const crossbarRef = useRef<SVGLineElement>(null);
+  const charInnerRef = useRef<HTMLDivElement>(null);
+  const letterRefs = useRef<(HTMLSpanElement | null)[]>([]);
+  const aLetterRef = useRef<HTMLSpanElement>(null);
+  const topWordRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    const hero = heroRef.current;
-    if (!hero) return;
+  useLayoutEffect(() => {
+    const section = sectionRef.current;
+    if (!section) return;
 
-    // Initial state
-    gsap.set(titleRef.current,    { opacity: 0, y: 60, skewY: 4 });
-    gsap.set(subtitleRef.current, { opacity: 0, y: 30 });
-    gsap.set(scrollHintRef.current, { opacity: 0, y: 20 });
-    gsap.set(bgRef.current,       { scale: 1.08, opacity: 0 });
-    gsap.set(glowRef.current,     { scale: 0.6, opacity: 0 });
-
-    // Entry sequence
-    const tl = gsap.timeline({ delay: 0.2 });
-    tl.to(bgRef.current, { scale: 1, opacity: 1, duration: 1.4, ease: "power2.out" })
-      .to(glowRef.current, { scale: 1, opacity: 1, duration: 1.2, ease: "power3.out" }, "-=0.9")
-      .to(titleRef.current, { opacity: 1, y: 0, skewY: 0, duration: 0.9, ease: "power4.out" }, "-=0.7")
-      .to(subtitleRef.current, { opacity: 1, y: 0, duration: 0.7, ease: "power2.out" }, "-=0.4")
-      .to(scrollHintRef.current, { opacity: 1, y: 0, duration: 0.6, ease: "power2.out" }, "-=0.2");
-
-    // Scroll-out: hero fades/scales as user leaves
     const ctx = gsap.context(() => {
-      gsap.to(hero, {
-        scrollTrigger: {
-          trigger: hero,
-          start: "top top",
-          end: "bottom top",
-          scrub: true,
-        },
-        opacity: 0,
-        scale: 0.97,
-        ease: "none",
-      });
-    }, hero);
+      // 1. Initial Hidden States
+      gsap.set(legRef.current, { rotation: 0, transformOrigin: "top center", opacity: 0 });
+      gsap.set(crossbarRef.current, { opacity: 0 });
+      gsap.set(letterRefs.current, { opacity: 0, y: 30 });
+      gsap.set(aLetterRef.current, { opacity: 0 });
+      gsap.set(topWordRef.current, { opacity: 0, y: 40 });
+      gsap.set(charGroupRef.current, { x: "2vw" });
 
-    return () => {
-      tl.kill();
-      ctx.revert();
-    };
+      const tl = gsap.timeline({ defaults: { ease: "power2.out" } });
+
+      // 2. Sprout the back leg
+      tl.to(legRef.current, { opacity: 1, duration: 0.3 });
+
+      // 3. Clean Walking Animation
+      const walkDuration = 2.4;
+      
+      // Move the character across the screen
+      tl.to(charGroupRef.current, { x: "82vw", duration: walkDuration, ease: "none" }, "walk");
+      
+      // Swing the leg back and forth like a real stride
+      tl.to(legRef.current, { 
+        rotation: 30, 
+        duration: walkDuration / 7, 
+        yoyo: true, 
+        repeat: 7, 
+        ease: "sine.inOut" 
+      }, "walk");
+
+      // 4. Letters S-U-R-Y pop in sequentially as it walks past
+      LETTERS.forEach((_, i) => {
+        tl.to(
+          letterRefs.current[i],
+          { opacity: 1, y: 0, duration: 0.4, ease: "back.out(1.5)" },
+          `walk+=${(walkDuration / 5) * (i + 1)}`
+        );
+      });
+
+      // 5. Stop walking, rotate 3D, and morph into "A"
+      tl.to(legRef.current, { rotation: 0, duration: 0.2 }, "walk+=2.4");
+      tl.to(charInnerRef.current, { rotateY: 180, duration: 0.5, ease: "back.out(1.2)" });
+      tl.to(crossbarRef.current, { opacity: 1, duration: 0.2 }, "-=0.2");
+      
+      // Swap SVG for the glowing text "A"
+      tl.to(aLetterRef.current, { opacity: 1, duration: 0.2 }, "-=0.1");
+      tl.to(charGroupRef.current, { opacity: 0, duration: 0.2 }, "-=0.1"); 
+
+      // 6. "PEDDISHETTI" rises cleanly above it
+      tl.to(topWordRef.current, { opacity: 1, y: 0, duration: 0.8, ease: "power3.out" }, "+=0.1");
+
+    }, section);
+
+    return () => ctx.revert();
   }, []);
 
   return (
-    <>
-      <Header />
-
-      <section
-        ref={heroRef}
-        id="hero"
-        className="relative w-full flex items-center justify-center overflow-hidden"
-        style={{ height: "100vh", minHeight: "600px" }}
-      >
-        {/* BG Noise + Gradient */}
-        <div
-          ref={bgRef}
-          className="absolute inset-0"
-          style={{
-            background: "linear-gradient(160deg, #f5f7f2 0%, #e8ede3 40%, #d4dfc9 100%)",
-          }}
-        />
-
-        {/* Dot grid */}
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            backgroundImage: "radial-gradient(circle, rgba(0,0,0,0.06) 1px, transparent 1px)",
-            backgroundSize: "32px 32px",
-          }}
-        />
-
-        {/* Ambient glow */}
-        <div
-          ref={glowRef}
-          className="absolute pointer-events-none"
-          style={{
-            width: "70vw",
-            height: "70vw",
-            maxWidth: "900px",
-            maxHeight: "900px",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-            background: "radial-gradient(ellipse, rgba(107,140,90,0.18) 0%, transparent 70%)",
-            filter: "blur(40px)",
-          }}
-        />
-
-        {/* Top-right decorative ring */}
-        <div
-          className="absolute pointer-events-none opacity-20"
-          style={{
-            width: "clamp(200px, 35vw, 500px)",
-            height: "clamp(200px, 35vw, 500px)",
-            top: "-10%",
-            right: "-8%",
-            border: "1.5px solid #6b8c5a",
-            borderRadius: "50%",
-          }}
-        />
-        <div
-          className="absolute pointer-events-none opacity-10"
-          style={{
-            width: "clamp(300px, 55vw, 700px)",
-            height: "clamp(300px, 55vw, 700px)",
-            top: "-20%",
-            right: "-18%",
-            border: "1px solid #6b8c5a",
-            borderRadius: "50%",
-          }}
-        />
-
-        {/* Center content */}
-        <div className="relative z-10 flex flex-col items-center text-center px-6 gap-6">
-          {/* Eyebrow */}
-          <div
-            className="flex items-center gap-2 px-4 py-1.5 rounded-full"
-            style={{
-              background: "rgba(107,140,90,0.12)",
-              border: "1px solid rgba(107,140,90,0.3)",
-            }}
-          >
-            <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-            <span className="text-[10px] font-bold tracking-[0.25em] uppercase" style={{ color: "#4a6b38" }}>
-              Available for work
+    <section ref={sectionRef} className="relative w-full flex flex-col items-center justify-center bg-white overflow-hidden select-none" style={{ minHeight: "100vh" }}>
+      <div className="relative z-10 flex flex-col items-stretch w-full px-[6vw] max-w-[1200px]">
+        
+        {/* TOP ROW: PEDDISHETTI */}
+        <div ref={topWordRef} className="flex justify-between items-baseline w-full" style={{ letterSpacing: "-0.01em" }}>
+          {"PEDDISHETTI".split("").map((ch, i) => (
+            <span key={i} className="font-black leading-none" style={{ fontSize: "clamp(2.5rem, 6.5vw, 7.5rem)", color: ORANGE, textShadow: `0 0 25px ${ORANGE}44` }}>
+              {ch}
             </span>
-          </div>
-
-          {/* Title */}
-          <div ref={titleRef}>
-            <h1
-              className="font-black leading-none"
-              style={{
-                fontSize: "clamp(3rem, 9vw, 9rem)",
-                letterSpacing: "-0.04em",
-                color: "#111",
-              }}
-            >
-              SURYA
-            </h1>
-            <h1
-              className="font-black leading-none"
-              style={{
-                fontSize: "clamp(1.6rem, 4.5vw, 5rem)",
-                letterSpacing: "-0.02em",
-                background: "linear-gradient(135deg, #6b8c5a 0%, #a8c48a 50%, #4a6b38 100%)",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-                backgroundClip: "text",
-              }}
-            >
-              PEDDISHETTI
-            </h1>
-          </div>
-
-          {/* Subtitle */}
-          <div ref={subtitleRef} className="flex flex-col items-center gap-3">
-            <p
-              className="font-medium tracking-widest uppercase"
-              style={{ fontSize: "clamp(0.7rem, 1.2vw, 0.9rem)", color: "#666", letterSpacing: "0.3em" }}
-            >
-              AI Engineer · Full-Stack Developer · Motion Designer
-            </p>
-            <div className="flex items-center gap-3">
-              {["Next.js", "FastAPI", "GSAP", "Supabase"].map((tag) => (
-                <span
-                  key={tag}
-                  className="text-[10px] font-bold px-2.5 py-1 rounded-full"
-                  style={{
-                    background: "rgba(0,0,0,0.06)",
-                    color: "#555",
-                    border: "1px solid rgba(0,0,0,0.08)",
-                  }}
-                >
-                  {tag}
-                </span>
-              ))}
-            </div>
-          </div>
+          ))}
         </div>
 
-        {/* Scroll hint */}
-        <div
-          ref={scrollHintRef}
-          className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
-        >
-          <span className="text-[9px] font-bold tracking-[0.3em] uppercase" style={{ color: "#999" }}>
-            Scroll
+        {/* BOTTOM ROW: S U R Y A */}
+        <div className="relative flex justify-between items-baseline w-full mt-2" style={{ letterSpacing: "-0.01em" }}>
+          {LETTERS.map((ch, i) => (
+            <span key={ch} ref={(el) => { letterRefs.current[i] = el; }} className="font-black leading-none" style={{ fontSize: "clamp(1.8rem, 4vw, 4.8rem)", color: ORANGE }}>
+              {ch}
+            </span>
+          ))}
+          {/* Static A (Hidden until the flip completes) */}
+          <span ref={aLetterRef} className="font-black leading-none" style={{ fontSize: "clamp(1.8rem, 4vw, 4.8rem)", color: ORANGE, textShadow: `0 0 40px ${ORANGE}88` }}>
+            A
           </span>
-          <div className="w-px h-12 overflow-hidden rounded-full" style={{ background: "rgba(0,0,0,0.1)" }}>
-            <div
-              className="w-full rounded-full"
-              style={{
-                height: "40%",
-                background: "#6b8c5a",
-                animation: "scrollLine 1.6s cubic-bezier(0.4,0,0.2,1) infinite",
-              }}
-            />
-          </div>
         </div>
+      </div>
 
-        <style>{`
-          @keyframes scrollLine {
-            0%   { transform: translateY(-100%); opacity: 0; }
-            30%  { opacity: 1; }
-            100% { transform: translateY(300%); opacity: 0; }
-          }
-        `}</style>
-      </section>
-    </>
+      {/* SVG WALKING CHARACTER */}
+      <div ref={charGroupRef} className="absolute" style={{ bottom: "calc(50% - clamp(1.8rem, 4vw, 4.8rem) * 0.85)", left: 0, zIndex: 20, perspective: "600px" }}>
+        <div ref={charInnerRef} style={{ transformStyle: "preserve-3d" }}>
+          <svg width="clamp(28px, 3.5vw, 52px)" height="clamp(40px, 5vw, 72px)" viewBox="0 0 60 120" overflow="visible" style={{ backfaceVisibility: "visible" }}>
+            <g style={{ filter: `drop-shadow(0px 0px 10px ${ORANGE})` }}>
+              <line x1="30" y1="0" x2="30" y2="120" stroke={ORANGE} strokeWidth="8" strokeLinecap="round" />
+              <line ref={legRef} x1="30" y1="60" x2="50" y2="120" stroke={ORANGE} strokeWidth="8" strokeLinecap="round" />
+              <line ref={crossbarRef} x1="10" y1="70" x2="50" y2="70" stroke={ORANGE} strokeWidth="8" strokeLinecap="round" />
+            </g>
+          </svg>
+        </div>
+      </div>
+    </section>
   );
 }
