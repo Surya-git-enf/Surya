@@ -31,24 +31,23 @@ const APPS = [
   },
 ] as const;
 
-// Mathematically perfect node coordinates matching the pure Cubic Bezier Sine Wave
+// Mathematically calculated precise coordinates for exactly 3 waves (25%, 50%, 75%)
 const WAVE_POSITIONS = [
-  { leftPct: 33.33, topPct: 13.63 }, // Card 1: First Peak
-  { leftPct: 50.00, topPct: 86.36 }, // Card 2: Trough
-  { leftPct: 66.66, topPct: 13.63 }, // Card 3: Second Peak
+  { leftPct: 25, topPct: 13.63 }, // Card 1: First Peak
+  { leftPct: 50, topPct: 86.36 }, // Card 2: Trough
+  { leftPct: 75, topPct: 13.63 }, // Card 3: Second Peak
 ];
 
-function AppCard({ app, active, isTrough }: { app: (typeof APPS)[number]; active: boolean; isTrough: boolean }) {
+function AppCard({ app, active }: { app: (typeof APPS)[number]; active: boolean }) {
   const [flipped, setFlipped] = useState(false);
 
   return (
     <div
-      className="relative pointer-events-auto transition-opacity duration-500"
+      className="relative pointer-events-auto"
       style={{
         width: "clamp(240px, 22vw, 340px)",
         height: "clamp(360px, 45vh, 460px)",
         perspective: "1200px",
-        opacity: active ? 1 : 0,
       }}
     >
       {/* 3D Flipper Container */}
@@ -58,7 +57,7 @@ function AppCard({ app, active, isTrough }: { app: (typeof APPS)[number]; active
         style={{
           transformStyle: "preserve-3d",
           transform: flipped ? "rotateY(180deg)" : "rotateY(0deg)",
-          // Neon Olive Green Shadow/Border applied when active
+          // Neon Olive Green Glow activates smoothly
           boxShadow: active 
             ? "0 15px 40px rgba(107, 140, 90, 0.35), 0 0 25px rgba(107, 140, 90, 0.2)" 
             : "0 15px 35px rgba(0,0,0,0.05)",
@@ -86,7 +85,7 @@ function AppCard({ app, active, isTrough }: { app: (typeof APPS)[number]; active
             <img 
               src={app.imgSrc} 
               alt={app.title} 
-              className="max-w-full max-h-full object-contain drop-shadow-lg"
+              className="max-w-full max-h-full object-contain drop-shadow-lg transition-transform duration-500 hover:scale-105"
             />
           </div>
           
@@ -151,6 +150,9 @@ export default function AppsSineWave() {
   const cardWrappers = useRef<(HTMLDivElement | null)[]>([]);
   const [activeIndex, setActiveIndex] = useState(0);
 
+  // A proxy object to let GSAP smoothly update the React State numbers forwards AND backwards
+  const valProxy = useRef({ val: 1 });
+
   useLayoutEffect(() => {
     const section = sectionRef.current;
     const marker = markerRef.current;
@@ -159,7 +161,7 @@ export default function AppsSineWave() {
     cardWrappers.current.forEach((el, i) => {
       if (!el) return;
       const isTrough = i === 1;
-      // Cards start faded out and pushed away
+      // Cards start pushed away and faded out
       gsap.set(el, { opacity: i === 0 ? 1 : 0, y: i === 0 ? 0 : (isTrough ? 40 : -40) });
     });
 
@@ -186,7 +188,7 @@ export default function AppsSineWave() {
       });
 
       // === BEAT 1: Node 1 -> Node 2 ===
-      // Linear X + Sine Y = Physically Perfect Sine Wave tracking
+      // Elite Physics: Linear X + Sine.inOut Y trace the precise SVG mathematical curve
       tl.to(markerProxy, {
         left: WAVE_POSITIONS[1].leftPct,
         duration: 1.5,
@@ -200,21 +202,23 @@ export default function AppsSineWave() {
         onUpdate: () => { if (marker) marker.style.top = `${markerProxy.top}%`; },
       }, 0);
 
-      // Card 1 out
+      // Card 1 Fade out
       tl.to(cardWrappers.current[0], { opacity: 0, y: 40, duration: 0.5, ease: "power2.in" }, 0.2);
       
-      // Number Flip
-      tl.to({ val: 1 }, {
-        val: 2, duration: 0.1, onUpdate: function () {
-          if (markerNumRef.current) markerNumRef.current.textContent = Math.round(this.targets()[0].val).toString();
+      // Update Number AND UI State seamlessly in both directions
+      tl.to(valProxy.current, {
+        val: 2, 
+        duration: 0.2, 
+        ease: "none",
+        onUpdate: () => {
+          const currentVal = Math.round(valProxy.current.val);
+          if (markerNumRef.current) markerNumRef.current.textContent = currentVal.toString();
+          setActiveIndex(currentVal - 1); 
         }
-      }, 0.75); 
+      }, 0.65); 
 
-      // Card 2 in
-      tl.to(cardWrappers.current[1], {
-        opacity: 1, y: 0, duration: 0.7, ease: "back.out(1.2)",
-        onStart: () => setActiveIndex(1),
-      }, 0.8);
+      // Card 2 Fade in
+      tl.to(cardWrappers.current[1], { opacity: 1, y: 0, duration: 0.7, ease: "back.out(1.2)" }, 0.8);
 
       // === BEAT 2: Node 2 -> Node 3 ===
       tl.to(markerProxy, {
@@ -230,23 +234,25 @@ export default function AppsSineWave() {
         onUpdate: () => { if (marker) marker.style.top = `${markerProxy.top}%`; },
       }, 1.5);
 
-      // Card 2 out
+      // Card 2 Fade out
       tl.to(cardWrappers.current[1], { opacity: 0, y: -40, duration: 0.5, ease: "power2.in" }, 1.7);
       
-      // Number Flip
-      tl.to({ val: 2 }, {
-        val: 3, duration: 0.1, onUpdate: function () {
-          if (markerNumRef.current) markerNumRef.current.textContent = Math.round(this.targets()[0].val).toString();
+      // Update Number AND UI State seamlessly in both directions
+      tl.to(valProxy.current, {
+        val: 3, 
+        duration: 0.2, 
+        ease: "none",
+        onUpdate: () => {
+          const currentVal = Math.round(valProxy.current.val);
+          if (markerNumRef.current) markerNumRef.current.textContent = currentVal.toString();
+          setActiveIndex(currentVal - 1);
         }
-      }, 2.25); 
+      }, 2.15); 
 
-      // Card 3 in
-      tl.to(cardWrappers.current[2], {
-        opacity: 1, y: 0, duration: 0.7, ease: "back.out(1.2)",
-        onStart: () => setActiveIndex(2),
-      }, 2.3);
+      // Card 3 Fade in
+      tl.to(cardWrappers.current[2], { opacity: 1, y: 0, duration: 0.7, ease: "back.out(1.2)" }, 2.3);
 
-      // Hold final card to prevent footer crush
+      // Hold final card
       tl.to({}, { duration: 2.0 });
 
     }, section);
@@ -255,7 +261,7 @@ export default function AppsSineWave() {
   }, []);
 
   return (
-    <div className="relative w-full z-40 bg-white pointer-events-auto">
+    <div className="relative w-full z-40 bg-white">
       <section
         id="builtapps"
         ref={sectionRef}
@@ -280,7 +286,7 @@ export default function AppsSineWave() {
         </div>
 
         {/* Professional SVG Wave Canvas Area.
-          Using a strict mathematically computed Bezier curve so the JS ease matches the visual line identically. 
+          This uses exactly 3 distinct half-waves perfectly matching your "Up, Down, Up" layout request. 
         */}
         <div className="absolute top-[30vh] left-0 right-0 h-[40vh] z-0 pointer-events-none">
           <svg
@@ -299,13 +305,13 @@ export default function AppsSineWave() {
               </filter>
             </defs>
 
-            {/* Pure Bezier approximations for half-cosine waves */}
+            {/* Exactly 3 pure Bezier curves: Peak -> Trough -> Peak */}
             <path
-              d="M 0 30 C 72.8 30, 127.2 190, 200 190 C 272.8 190, 327.2 30, 400 30 C 472.8 30, 527.2 190, 600 190 C 672.8 190, 727.2 30, 800 30 C 872.8 30, 927.2 190, 1000 190 C 1072.8 190, 1127.2 30, 1200 30"
+              d="M -100 110 C 50 110, 150 30, 300 30 C 450 30, 450 190, 600 190 C 750 190, 750 30, 900 30 C 1050 30, 1150 110, 1300 110"
               fill="none" stroke="#e0e7ff" strokeWidth="20" opacity="0.4" strokeLinecap="round"
             />
             <path
-              d="M 0 30 C 72.8 30, 127.2 190, 200 190 C 272.8 190, 327.2 30, 400 30 C 472.8 30, 527.2 190, 600 190 C 672.8 190, 727.2 30, 800 30 C 872.8 30, 927.2 190, 1000 190 C 1072.8 190, 1127.2 30, 1200 30"
+              d="M -100 110 C 50 110, 150 30, 300 30 C 450 30, 450 190, 600 190 C 750 190, 750 30, 900 30 C 1050 30, 1150 110, 1300 110"
               fill="none" stroke="#3b82f6" strokeWidth="3" strokeLinecap="round" filter="url(#waveGlow)"
             />
           </svg>
@@ -323,14 +329,14 @@ export default function AppsSineWave() {
             </div>
           </div>
 
-          {/* Hard-Coded Alignments: Card 1 and 3 sit straight below. Card 2 sits straight above. */}
+          {/* Hard-Coded Alignments: Card 1 & 3 sit perfectly straight below. Card 2 sits perfectly straight above. */}
           {APPS.map((app, i) => {
             const isTrough = i === 1; 
             return (
               <div
                 key={app.title}
                 ref={(el) => { cardWrappers.current[i] = el; }}
-                className="absolute z-40 pointer-events-auto"
+                className="absolute z-40"
                 style={{
                   left: `${WAVE_POSITIONS[i].leftPct}%`,
                   top: `${WAVE_POSITIONS[i].topPct}%`,
@@ -338,18 +344,18 @@ export default function AppsSineWave() {
                 }}
               >
                 {isTrough ? (
-                  // Node 2 is down. Card sits perfectly above the node.
-                  <div className="absolute bottom-[calc(100%+40px)] left-1/2 -translate-x-1/2">
-                    <AppCard app={app} active={activeIndex === i} isTrough={isTrough} />
-                    {/* Dotted Line dropping down to the node */}
-                    <div className="absolute top-[100%] left-1/2 w-[2px] h-[40px] border-l-[3px] border-dotted border-blue-300 opacity-60" />
+                  // Node 2 is down. Card sits perfectly straight above the node.
+                  <div className="absolute bottom-[calc(100%+40px)] left-1/2 -translate-x-1/2 pointer-events-auto flex flex-col items-center">
+                    <AppCard app={app} active={activeIndex === i} />
+                    {/* Dotted Line connecting down to the node */}
+                    <div className={`absolute top-[100%] w-[2px] h-[40px] border-l-[3px] border-dotted border-blue-300 transition-opacity duration-500 delay-200 ${activeIndex === i ? 'opacity-60' : 'opacity-0'}`} />
                   </div>
                 ) : (
-                  // Node 1 & 3 are up. Card sits perfectly below the node.
-                  <div className="absolute top-[calc(100%+40px)] left-1/2 -translate-x-1/2">
-                    {/* Dotted Line rising up to the node */}
-                    <div className="absolute bottom-[100%] left-1/2 w-[2px] h-[40px] border-l-[3px] border-dotted border-blue-300 opacity-60" />
-                    <AppCard app={app} active={activeIndex === i} isTrough={isTrough} />
+                  // Node 1 & 3 are up. Card sits perfectly straight below the node.
+                  <div className="absolute top-[calc(100%+40px)] left-1/2 -translate-x-1/2 pointer-events-auto flex flex-col items-center">
+                    {/* Dotted Line connecting up to the node */}
+                    <div className={`absolute bottom-[100%] w-[2px] h-[40px] border-l-[3px] border-dotted border-blue-300 transition-opacity duration-500 delay-200 ${activeIndex === i ? 'opacity-60' : 'opacity-0'}`} />
+                    <AppCard app={app} active={activeIndex === i} />
                   </div>
                 )}
               </div>
@@ -359,4 +365,4 @@ export default function AppsSineWave() {
       </section>
     </div>
   );
-                                                                                  }
+                    }
