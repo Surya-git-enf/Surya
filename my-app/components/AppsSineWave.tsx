@@ -11,26 +11,26 @@ const APPS = [
   {
     num: "1",
     title: "Mailmate",
-    tagline: "AI Email Composer",
-    desc: "Zero-effort cold outreach. Mailmate learns your tone and audience to write hyper-personalised emails that feel human — at scale.",
-    accent: "#3b82f6",
-    imgBg: "#dbeafe",
+    tagline: "AI Email Assistant",
+    desc: "Mailmate is an intelligent email assistant that automatically reads, sorts, and organizes your inbox into clear categories like advertisements, friends and family, and important messages. It detects emails that need urgent attention and sends instant alerts through a Telegram bot, so you never miss something critical. Mailmate also includes Telegram automation features, allowing automatic message forwarding and channel-to-channel communication to keep your workflow fast, organized, and always connected.",
+    accent: "#3b82f6", // Blue
+    imgSrc: "/mailmate.png",
   },
   {
     num: "2",
     title: "Slide",
-    tagline: "Deck Generator",
-    desc: "Drop a brief. Slide builds a polished presentation in seconds — slides, charts, and speaker notes, brand-consistent and export-ready.",
-    accent: "#8b5cf6",
-    imgBg: "#ede9fe",
+    tagline: "AI News Summariser",
+    desc: "Slide is an AI-powered news summariser that collects the latest stories from trusted sources like BBC, Times of India, and more, then transforms them into short, easy-to-read summaries. Instead of reading long articles, users get the key points in just two or three paragraphs. News is neatly organized into categories such as sports, entertainment, business, science, and technology, making it simple to stay informed without the overload.",
+    accent: "#8b5cf6", // Purple
+    imgSrc: "/slide.png",
   },
   {
     num: "3",
     title: "Playful",
-    tagline: "AI Storyboard",
-    desc: "Story-driven content planning. Playful maps your narrative arc, generates scene scripts, and suggests visual hooks for every platform.",
-    accent: "#06b6d4",
-    imgBg: "#cffafe",
+    tagline: "AI Powered Game Engine",
+    desc: "Playful is an AI-powered game engine that turns simple prompts into playable games. Inspired by the speed and simplicity of modern AI builders, Playful helps creators bring game ideas to life without needing to start from scratch. Just describe the game you want, and Playful generates the experience for you, making game creation faster, easier, and more accessible for everyone.",
+    accent: "#06b6d4", // Cyan
+    imgSrc: "/playful.png",
   },
 ] as const;
 
@@ -41,29 +41,41 @@ const WAVE_POSITIONS = [
   { leftPct: 85, topPct: 18 }, // Card 3: Second Peak
 ];
 
-function AppCard({ app, active }: { app: (typeof APPS)[number]; active: boolean }) {
+function AppCard({ app, active, isTrough }: { app: (typeof APPS)[number]; active: boolean; isTrough: boolean }) {
   const [flipped, setFlipped] = useState(false);
 
   return (
     <div
+      className="relative"
       style={{
-        width: "clamp(240px, 22vw, 300px)",
-        height: "clamp(320px, 35vh, 400px)",
-        perspective: "1000px",
+        width: "clamp(260px, 24vw, 340px)",
+        height: "clamp(380px, 45vh, 480px)",
+        perspective: "1200px",
       }}
     >
-      {/* Neon backlight */}
+      {/* Visual Dotted Connector Line (simulating the image reference) */}
+      <div 
+        className="absolute left-1/2 w-[2px] border-l-2 border-dashed border-blue-300 opacity-60 pointer-events-none"
+        style={{
+          height: "60px",
+          top: isTrough ? "-60px" : "100%",
+          transform: "translateX(-50%)",
+          display: active ? "block" : "none"
+        }}
+      />
+
+      {/* Neon backlight for active state */}
       <div
         className="absolute inset-0 rounded-3xl pointer-events-none transition-all duration-700 ease-out"
         style={{
           background: app.accent,
-          filter: "blur(40px)",
-          opacity: active ? 0.35 : 0,
-          transform: active ? "scale(0.9) translateY(20px)" : "scale(0.7) translateY(0px)",
+          filter: "blur(45px)",
+          opacity: active ? 0.25 : 0,
+          transform: active ? "scale(0.95) translateY(15px)" : "scale(0.8) translateY(0px)",
         }}
       />
 
-      {/* 3D Flipper */}
+      {/* 3D Flipper Container */}
       <div
         onClick={() => setFlipped((f) => !f)}
         className="relative w-full h-full cursor-pointer"
@@ -73,53 +85,84 @@ function AppCard({ app, active }: { app: (typeof APPS)[number]; active: boolean 
           transition: "transform 0.8s cubic-bezier(0.34, 1.56, 0.64, 1)",
         }}
       >
-        {/* Front Face */}
+        {/* ── FRONT FACE (60% Image / 40% Text) ── */}
         <div
           className="absolute inset-0 rounded-3xl overflow-hidden flex flex-col bg-white"
           style={{
             backfaceVisibility: "hidden",
-            boxShadow: "0 20px 40px rgba(0,0,0,0.08), 0 0 0 1px rgba(0,0,0,0.04)",
+            boxShadow: "0 25px 50px rgba(0,0,0,0.06), 0 0 0 1px rgba(0,0,0,0.04)",
           }}
         >
-          <div className="flex-1 flex items-center justify-center" style={{ background: app.imgBg }}>
-            <svg viewBox="0 0 80 80" className="w-20 h-20" fill="none">
-              <rect x="10" y="10" width="60" height="60" rx="14" stroke={app.accent} strokeWidth="3" />
-              <circle cx="40" cy="40" r="15" fill={app.accent} opacity="0.2" />
-              <path d="M32 40l6 6 12-12" stroke={app.accent} strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
+          {/* 60% Image Section */}
+          <div className="h-[60%] w-full relative bg-gradient-to-b from-gray-50 to-white flex items-center justify-center p-6 border-b border-gray-100">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img 
+              src={app.imgSrc} 
+              alt={app.title} 
+              className="w-full h-full object-contain drop-shadow-xl transition-transform duration-500 hover:scale-105"
+            />
           </div>
-          <div className="bg-white p-5 flex flex-col gap-1">
-            <span className="font-black text-gray-900 text-xl tracking-tight">{app.title}</span>
-            <span className="text-[11px] font-bold tracking-[0.15em] uppercase" style={{ color: app.accent }}>
+          
+          {/* 40% Text Section */}
+          <div className="h-[40%] w-full flex flex-col justify-center items-center p-5 text-center bg-white">
+            <h3 className="font-black text-gray-900 tracking-tight" style={{ fontSize: "clamp(1.5rem, 2vw, 2rem)" }}>
+              {app.title}
+            </h3>
+            <p className="font-bold tracking-[0.2em] uppercase mt-2" style={{ color: app.accent, fontSize: "clamp(10px, 1vw, 12px)" }}>
               {app.tagline}
+            </p>
+            <span className="text-[10px] font-semibold text-gray-400 mt-4 uppercase tracking-wider">
+              Tap to read more ↺
             </span>
           </div>
         </div>
 
-        {/* Back Face */}
+        {/* ── BACK FACE (Description) ── */}
         <div
-          className="absolute inset-0 rounded-3xl flex flex-col justify-center gap-4 p-6"
+          className="absolute inset-0 rounded-3xl flex flex-col gap-4 p-6 overflow-hidden"
           style={{
             backfaceVisibility: "hidden",
             transform: "rotateY(180deg)",
-            background: "rgba(255,255,255,0.9)",
-            backdropFilter: "blur(20px)",
+            background: "rgba(255,255,255,0.95)",
+            backdropFilter: "blur(24px)",
             border: "1px solid rgba(255,255,255,1)",
-            boxShadow: "0 25px 50px rgba(0,0,0,0.1)",
+            boxShadow: "0 25px 60px rgba(0,0,0,0.1)",
           }}
         >
-          <div
-            className="w-12 h-12 rounded-xl flex items-center justify-center text-white font-black text-xl"
-            style={{ background: app.accent, boxShadow: `0 8px 24px ${app.accent}66` }}
-          >
-            {app.num}
+          <div className="flex items-center gap-3 border-b border-gray-100 pb-4">
+            <div
+              className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-black text-lg shadow-md flex-shrink-0"
+              style={{ background: app.accent }}
+            >
+              {app.num}
+            </div>
+            <span className="font-black text-gray-900 text-lg">{app.title}</span>
           </div>
-          <p className="text-gray-600 text-sm leading-relaxed font-medium">{app.desc}</p>
-          <span className="text-[10px] font-bold tracking-widest uppercase mt-2" style={{ color: app.accent }}>
-            Tap to return ↺
-          </span>
+          
+          {/* Scrollable text container with clamp font size */}
+          <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar">
+            <p 
+              className="text-gray-600 leading-relaxed font-medium text-justify"
+              style={{ fontSize: "clamp(12px, 1.4vh, 15px)" }}
+            >
+              {app.desc}
+            </p>
+          </div>
+
+          <div className="pt-2 text-center border-t border-gray-100">
+            <span className="text-[10px] font-bold tracking-widest uppercase" style={{ color: app.accent }}>
+              Tap to return ↺
+            </span>
+          </div>
         </div>
       </div>
+
+      {/* Global style for thin scrollbar on back card */}
+      <style>{`
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+      `}</style>
     </div>
   );
 }
@@ -136,10 +179,11 @@ export default function AppsSineWave() {
     const marker = markerRef.current;
     if (!section || !marker) return;
 
-    // Reset initial states
+    // Reset initial card states
     cardWrappers.current.forEach((el, i) => {
       if (!el) return;
-      gsap.set(el, { opacity: i === 0 ? 1 : 0, y: i === 0 ? 0 : 60 });
+      // Cards start hidden and slightly translated for a smooth entry
+      gsap.set(el, { opacity: i === 0 ? 1 : 0, y: i === 0 ? 0 : (i === 1 ? -40 : 40) });
     });
 
     gsap.set(marker, {
@@ -157,19 +201,19 @@ export default function AppsSineWave() {
         scrollTrigger: {
           trigger: section,
           start: "top top",
-          end: "+=600%", // Massive scroll duration to prevent overlap
+          end: "+=600%", // Pin holds for a long scroll duration
           pin: true,
-          scrub: 1.2, // Smooth scrubbing
+          scrub: 1.2, // Smooth interpolation
           anticipatePin: 1,
         },
       });
 
-      // === BEAT 1: Card 1 to Card 2 ===
+      // === BEAT 1: Node 1 -> Node 2 ===
       tl.to(markerProxy, {
         left: WAVE_POSITIONS[1].leftPct,
         top: WAVE_POSITIONS[1].topPct,
         duration: 1.5,
-        ease: "sine.inOut", // Perfect wave tracing
+        ease: "sine.inOut", // Mimics the physical curve of the wave
         onUpdate: () => {
           if (marker) {
             marker.style.left = `${markerProxy.left}%`;
@@ -178,7 +222,17 @@ export default function AppsSineWave() {
         },
       }, 0);
 
-      tl.to(cardWrappers.current[0], { opacity: 0, y: -60, duration: 0.5, ease: "power2.in" }, 0.2);
+      // Card 1 fades out
+      tl.to(cardWrappers.current[0], { opacity: 0, y: 40, duration: 0.5, ease: "power2.in" }, 0.2);
+      
+      // Number flips cleanly at the halfway point
+      tl.to({ val: 1 }, {
+        val: 2, duration: 0.1, onUpdate: function () {
+          if (markerNumRef.current) markerNumRef.current.textContent = Math.round(this.targets()[0].val).toString();
+        }
+      }, 0.75); 
+
+      // Card 2 fades in
       tl.to(cardWrappers.current[1], {
         opacity: 1,
         y: 0,
@@ -187,18 +241,13 @@ export default function AppsSineWave() {
         onStart: () => setActiveIndex(1),
       }, 0.8);
       
-      tl.to({ val: 1 }, {
-        val: 2, duration: 0.1, onUpdate: function () {
-          if (markerNumRef.current) markerNumRef.current.textContent = Math.round(this.targets()[0].val).toString();
-        }
-      }, 0.75); // Flips number precisely at the halfway drop
 
-      // === BEAT 2: Card 2 to Card 3 ===
+      // === BEAT 2: Node 2 -> Node 3 ===
       tl.to(markerProxy, {
         left: WAVE_POSITIONS[2].leftPct,
         top: WAVE_POSITIONS[2].topPct,
         duration: 1.5,
-        ease: "sine.inOut", // Perfect wave tracing
+        ease: "sine.inOut",
         onUpdate: () => {
           if (marker) {
             marker.style.left = `${markerProxy.left}%`;
@@ -207,7 +256,17 @@ export default function AppsSineWave() {
         },
       }, 1.5);
 
-      tl.to(cardWrappers.current[1], { opacity: 0, y: -60, duration: 0.5, ease: "power2.in" }, 1.7);
+      // Card 2 fades out
+      tl.to(cardWrappers.current[1], { opacity: 0, y: -40, duration: 0.5, ease: "power2.in" }, 1.7);
+      
+      // Number flips at halfway point
+      tl.to({ val: 2 }, {
+        val: 3, duration: 0.1, onUpdate: function () {
+          if (markerNumRef.current) markerNumRef.current.textContent = Math.round(this.targets()[0].val).toString();
+        }
+      }, 2.25); 
+
+      // Card 3 fades in
       tl.to(cardWrappers.current[2], {
         opacity: 1,
         y: 0,
@@ -216,14 +275,8 @@ export default function AppsSineWave() {
         onStart: () => setActiveIndex(2),
       }, 2.3);
 
-      tl.to({ val: 2 }, {
-        val: 3, duration: 0.1, onUpdate: function () {
-          if (markerNumRef.current) markerNumRef.current.textContent = Math.round(this.targets()[0].val).toString();
-        }
-      }, 2.25); // Flips number precisely at the halfway rise
-
-      // === BEAT 3: HOLD THE LAST CARD ===
-      // Forces the pin to stay active so the footer doesn't rush in
+      // === BEAT 3: HOLD THE FINAL CARD ===
+      // Forces the pin to stay active so the user can read card 3 before scrolling to footer
       tl.to({}, { duration: 2.0 });
 
     }, section);
@@ -235,10 +288,10 @@ export default function AppsSineWave() {
     <section
       id="builtapps"
       ref={sectionRef}
-      className="relative w-full h-screen bg-[#fafafa] overflow-hidden"
+      className="relative w-full h-screen bg-[#ffffff] overflow-hidden"
     >
-      {/* Dynamic Header */}
-      <div className="absolute top-[8vh] left-0 right-0 flex flex-col items-center z-10 select-none">
+      {/* Header */}
+      <div className="absolute top-[6vh] left-0 right-0 flex flex-col items-center z-10 select-none">
         <h2
           className="font-black tracking-tight m-0"
           style={{
@@ -255,8 +308,8 @@ export default function AppsSineWave() {
         <div className="mt-4 h-[3px] w-20 rounded-full bg-gradient-to-r from-transparent via-blue-500 to-transparent" />
       </div>
 
-      {/* SVG Wave Canvas Area */}
-      <div className="absolute top-[28vh] left-0 right-0 h-[45vh] z-0 pointer-events-none">
+      {/* Wave Container */}
+      <div className="absolute top-[28vh] left-0 right-0 h-[44vh] z-0 pointer-events-none">
         <svg
           viewBox="0 0 1200 220"
           preserveAspectRatio="none"
@@ -276,7 +329,7 @@ export default function AppsSineWave() {
           {/* Background thick path */}
           <path
             d="M0 110 C180 110 220 24 350 24 C500 24 530 196 600 196 C670 196 700 24 850 24 C980 24 1020 110 1200 110"
-            fill="none" stroke="#3b82f6" strokeWidth="24" opacity="0.05" strokeLinecap="round"
+            fill="none" stroke="#3b82f6" strokeWidth="24" opacity="0.06" strokeLinecap="round"
           />
           {/* Neon core path */}
           <path
@@ -285,36 +338,42 @@ export default function AppsSineWave() {
           />
         </svg>
 
-        {/* The glowing marker that rides the wave. 
-          Its left and top are controlled by GSAP.
-        */}
+        {/* The glowing marker node that rides the wave */}
         <div
           ref={markerRef}
           className="absolute z-30 w-12 h-12 -translate-x-1/2 -translate-y-1/2 pointer-events-none"
         >
           <div className="absolute inset-0 rounded-full bg-blue-500 blur-md opacity-60" />
-          <div className="absolute inset-0 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center shadow-[0_0_0_4px_rgba(59,130,246,0.3)]">
-            <span ref={markerNumRef} className="text-white font-black text-lg select-none">
+          <div className="absolute inset-0 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center shadow-[0_0_0_6px_rgba(59,130,246,0.25)]">
+            <span ref={markerNumRef} className="text-white font-black text-xl select-none">
               1
             </span>
           </div>
         </div>
 
-        {/* The Cards pinned exactly at the wave peaks/troughs */}
-        {APPS.map((app, i) => (
-          <div
-            key={app.title}
-            ref={(el) => { cardWrappers.current[i] = el; }}
-            className="absolute z-20 -translate-x-1/2 -translate-y-1/2"
-            style={{
-              left: `${WAVE_POSITIONS[i].leftPct}%`,
-              top: `${WAVE_POSITIONS[i].topPct}%`,
-            }}
-          >
-            <AppCard app={app} active={activeIndex === i} />
-          </div>
-        ))}
+        {/* Static placement of the 3 App Cards */}
+        {APPS.map((app, i) => {
+          // Card 1 & 3 (Peaks) position below the node. Card 2 (Trough) positions above the node.
+          const isTrough = i === 1; 
+          const yOffset = isTrough ? "-100%" : "0%";
+          const yMargin = isTrough ? "-70px" : "70px";
+
+          return (
+            <div
+              key={app.title}
+              ref={(el) => { cardWrappers.current[i] = el; }}
+              className="absolute z-20"
+              style={{
+                left: `${WAVE_POSITIONS[i].leftPct}%`,
+                top: `${WAVE_POSITIONS[i].topPct}%`,
+                transform: `translate(-50%, calc(${yOffset} + ${yMargin}))`,
+              }}
+            >
+              <AppCard app={app} active={activeIndex === i} isTrough={isTrough} />
+            </div>
+          );
+        })}
       </div>
     </section>
   );
-}
+          }
