@@ -1,6 +1,7 @@
+
 "use client";
 
-import { useRef, useEffect, useState } from "react";
+import { useRef, useLayoutEffect, useState } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
@@ -33,12 +34,11 @@ const APPS = [
   },
 ] as const;
 
-// Wave Y positions (percentage of wave container height, 0–100)
-// Peak → Trough → Peak
+// Wave Positions explicitly mapped to the SVG peaks and troughs
 const WAVE_POSITIONS = [
-  { leftPct: 14, topPct: 20  },  // Card 1: first peak
-  { leftPct: 50, topPct: 78  },  // Card 2: trough
-  { leftPct: 86, topPct: 20  },  // Card 3: second peak
+  { leftPct: 15, topPct: 18 }, // Card 1: First Peak
+  { leftPct: 50, topPct: 82 }, // Card 2: Trough
+  { leftPct: 85, topPct: 18 }, // Card 3: Second Peak
 ];
 
 function AppCard({ app, active }: { app: (typeof APPS)[number]; active: boolean }) {
@@ -47,93 +47,76 @@ function AppCard({ app, active }: { app: (typeof APPS)[number]; active: boolean 
   return (
     <div
       style={{
-        width: "clamp(220px, 20vw, 280px)",
-        height: "clamp(300px, 32vh, 360px)",
-        perspective: "900px",
+        width: "clamp(240px, 22vw, 300px)",
+        height: "clamp(320px, 35vh, 400px)",
+        perspective: "1000px",
       }}
     >
       {/* Neon backlight */}
       <div
+        className="absolute inset-0 rounded-3xl pointer-events-none transition-all duration-700 ease-out"
         style={{
-          position: "absolute",
-          inset: 0,
-          borderRadius: "1.5rem",
           background: app.accent,
           filter: "blur(40px)",
-          opacity: active ? 0.2 : 0,
-          transform: "scale(0.8) translateY(14px)",
-          transition: "opacity 0.7s ease",
-          pointerEvents: "none",
+          opacity: active ? 0.35 : 0,
+          transform: active ? "scale(0.9) translateY(20px)" : "scale(0.7) translateY(0px)",
         }}
       />
 
-      {/* Flipper */}
+      {/* 3D Flipper */}
       <div
         onClick={() => setFlipped((f) => !f)}
+        className="relative w-full h-full cursor-pointer"
         style={{
-          position: "relative",
-          width: "100%",
-          height: "100%",
-          cursor: "pointer",
           transformStyle: "preserve-3d",
           transform: flipped ? "rotateY(180deg)" : "rotateY(0deg)",
-          transition: "transform 0.65s cubic-bezier(0.4,0,0.2,1)",
+          transition: "transform 0.8s cubic-bezier(0.34, 1.56, 0.64, 1)",
         }}
       >
-        {/* Front */}
+        {/* Front Face */}
         <div
+          className="absolute inset-0 rounded-3xl overflow-hidden flex flex-col bg-white"
           style={{
-            position: "absolute",
-            inset: 0,
-            borderRadius: "1.5rem",
-            overflow: "hidden",
-            display: "flex",
-            flexDirection: "column",
             backfaceVisibility: "hidden",
-            boxShadow: "0 16px 50px rgba(0,0,0,0.08), 0 0 0 1px rgba(0,0,0,0.05)",
+            boxShadow: "0 20px 40px rgba(0,0,0,0.08), 0 0 0 1px rgba(0,0,0,0.04)",
           }}
         >
-          <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", background: app.imgBg }}>
-            <svg viewBox="0 0 80 80" style={{ width: 72, height: 72 }} fill="none">
-              <rect x="10" y="10" width="60" height="60" rx="14" stroke={app.accent} strokeWidth="2.5" />
-              <circle cx="40" cy="40" r="15" fill={app.accent} opacity="0.18" />
-              <path d="M32 40l6 6 12-12" stroke={app.accent} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+          <div className="flex-1 flex items-center justify-center" style={{ background: app.imgBg }}>
+            <svg viewBox="0 0 80 80" className="w-20 h-20" fill="none">
+              <rect x="10" y="10" width="60" height="60" rx="14" stroke={app.accent} strokeWidth="3" />
+              <circle cx="40" cy="40" r="15" fill={app.accent} opacity="0.2" />
+              <path d="M32 40l6 6 12-12" stroke={app.accent} strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </div>
-          <div style={{ background: "#fff", padding: "16px 20px 18px", display: "flex", flexDirection: "column", gap: 4 }}>
-            <span style={{ fontWeight: 900, color: "#111", fontSize: 17, lineHeight: 1.2 }}>{app.title}</span>
-            <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: app.accent }}>
+          <div className="bg-white p-5 flex flex-col gap-1">
+            <span className="font-black text-gray-900 text-xl tracking-tight">{app.title}</span>
+            <span className="text-[11px] font-bold tracking-[0.15em] uppercase" style={{ color: app.accent }}>
               {app.tagline}
             </span>
           </div>
         </div>
 
-        {/* Back */}
+        {/* Back Face */}
         <div
+          className="absolute inset-0 rounded-3xl flex flex-col justify-center gap-4 p-6"
           style={{
-            position: "absolute",
-            inset: 0,
-            borderRadius: "1.5rem",
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "center",
-            gap: 16,
-            padding: 24,
             backfaceVisibility: "hidden",
             transform: "rotateY(180deg)",
-            background: "rgba(255,255,255,0.85)",
-            backdropFilter: "blur(24px)",
-            WebkitBackdropFilter: "blur(24px)",
-            border: "1px solid rgba(255,255,255,0.9)",
-            boxShadow: "0 20px 60px rgba(0,0,0,0.08)",
+            background: "rgba(255,255,255,0.9)",
+            backdropFilter: "blur(20px)",
+            border: "1px solid rgba(255,255,255,1)",
+            boxShadow: "0 25px 50px rgba(0,0,0,0.1)",
           }}
         >
-          <div style={{ width: 40, height: 40, borderRadius: 12, display: "flex", alignItems: "center", justifyContent: "center", background: app.accent, color: "#fff", fontWeight: 900, fontSize: 18 }}>
+          <div
+            className="w-12 h-12 rounded-xl flex items-center justify-center text-white font-black text-xl"
+            style={{ background: app.accent, boxShadow: `0 8px 24px ${app.accent}66` }}
+          >
             {app.num}
           </div>
-          <p style={{ color: "#444", fontSize: 13, lineHeight: 1.6, fontWeight: 500 }}>{app.desc}</p>
-          <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: app.accent }}>
-            Tap to flip back →
+          <p className="text-gray-600 text-sm leading-relaxed font-medium">{app.desc}</p>
+          <span className="text-[10px] font-bold tracking-widest uppercase mt-2" style={{ color: app.accent }}>
+            Tap to return ↺
           </span>
         </div>
       </div>
@@ -142,29 +125,31 @@ function AppCard({ app, active }: { app: (typeof APPS)[number]; active: boolean 
 }
 
 export default function AppsSineWave() {
-  const sectionRef   = useRef<HTMLDivElement>(null);
-  const markerRef    = useRef<HTMLDivElement>(null);
+  const sectionRef = useRef<HTMLDivElement>(null);
+  const markerRef = useRef<HTMLDivElement>(null);
   const markerNumRef = useRef<HTMLSpanElement>(null);
   const cardWrappers = useRef<(HTMLDivElement | null)[]>([]);
   const [activeIndex, setActiveIndex] = useState(0);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const section = sectionRef.current;
-    const marker  = markerRef.current;
+    const marker = markerRef.current;
     if (!section || !marker) return;
 
-    // Initial states: card 0 visible, others hidden
+    // Reset initial states
     cardWrappers.current.forEach((el, i) => {
       if (!el) return;
-      gsap.set(el, { opacity: i === 0 ? 1 : 0, y: i === 0 ? 0 : 40 });
+      gsap.set(el, { opacity: i === 0 ? 1 : 0, y: i === 0 ? 0 : 60 });
     });
 
-    // Place marker at card 1 wave position
-    gsap.set(marker, { left: `${WAVE_POSITIONS[0].leftPct}%`, top: `${WAVE_POSITIONS[0].topPct}%` });
+    gsap.set(marker, {
+      left: `${WAVE_POSITIONS[0].leftPct}%`,
+      top: `${WAVE_POSITIONS[0].topPct}%`,
+    });
 
     const markerProxy = {
       left: WAVE_POSITIONS[0].leftPct,
-      top:  WAVE_POSITIONS[0].topPct,
+      top: WAVE_POSITIONS[0].topPct,
     };
 
     const ctx = gsap.context(() => {
@@ -172,59 +157,74 @@ export default function AppsSineWave() {
         scrollTrigger: {
           trigger: section,
           start: "top top",
-          // ← CRITICAL: 600% = plenty of scroll to hold card 3 before footer
-          end: "+=600%",
+          end: "+=600%", // Massive scroll duration to prevent overlap
           pin: true,
-          scrub: 1.4,
+          scrub: 1.2, // Smooth scrubbing
           anticipatePin: 1,
         },
       });
 
-      /* ── Beat 0 → 1: marker peak → trough, card 1 out, card 2 in ── */
+      // === BEAT 1: Card 1 to Card 2 ===
       tl.to(markerProxy, {
         left: WAVE_POSITIONS[1].leftPct,
-        top:  WAVE_POSITIONS[1].topPct,
-        duration: 1,
-        ease: "power1.inOut",
+        top: WAVE_POSITIONS[1].topPct,
+        duration: 1.5,
+        ease: "sine.inOut", // Perfect wave tracing
         onUpdate: () => {
           if (marker) {
             marker.style.left = `${markerProxy.left}%`;
-            marker.style.top  = `${markerProxy.top}%`;
+            marker.style.top = `${markerProxy.top}%`;
           }
         },
       }, 0);
 
-      tl.to(cardWrappers.current[0], { opacity: 0, y: -40, duration: 0.35, ease: "power2.in" }, 0.45);
+      tl.to(cardWrappers.current[0], { opacity: 0, y: -60, duration: 0.5, ease: "power2.in" }, 0.2);
       tl.to(cardWrappers.current[1], {
-        opacity: 1, y: 0, duration: 0.35, ease: "power2.out",
+        opacity: 1,
+        y: 0,
+        duration: 0.7,
+        ease: "back.out(1.2)",
         onStart: () => setActiveIndex(1),
-      }, 0.55);
-      tl.to({ n: 1 }, { n: 2, duration: 0.01, onUpdate() { if (markerNumRef.current) markerNumRef.current.textContent = "2"; } }, 0.85);
+      }, 0.8);
+      
+      tl.to({ val: 1 }, {
+        val: 2, duration: 0.1, onUpdate: function () {
+          if (markerNumRef.current) markerNumRef.current.textContent = Math.round(this.targets()[0].val).toString();
+        }
+      }, 0.75); // Flips number precisely at the halfway drop
 
-      /* ── Beat 1 → 2: marker trough → peak, card 2 out, card 3 in ── */
+      // === BEAT 2: Card 2 to Card 3 ===
       tl.to(markerProxy, {
         left: WAVE_POSITIONS[2].leftPct,
-        top:  WAVE_POSITIONS[2].topPct,
-        duration: 1,
-        ease: "power1.inOut",
+        top: WAVE_POSITIONS[2].topPct,
+        duration: 1.5,
+        ease: "sine.inOut", // Perfect wave tracing
         onUpdate: () => {
           if (marker) {
             marker.style.left = `${markerProxy.left}%`;
-            marker.style.top  = `${markerProxy.top}%`;
+            marker.style.top = `${markerProxy.top}%`;
           }
         },
-      }, 1);
+      }, 1.5);
 
-      tl.to(cardWrappers.current[1], { opacity: 0, y: -40, duration: 0.35, ease: "power2.in" }, 1.45);
+      tl.to(cardWrappers.current[1], { opacity: 0, y: -60, duration: 0.5, ease: "power2.in" }, 1.7);
       tl.to(cardWrappers.current[2], {
-        opacity: 1, y: 0, duration: 0.35, ease: "power2.out",
+        opacity: 1,
+        y: 0,
+        duration: 0.7,
+        ease: "back.out(1.2)",
         onStart: () => setActiveIndex(2),
-      }, 1.55);
-      tl.to({ n: 2 }, { n: 3, duration: 0.01, onUpdate() { if (markerNumRef.current) markerNumRef.current.textContent = "3"; } }, 1.85);
+      }, 2.3);
 
-      // ── Hold card 3 for 4 beats before unpin ──
-      // tl total = 2 (beats) + 4 (hold) = 6 — maps to 600% scroll
-      tl.set({}, {}, 6.0);
+      tl.to({ val: 2 }, {
+        val: 3, duration: 0.1, onUpdate: function () {
+          if (markerNumRef.current) markerNumRef.current.textContent = Math.round(this.targets()[0].val).toString();
+        }
+      }, 2.25); // Flips number precisely at the halfway rise
+
+      // === BEAT 3: HOLD THE LAST CARD ===
+      // Forces the pin to stay active so the footer doesn't rush in
+      tl.to({}, { duration: 2.0 });
 
     }, section);
 
@@ -235,127 +235,86 @@ export default function AppsSineWave() {
     <section
       id="builtapps"
       ref={sectionRef}
-      style={{ position: "relative", width: "100%", height: "100vh", background: "#fff", overflow: "hidden" }}
+      className="relative w-full h-screen bg-[#fafafa] overflow-hidden"
     >
-      {/* Heading */}
-      <div style={{ position: "absolute", top: "5vh", left: 0, right: 0, display: "flex", flexDirection: "column", alignItems: "center", zIndex: 10, userSelect: "none" }}>
+      {/* Dynamic Header */}
+      <div className="absolute top-[8vh] left-0 right-0 flex flex-col items-center z-10 select-none">
         <h2
+          className="font-black tracking-tight m-0"
           style={{
-            fontWeight: 900,
-            fontSize: "clamp(2rem, 4.5vw, 5rem)",
-            letterSpacing: "-0.02em",
+            fontSize: "clamp(2rem, 5vw, 5rem)",
             background: "linear-gradient(135deg, #111827 30%, #3b82f6 100%)",
             WebkitBackgroundClip: "text",
             WebkitTextFillColor: "transparent",
             backgroundClip: "text",
-            margin: 0,
             lineHeight: 1,
           }}
         >
           AI APPS BUILT
         </h2>
-        <div style={{ marginTop: 8, height: 2, width: 80, borderRadius: 9999, background: "linear-gradient(90deg, transparent, #3b82f6, transparent)" }} />
+        <div className="mt-4 h-[3px] w-20 rounded-full bg-gradient-to-r from-transparent via-blue-500 to-transparent" />
       </div>
 
-      {/*
-        ── WAVE STRIP ──
-        Positioned at 34vh from top, spans 36vh tall.
-        Cards are positioned WITHIN this strip at their wave Y positions.
-      */}
-      <div
-        style={{
-          position: "absolute",
-          top: "28vh",
-          left: 0,
-          right: 0,
-          height: "44vh",
-          zIndex: 2,
-          pointerEvents: "none",
-        }}
-      >
-        {/* SVG wave — fills the strip */}
+      {/* SVG Wave Canvas Area */}
+      <div className="absolute top-[28vh] left-0 right-0 h-[45vh] z-0 pointer-events-none">
         <svg
           viewBox="0 0 1200 220"
           preserveAspectRatio="none"
-          style={{ width: "100%", height: "100%", display: "block", overflow: "visible" }}
+          className="w-full h-full overflow-visible"
         >
           <defs>
             <filter id="waveGlow" x="-20%" y="-80%" width="140%" height="260%">
-              <feGaussianBlur in="SourceGraphic" stdDeviation="7" result="blur" />
-              <feColorMatrix in="blur" type="matrix"
-                values="0 0 0 0 0.23  0 0 0 0 0.51  0 0 0 0 0.96  0 0 0 1 0"
-                result="blueGlow"
-              />
+              <feGaussianBlur in="SourceGraphic" stdDeviation="6" result="blur" />
+              <feColorMatrix in="blur" type="matrix" values="0 0 0 0 0.23  0 0 0 0 0.51  0 0 0 0 0.96  0 0 0 1 0" result="blueGlow" />
               <feMerge>
                 <feMergeNode in="blueGlow" />
                 <feMergeNode in="SourceGraphic" />
               </feMerge>
             </filter>
           </defs>
-          {/* Thick glow layer */}
+
+          {/* Background thick path */}
           <path
-            d="M0 110 C160 110 200 24 350 24 C480 24 520 196 600 196 C680 196 720 24 850 24 C1000 24 1040 196 1200 110"
-            fill="none" stroke="#3b82f6" strokeWidth="20" opacity="0.07" strokeLinecap="round"
+            d="M0 110 C180 110 220 24 350 24 C500 24 530 196 600 196 C670 196 700 24 850 24 C980 24 1020 110 1200 110"
+            fill="none" stroke="#3b82f6" strokeWidth="24" opacity="0.05" strokeLinecap="round"
           />
-          {/* Neon line */}
+          {/* Neon core path */}
           <path
-            d="M0 110 C160 110 200 24 350 24 C480 24 520 196 600 196 C680 196 720 24 850 24 C1000 24 1040 196 1200 110"
-            fill="none" stroke="#3b82f6" strokeWidth="2.5" strokeLinecap="round"
-            filter="url(#waveGlow)"
+            d="M0 110 C180 110 220 24 350 24 C500 24 530 196 600 196 C670 196 700 24 850 24 C980 24 1020 110 1200 110"
+            fill="none" stroke="#3b82f6" strokeWidth="3" strokeLinecap="round" filter="url(#waveGlow)"
           />
-          {/* Card 1 peak dot */}
-          <circle cx="200" cy="24" r="5" fill="#3b82f680" />
-          {/* Card 2 trough dot */}
-          <circle cx="600" cy="196" r="5" fill="#3b82f680" />
-          {/* Card 3 peak dot */}
-          <circle cx="1000" cy="24" r="5" fill="#3b82f680" />
         </svg>
-      </div>
 
-      {/*
-        ── MARKER — lives in the wave strip coordinate space ──
-        position: absolute inside section, left/top set by GSAP as %
-      */}
-      <div
-        ref={markerRef}
-        style={{
-          position: "absolute",
-          zIndex: 20,
-          width: 48,
-          height: 48,
-          transform: "translate(-50%, -50%)",
-          pointerEvents: "none",
-        }}
-      >
-        <div style={{ position: "absolute", inset: 0, borderRadius: "50%", background: "#3b82f6", filter: "blur(14px)", opacity: 0.45 }} />
-        <div style={{ position: "absolute", inset: 0, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", background: "#3b82f6", boxShadow: "0 0 0 3px rgba(59,130,246,0.3)" }}>
-          <span ref={markerNumRef} style={{ color: "#fff", fontWeight: 900, fontSize: 14, userSelect: "none" }}>1</span>
-        </div>
-      </div>
-
-      {/*
-        ── CARDS — each absolutely positioned at its wave peak/trough ──
-        Uses the same coordinate system as the wave strip:
-        Card 1: top peak  → row from ~28vh top  →  absolute top ~30vh, left ~14%
-        Card 2: trough    → absolute top ~62vh,  left ~50%
-        Card 3: top peak  → absolute top ~30vh,  left ~86%
-      */}
-      {APPS.map((app, i) => (
+        {/* The glowing marker that rides the wave. 
+          Its left and top are controlled by GSAP.
+        */}
         <div
-          key={app.title}
-          ref={(el) => { cardWrappers.current[i] = el; }}
-          style={{
-            position: "absolute",
-            zIndex: 10,
-            left: `${WAVE_POSITIONS[i].leftPct}%`,
-            // Wave strip starts at 28vh; topPct is within the 44vh strip
-            top: `calc(28vh + ${WAVE_POSITIONS[i].topPct / 100} * 44vh)`,
-            transform: "translate(-50%, -50%)",
-          }}
+          ref={markerRef}
+          className="absolute z-30 w-12 h-12 -translate-x-1/2 -translate-y-1/2 pointer-events-none"
         >
-          <AppCard app={app} active={activeIndex === i} />
+          <div className="absolute inset-0 rounded-full bg-blue-500 blur-md opacity-60" />
+          <div className="absolute inset-0 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center shadow-[0_0_0_4px_rgba(59,130,246,0.3)]">
+            <span ref={markerNumRef} className="text-white font-black text-lg select-none">
+              1
+            </span>
+          </div>
         </div>
-      ))}
+
+        {/* The Cards pinned exactly at the wave peaks/troughs */}
+        {APPS.map((app, i) => (
+          <div
+            key={app.title}
+            ref={(el) => { cardWrappers.current[i] = el; }}
+            className="absolute z-20 -translate-x-1/2 -translate-y-1/2"
+            style={{
+              left: `${WAVE_POSITIONS[i].leftPct}%`,
+              top: `${WAVE_POSITIONS[i].topPct}%`,
+            }}
+          >
+            <AppCard app={app} active={activeIndex === i} />
+          </div>
+        ))}
+      </div>
     </section>
   );
 }
