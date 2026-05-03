@@ -57,7 +57,7 @@ const SOCIALS = [
   },
   {
     name: "GitHub",
-    href: "https://github.com/surya-dev",
+    href: "https://github.com/Surya-git-enf",
     color: "#24292e",
     svg: (
       <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
@@ -67,7 +67,7 @@ const SOCIALS = [
   },
   {
     name: "Twitter / X",
-    href: "",
+    href: "@surya_builds",
     color: "#000",
     svg: (
       <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
