@@ -180,7 +180,7 @@ export default function AppsSineWave() {
         scrollTrigger: {
           trigger: section,
           start: "top top",
-          end: "+=400%", 
+          end: "+=300%", 
           pin: true,
           scrub: 1.2, 
           anticipatePin: 1,
