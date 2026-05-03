@@ -1,8 +1,12 @@
+
 "use client";
 
-const CARD_COUNT     = 9;
+import { useEffect, useRef } from "react";
+import gsap from "gsap";
+
+const CARD_COUNT = 9;
 const ANGLE_PER_CARD = 360 / CARD_COUNT;
-const RADIUS         = 400;
+const RADIUS = 400;
 
 const skills = [
   {
@@ -12,10 +16,12 @@ const skills = [
       <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-12 h-12">
         <defs>
           <linearGradient id="py1" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="#4B8BBE" /><stop offset="100%" stopColor="#306998" />
+            <stop offset="0%" stopColor="#4B8BBE" />
+            <stop offset="100%" stopColor="#306998" />
           </linearGradient>
           <linearGradient id="py2" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="#FFE873" /><stop offset="100%" stopColor="#FFD43B" />
+            <stop offset="0%" stopColor="#FFE873" />
+            <stop offset="100%" stopColor="#FFD43B" />
           </linearGradient>
         </defs>
         <path d="M32 4C20.4 4 21.2 9.2 21.2 9.2L21.22 14.6H32.2V16H15.6C15.6 16 8 15.12 8 27.04C8 38.96 14.76 38.6 14.76 38.6H18.8V33C18.8 33 18.52 26.24 25.36 26.24H35.68C35.68 26.24 42.16 26.34 42.16 20.08V10.48C42.16 10.48 43.12 4 32 4Z" fill="url(#py1)" />
@@ -32,7 +38,8 @@ const skills = [
       <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-12 h-12">
         <defs>
           <linearGradient id="fapi" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="#059669" /><stop offset="100%" stopColor="#34d399" />
+            <stop offset="0%" stopColor="#059669" />
+            <stop offset="100%" stopColor="#34d399" />
           </linearGradient>
         </defs>
         <circle cx="32" cy="32" r="28" fill="url(#fapi)" opacity="0.12" />
@@ -48,7 +55,8 @@ const skills = [
       <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-12 h-12">
         <defs>
           <linearGradient id="n8n1" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="#EA4B00" /><stop offset="100%" stopColor="#FF6D3A" />
+            <stop offset="0%" stopColor="#EA4B00" />
+            <stop offset="100%" stopColor="#FF6D3A" />
           </linearGradient>
         </defs>
         <circle cx="12" cy="32" r="7" fill="url(#n8n1)" />
@@ -73,7 +81,8 @@ const skills = [
       <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-12 h-12">
         <defs>
           <linearGradient id="clang" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="#5c6bc0" /><stop offset="100%" stopColor="#a5b4fc" />
+            <stop offset="0%" stopColor="#5c6bc0" />
+            <stop offset="100%" stopColor="#a5b4fc" />
           </linearGradient>
         </defs>
         <circle cx="32" cy="32" r="28" stroke="url(#clang)" strokeWidth="2" fill="none" />
@@ -89,10 +98,12 @@ const skills = [
       <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-12 h-12">
         <defs>
           <linearGradient id="threed" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="#7c3aed" /><stop offset="100%" stopColor="#c4b5fd" />
+            <stop offset="0%" stopColor="#7c3aed" />
+            <stop offset="100%" stopColor="#c4b5fd" />
           </linearGradient>
           <linearGradient id="threed2" x1="1" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#a78bfa" /><stop offset="100%" stopColor="#6d28d9" />
+            <stop offset="0%" stopColor="#a78bfa" />
+            <stop offset="100%" stopColor="#6d28d9" />
           </linearGradient>
         </defs>
         <path d="M32 36L14 26V44L32 54L32 36Z" fill="url(#threed)" opacity="0.7" />
@@ -109,7 +120,8 @@ const skills = [
       <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-12 h-12">
         <defs>
           <linearGradient id="supa" x1="0.3" y1="0" x2="0.7" y2="1">
-            <stop offset="0%" stopColor="#3ECF8E" /><stop offset="100%" stopColor="#1a9e63" />
+            <stop offset="0%" stopColor="#3ECF8E" />
+            <stop offset="100%" stopColor="#1a9e63" />
           </linearGradient>
         </defs>
         <path d="M34.8 6L10 36.4H30.4L29.2 58L54 27.6H33.6L34.8 6Z" fill="url(#supa)" />
@@ -123,7 +135,8 @@ const skills = [
       <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-12 h-12">
         <defs>
           <linearGradient id="prompt" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="#f59e0b" /><stop offset="100%" stopColor="#fcd34d" />
+            <stop offset="0%" stopColor="#f59e0b" />
+            <stop offset="100%" stopColor="#fcd34d" />
           </linearGradient>
         </defs>
         <path d="M10 12H54C55.1 12 56 12.9 56 14V42C56 43.1 55.1 44 54 44H24L14 54V44H10C8.9 44 8 43.1 8 42V14C8 12.9 8.9 12 10 12Z" stroke="url(#prompt)" strokeWidth="2" fill="url(#prompt)" fillOpacity="0.07" />
@@ -141,10 +154,12 @@ const skills = [
       <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-12 h-12">
         <defs>
           <linearGradient id="fs1" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="#06b6d4" /><stop offset="100%" stopColor="#0284c7" />
+            <stop offset="0%" stopColor="#06b6d4" />
+            <stop offset="100%" stopColor="#0284c7" />
           </linearGradient>
           <linearGradient id="fs2" x1="0" y1="1" x2="1" y2="0">
-            <stop offset="0%" stopColor="#7c3aed" /><stop offset="100%" stopColor="#a78bfa" />
+            <stop offset="0%" stopColor="#7c3aed" />
+            <stop offset="100%" stopColor="#a78bfa" />
           </linearGradient>
         </defs>
         <rect x="10" y="10" width="44" height="12" rx="4" fill="url(#fs1)" opacity="0.9" />
@@ -165,10 +180,13 @@ const skills = [
       <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-12 h-12">
         <defs>
           <linearGradient id="rwy" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="#ec4899" /><stop offset="50%" stopColor="#a855f7" /><stop offset="100%" stopColor="#6366f1" />
+            <stop offset="0%" stopColor="#ec4899" />
+            <stop offset="50%" stopColor="#a855f7" />
+            <stop offset="100%" stopColor="#6366f1" />
           </linearGradient>
           <linearGradient id="rwy2" x1="1" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#f472b6" /><stop offset="100%" stopColor="#818cf8" />
+            <stop offset="0%" stopColor="#f472b6" />
+            <stop offset="100%" stopColor="#818cf8" />
           </linearGradient>
         </defs>
         <rect x="8" y="14" width="48" height="36" rx="4" stroke="url(#rwy)" strokeWidth="2" fill="url(#rwy)" fillOpacity="0.07" />
@@ -181,6 +199,16 @@ const skills = [
 ];
 
 export default function SkillsOrbit() {
+  const sectionRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    gsap.fromTo(
+      sectionRef.current,
+      { opacity: 0, y: 60 },
+      { opacity: 1, y: 0, duration: 1, ease: "power3.out" }
+    );
+  }, []);
+
   return (
     <>
       <style>{`
@@ -188,6 +216,7 @@ export default function SkillsOrbit() {
           from { transform: rotateY(0deg); }
           to   { transform: rotateY(360deg); }
         }
+
         .orbit-ring {
           animation: orbitSpin 22s linear infinite;
           transform-style: preserve-3d;
@@ -195,47 +224,51 @@ export default function SkillsOrbit() {
           height: 0;
           position: relative;
         }
-        .orbit-stage:hover .orbit-ring,
-        .orbit-stage:focus-within .orbit-ring {
-          animation-play-state: paused;
+
+        @media (hover: hover) {
+          .orbit-stage:hover .orbit-ring {
+            animation-play-state: paused;
+          }
         }
       `}</style>
 
       <section
-        className="relative w-full bg-white overflow-hidden"
+        ref={sectionRef}
+        className="relative w-full overflow-hidden bg-white"
         style={{ minHeight: "100vh", paddingBottom: "4rem" }}
       >
-        {/* Dot grid */}
         <div
           className="pointer-events-none absolute inset-0"
           style={{
-            backgroundImage: "radial-gradient(circle, rgba(0,0,0,0.055) 1px, transparent 1px)",
+            backgroundImage:
+              "radial-gradient(circle, rgba(0,0,0,0.055) 1px, transparent 1px)",
             backgroundSize: "36px 36px",
           }}
         />
 
-        {/* Blue neon heading */}
         <div className="relative z-10 flex flex-col items-center pt-[8vh] pb-4 select-none">
           <span
-            className="font-black text-gray-900 leading-none tracking-[0.18em]"
+            className="font-black leading-none tracking-[0.18em]"
             style={{
               fontSize: "clamp(2.2rem, 4vw, 5.5rem)",
-              textShadow: "0 0 40px #3b82f688, 0 0 80px #3b82f644",
               color: "#1e3a8a",
+              textShadow: "0 0 40px #3b82f688, 0 0 80px #3b82f644",
             }}
           >
             TECHSTACK
           </span>
           <div
             className="mt-3 h-[2px] w-32 rounded-full"
-            style={{ background: "linear-gradient(90deg, transparent, #3b82f6, #60a5fa, #3b82f6, transparent)" }}
+            style={{
+              background:
+                "linear-gradient(90deg, transparent, #3b82f6, #60a5fa, #3b82f6, transparent)",
+            }}
           />
           <p className="mt-3 text-gray-400 text-sm tracking-widest uppercase">
             Hover to pause
           </p>
         </div>
 
-        {/* 3D Stage — no touch pause, only hover */}
         <div
           className="orbit-stage relative flex items-center justify-center"
           style={{
@@ -247,6 +280,7 @@ export default function SkillsOrbit() {
           <div className="orbit-ring">
             {skills.map((skill, i) => {
               const angle = ANGLE_PER_CARD * i;
+
               return (
                 <div
                   key={skill.name}
@@ -260,14 +294,14 @@ export default function SkillsOrbit() {
                     transformStyle: "preserve-3d",
                     backfaceVisibility: "hidden",
                     borderRadius: "20px",
-                    background: "rgba(255,255,255,0.6)",
+                    background: "rgba(255,255,255,0.72)",
                     backdropFilter: "blur(18px)",
                     WebkitBackdropFilter: "blur(18px)",
                     boxShadow: [
                       "0 0 0 1.5px #1d4ed833",
                       `0 0 24px 4px ${skill.glow}22`,
                       "0 10px 30px rgba(0,0,0,0.07)",
-                      "inset 0 1px 0 rgba(255,255,255,0.8)",
+                      "inset 0 1px 0 rgba(255,255,255,0.85)",
                     ].join(", "),
                     display: "flex",
                     flexDirection: "column",
@@ -286,26 +320,33 @@ export default function SkillsOrbit() {
                       "0 0 0 1.5px #1d4ed833",
                       `0 0 24px 4px ${skill.glow}22`,
                       "0 10px 30px rgba(0,0,0,0.07)",
+                      "inset 0 1px 0 rgba(255,255,255,0.85)",
                     ].join(", ");
                   }}
                 >
-                  {/* Blue neon top accent */}
-                  <div style={{
-                    position: "absolute", top: 0, left: "20%", right: "20%",
-                    height: "2px", borderRadius: "0 0 3px 3px",
-                    background: `linear-gradient(90deg, transparent, ${skill.glow}, transparent)`,
-                    opacity: 0.7,
-                  }} />
+                  <div
+                    style={{
+                      position: "absolute",
+                      top: 0,
+                      left: "20%",
+                      right: "20%",
+                      height: "2px",
+                      borderRadius: "0 0 3px 3px",
+                      background: `linear-gradient(90deg, transparent, ${skill.glow}, transparent)`,
+                      opacity: 0.7,
+                    }}
+                  />
                   {skill.svg}
-                  {/* Skill name label */}
-                  <span style={{
-                    fontSize: "11px",
-                    fontWeight: 700,
-                    letterSpacing: "0.1em",
-                    textTransform: "uppercase",
-                    color: skill.glow,
-                    textShadow: `0 0 8px ${skill.glow}88`,
-                  }}>
+                  <span
+                    style={{
+                      fontSize: "11px",
+                      fontWeight: 700,
+                      letterSpacing: "0.1em",
+                      textTransform: "uppercase",
+                      color: skill.glow,
+                      textShadow: `0 0 8px ${skill.glow}88`,
+                    }}
+                  >
                     {skill.name}
                   </span>
                 </div>
@@ -316,4 +357,4 @@ export default function SkillsOrbit() {
       </section>
     </>
   );
-}
+      }
