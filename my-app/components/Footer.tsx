@@ -37,7 +37,7 @@ const CREATIONS = [
 const SOCIALS = [
   {
     name: "Instagram",
-    href: "https://instagram.com/plauful_123",
+    href: "https://www.instagram.com/surya3ddev?igsh=bDIzODRjY2E0dG95",
     color: "#e1306c",
     svg: (
       <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
@@ -47,7 +47,7 @@ const SOCIALS = [
   },
   {
     name: "Discord",
-    href: "https://discord.com",
+    href: "https://discord.gg/ubpQBwRr",
     color: "#5865f2",
     svg: (
       <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
@@ -67,7 +67,7 @@ const SOCIALS = [
   },
   {
     name: "Twitter / X",
-    href: "https://twitter.com/surya_builds",
+    href: "",
     color: "#000",
     svg: (
       <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
@@ -77,7 +77,7 @@ const SOCIALS = [
   },
   {
     name: "LinkedIn",
-    href: "https://linkedin.com",
+    href: "https://www.linkedin.com/in/surisurya-undefined-9113b829b?utm_source=share_via&utm_content=profile&utm_medium=member_android",
     color: "#0077b5",
     svg: (
       <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
@@ -335,7 +335,7 @@ export default function Footer() {
               Surya Peddishetti
             </p>
             <p style={{ fontSize: 11, color: "#888", margin: 0, fontWeight: 500 }}>
-              AI Engineer · Full-Stack · Motion
+              AI Engineer · Full-Stack · 3D web
             </p>
           </div>
 
