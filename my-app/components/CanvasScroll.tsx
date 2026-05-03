@@ -147,10 +147,10 @@ export default function CanvasScroll() {
         <div className="absolute inset-0 z-20 flex flex-col items-center justify-center pointer-events-none">
           <div ref={textRef} className="absolute text-center flex flex-col items-center gap-4 px-6">
             <h2 className="text-white font-black leading-none" style={{ fontSize: "clamp(2.8rem, 6vw, 6rem)" }}>
-              Hey 👋, I&apos;m Peddishetti Surya
+              Hey 👋, I&apos;m  Surya
             </h2>
             <p className="text-white/60 font-medium tracking-widest uppercase text-base">
-              Scroll to discover
+              
             </p>
           </div>
 
