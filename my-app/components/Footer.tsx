@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -8,35 +9,34 @@ const CREATIONS = [
     sub: "Cinematic Scroll · GSAP",
     tag: "Awwwards",
     accent: "#e11d48",
-    icon: "🕷️",
+    img: "/Spiderman.png",
   },
   {
     title: "Transformers",
-    sub: "Canvas Sequence · 270 Frames",
+    sub: "Canvas Sequence · Motion",
     tag: "Motion",
     accent: "#f97316",
-    icon: "🤖",
+    img: "/Transformers.png", 
   },
   {
     title: "Playful",
     sub: "AI Game Builder · FastAPI",
     tag: "SaaS",
     accent: "#3b82f6",
-    icon: "🎮",
+    img: "/Playful.png",
   },
   {
-    title: "Portfoilio",
-    sub: "3D Orbit · Sine Wave",
-    tag: "This Site",
+    title: "Ice Cream",
+    sub: "3D Product Viewer · WebGL",
+    tag: "Concept",
     accent: "#6b8c5a",
-    icon: "✦",
+    img: "/Icecream.png",
   },
 ];
 
 const SOCIALS = [
   {
     name: "Instagram",
-    handle: "@plauful_123",
     href: "https://instagram.com/plauful_123",
     color: "#e1306c",
     svg: (
@@ -47,34 +47,11 @@ const SOCIALS = [
   },
   {
     name: "Discord",
-    handle: "surya#dev",
     href: "https://discord.com",
     color: "#5865f2",
     svg: (
       <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
         <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057.1 18.13.14 18.2.204 18.244a19.9 19.9 0 0 0 5.993 3.03.077.077 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/>
-      </svg>
-    ),
-  },
-  {
-    name: "GitHub",
-    handle: "surya-dev",
-    href: "https://github.com",
-    color: "#24292e",
-    svg: (
-      <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
-        <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
-      </svg>
-    ),
-  },
-  {
-    name: "Twitter / X",
-    handle: "@surya_builds",
-    href: "https://twitter.com",
-    color: "#000",
-    svg: (
-      <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
-        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.737-8.835L1.254 2.25H8.08l4.253 5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
       </svg>
     ),
   },
@@ -91,8 +68,20 @@ export default function Footer() {
         width: "100%",
         background: "linear-gradient(180deg, #f5f7f2 0%, #e8ede3 100%)",
         overflow: "hidden",
+        paddingBottom: "3rem",
       }}
     >
+      {/* Auto-scrolling CSS */}
+      <style>{`
+        @keyframes scroll-marquee {
+          0% { transform: translateX(0); }
+          100% { transform: translateX(calc(-50% - 10px)); } 
+        }
+        .marquee-container:hover .marquee-track {
+          animation-play-state: paused;
+        }
+      `}</style>
+
       {/* Dot grid */}
       <div
         style={{
@@ -119,8 +108,7 @@ export default function Footer() {
         }}
       />
 
-      <div style={{ position: "relative", zIndex: 1, maxWidth: 1200, margin: "0 auto", padding: "5rem 2rem 3rem" }}>
-
+      <div style={{ position: "relative", zIndex: 1, paddingTop: "5rem" }}>
         {/* ── Section heading ── */}
         <div style={{ textAlign: "center", marginBottom: "3.5rem" }}>
           <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.3em", textTransform: "uppercase", color: "#6b8c5a", marginBottom: 12 }}>
@@ -141,96 +129,100 @@ export default function Footer() {
           <div style={{ margin: "16px auto 0", width: 60, height: 2, borderRadius: 9999, background: "linear-gradient(90deg, transparent, #6b8c5a, transparent)" }} />
         </div>
 
-        {/* ── Creation cards ── */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-            gap: "1.25rem",
-            marginBottom: "5rem",
-          }}
-        >
-          {CREATIONS.map((c, i) => (
-            <div
-              key={c.title}
-              onMouseEnter={() => setHovered(i)}
-              onMouseLeave={() => setHovered(null)}
-              style={{
-                position: "relative",
-                borderRadius: 20,
-                overflow: "hidden",
-                padding: "1.5rem",
-                background: hovered === i
-                  ? "rgba(255,255,255,0.75)"
-                  : "rgba(255,255,255,0.55)",
-                backdropFilter: "blur(20px)",
-                WebkitBackdropFilter: "blur(20px)",
-                border: hovered === i
-                  ? `1px solid ${c.accent}66`
-                  : "1px solid rgba(107,140,90,0.18)",
-                boxShadow: hovered === i
-                  ? `0 20px 50px rgba(0,0,0,0.08), 0 0 0 1px ${c.accent}22, 0 0 40px ${c.accent}18`
-                  : "0 4px 20px rgba(0,0,0,0.05)",
-                transform: hovered === i ? "translateY(-6px)" : "translateY(0)",
-                transition: "all 0.35s cubic-bezier(0.16,1,0.3,1)",
-                cursor: "pointer",
-              }}
-            >
-              {/* Top accent bar */}
-              <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 3, background: `linear-gradient(90deg, ${c.accent}, ${c.accent}88)`, borderRadius: "20px 20px 0 0" }} />
-
-              <div style={{ fontSize: 32, marginBottom: 12 }}>{c.icon}</div>
-
-              <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 8, marginBottom: 6 }}>
-                <span style={{ fontWeight: 900, fontSize: 16, color: "#111", lineHeight: 1.2 }}>{c.title}</span>
-                <span
-                  style={{
-                    fontSize: 9,
-                    fontWeight: 700,
-                    letterSpacing: "0.12em",
-                    textTransform: "uppercase",
-                    color: c.accent,
-                    background: `${c.accent}15`,
-                    padding: "3px 8px",
-                    borderRadius: 9999,
-                    flexShrink: 0,
-                    marginTop: 2,
-                  }}
-                >
-                  {c.tag}
-                </span>
-              </div>
-
-              <p style={{ fontSize: 12, color: "#666", fontWeight: 500, margin: 0 }}>{c.sub}</p>
-
-              {/* Hover arrow */}
+        {/* ── Infinite Scrolling Carousel ── */}
+        <div className="marquee-container" style={{ display: "flex", overflow: "hidden", width: "100%", paddingBottom: "5rem" }}>
+          {/* We render the array twice to create the seamless infinite loop */}
+          <div 
+            className="marquee-track" 
+            style={{ 
+              display: "flex", 
+              gap: "20px", 
+              paddingLeft: "20px",
+              width: "max-content",
+              animation: "scroll-marquee 25s linear infinite" 
+            }}
+          >
+            {[...CREATIONS, ...CREATIONS].map((c, i) => (
               <div
+                key={`${c.title}-${i}`}
+                onMouseEnter={() => setHovered(i)}
+                onMouseLeave={() => setHovered(null)}
                 style={{
-                  position: "absolute",
-                  bottom: 16,
-                  right: 16,
-                  width: 28,
-                  height: 28,
-                  borderRadius: "50%",
-                  background: `${c.accent}18`,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  opacity: hovered === i ? 1 : 0,
-                  transform: hovered === i ? "scale(1)" : "scale(0.6)",
-                  transition: "all 0.3s ease",
+                  position: "relative",
+                  width: "280px",
+                  flexShrink: 0,
+                  borderRadius: 20,
+                  overflow: "hidden",
+                  padding: "1.25rem",
+                  background: hovered === i ? "rgba(255,255,255,0.85)" : "rgba(255,255,255,0.55)",
+                  backdropFilter: "blur(20px)",
+                  WebkitBackdropFilter: "blur(20px)",
+                  border: hovered === i ? `1px solid ${c.accent}66` : "1px solid rgba(107,140,90,0.18)",
+                  boxShadow: hovered === i ? `0 20px 50px rgba(0,0,0,0.08), 0 0 0 1px ${c.accent}22, 0 0 40px ${c.accent}18` : "0 4px 20px rgba(0,0,0,0.05)",
+                  transform: hovered === i ? "translateY(-8px)" : "translateY(0)",
+                  transition: "all 0.35s cubic-bezier(0.16,1,0.3,1)",
+                  cursor: "pointer",
                 }}
               >
-                <svg viewBox="0 0 24 24" fill="none" stroke={c.accent} strokeWidth="2.5" style={{ width: 12, height: 12 }}>
-                  <path d="M7 17L17 7M17 7H7M17 7v10" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
+                {/* Top accent bar */}
+                <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 3, background: `linear-gradient(90deg, ${c.accent}, ${c.accent}88)`, borderRadius: "20px 20px 0 0" }} />
+
+                {/* Requested Image Layout */}
+                <div style={{ width: "100%", height: "140px", borderRadius: "12px", overflow: "hidden", marginBottom: "1rem", backgroundColor: "#f9fafb" }}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={c.img} alt={c.title} style={{ width: "100%", height: "100%", objectFit: "cover", transform: hovered === i ? "scale(1.05)" : "scale(1)", transition: "transform 0.5s ease" }} />
+                </div>
+
+                <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 8, marginBottom: 6 }}>
+                  <span style={{ fontWeight: 900, fontSize: 16, color: "#111", lineHeight: 1.2 }}>{c.title}</span>
+                  <span
+                    style={{
+                      fontSize: 9,
+                      fontWeight: 700,
+                      letterSpacing: "0.12em",
+                      textTransform: "uppercase",
+                      color: c.accent,
+                      background: `${c.accent}15`,
+                      padding: "3px 8px",
+                      borderRadius: 9999,
+                      flexShrink: 0,
+                      marginTop: 2,
+                    }}
+                  >
+                    {c.tag}
+                  </span>
+                </div>
+                <p style={{ fontSize: 12, color: "#666", fontWeight: 500, margin: 0 }}>{c.sub}</p>
+
+                {/* Hover arrow */}
+                <div
+                  style={{
+                    position: "absolute",
+                    bottom: 16,
+                    right: 16,
+                    width: 28,
+                    height: 28,
+                    borderRadius: "50%",
+                    background: `${c.accent}18`,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    opacity: hovered === i ? 1 : 0,
+                    transform: hovered === i ? "scale(1)" : "scale(0.6)",
+                    transition: "all 0.3s ease",
+                  }}
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke={c.accent} strokeWidth="2.5" style={{ width: 12, height: 12 }}>
+                    <path d="M7 17L17 7M17 7H7M17 7v10" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
 
         {/* ── Divider ── */}
-        <div style={{ width: "100%", height: 1, background: "linear-gradient(90deg, transparent, rgba(107,140,90,0.3), transparent)", marginBottom: "3rem" }} />
+        <div style={{ width: "100%", maxWidth: 1200, margin: "0 auto", height: 1, background: "linear-gradient(90deg, transparent, rgba(107,140,90,0.3), transparent)", marginBottom: "3rem" }} />
 
         {/* ── Bottom bar: fully centered ── */}
         <div
@@ -296,7 +288,6 @@ export default function Footer() {
             </p>
           </div>
 
-          {/* Copyright */}
           <p style={{ fontSize: 11, color: "#aaa", margin: 0, fontWeight: 500 }}>
             © {new Date().getFullYear()} Surya Peddishetti · Built with Next.js & GSAP
           </p>
