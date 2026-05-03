@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import dynamic from "next/dynamic";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -10,10 +10,10 @@ import HeroReveal from "@/components/HeroReveal";
 import Footer from "@/components/Footer";
 import ErrorBoundary from "@/components/ErrorBoundary";
 
-// Register ScrollTrigger so the Header can use it for scroll-sync
+// Register ScrollTrigger
 gsap.registerPlugin(ScrollTrigger);
 
-// Lazy load the heavy GSAP components
+// Lazy load the heavy GSAP components to keep the initial load lightning fast
 const CanvasScroll = dynamic(() => import("@/components/CanvasScroll"), { ssr: false });
 const SkillsOrbit  = dynamic(() => import("@/components/SkillsOrbit"),  { ssr: false });
 const AppsSineWave = dynamic(() => import("@/components/AppsSineWave"), { ssr: false });
@@ -26,11 +26,12 @@ const NAV_SECTIONS = [
   { id: "3dwebsite",  label: "3D Website" },
 ] as const;
 
+// ── CUSTOM LINKS ADDED ──
 const CONTACT_LINKS = [
   {
     name: "Instagram",
-    handle: "@plauful_123",
-    url: "https://instagram.com/plauful_123",
+    handle: "@surya3ddev",
+    url: "https://www.instagram.com/surya3ddev?igsh=bDIzODRjY2E0dG95",
     color: "#e1306c",
     svg: (
       <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
@@ -40,8 +41,8 @@ const CONTACT_LINKS = [
   },
   {
     name: "Discord",
-    handle: "surya#dev",
-    url: "https://discord.com",
+    handle: "Join Server",
+    url: "https://discord.gg/3HYdEPq3",
     color: "#5865f2",
     svg: (
       <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
@@ -57,79 +58,83 @@ function GlobalHeader() {
   const [isVisible, setIsVisible] = useState(true);
   const [photoOpen, setPhotoOpen] = useState(false);
   const [contactOpen, setContactOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
 
-  // 1. Hide header on scroll, show when stopped
+  // 1. Smart Scroll (Hide while moving, Show when stopped) & Custom Scroll Spy
   useEffect(() => {
     let scrollTimeout: NodeJS.Timeout;
 
     const handleScroll = () => {
+      // Hide header immediately on scroll
       setIsVisible(false);
       clearTimeout(scrollTimeout);
+      
+      // Wait 300ms after scrolling stops to show header again
       scrollTimeout = setTimeout(() => {
         setIsVisible(true);
-      }, 300); 
+      }, 300);
+
+      // --- CUSTOM SCROLL SPY FOR GSAP PINNED SECTIONS ---
+      const ids = ["personal", "techstack", "builtapps", "3dwebsite"];
+      let currentActive = "personal";
+
+      for (const id of ids) {
+        const el = document.getElementById(id);
+        if (el) {
+          // If the section is pinned by GSAP, look at its spacer instead to get its real position
+          const trackingEl = el.closest(".pin-spacer") || el;
+          const rect = trackingEl.getBoundingClientRect();
+          
+          // If the top of the element (or its spacer) is above the middle of the screen
+          if (rect.top <= window.innerHeight / 2.5) {
+            currentActive = id;
+          }
+        }
+      }
+      setActiveSection(currentActive);
     };
 
     window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll(); // Trigger once on mount to set initial state
+
     return () => {
       window.removeEventListener("scroll", handleScroll);
       clearTimeout(scrollTimeout);
     };
   }, []);
 
-  // 2. PERFECT SYNC: Use GSAP ScrollTrigger to track sections instead of IntersectionObserver
-  useEffect(() => {
-    // We wrap this in a timeout to ensure all components and pins are fully mounted
-    const ctx = gsap.context(() => {
-      setTimeout(() => {
-        NAV_SECTIONS.forEach(({ id }) => {
-          const el = document.getElementById(id);
-          if (!el) return;
-
-          ScrollTrigger.create({
-            trigger: el,
-            // Trigger when the top of the section hits the middle of the viewport
-            start: "top 50%", 
-            end: "bottom 50%",
-            onToggle: (self) => {
-              if (self.isActive) {
-                setActiveSection(id);
-              }
-            },
-          });
-        });
-      }, 500);
-    });
-
-    return () => ctx.revert();
-  }, []);
-
+  // 2. Smooth Scroll To Link (Accounting for GSAP Pinning)
   const scrollTo = useCallback((id: string) => {
     const el = document.getElementById(id);
-    if (el) el.scrollIntoView({ behavior: "smooth" });
+    if (el) {
+      // Scroll to the GSAP pin-spacer if it exists, otherwise scroll to the element directly
+      const scrollTarget = el.closest(".pin-spacer") || el;
+      scrollTarget.scrollIntoView({ behavior: "smooth" });
+    }
+    setMenuOpen(false);
+    setContactOpen(false);
   }, []);
 
   return (
     <>
       <style>{`
-        /* Premium entrance animations */
         @keyframes panelFadeIn {
           from { opacity: 0; transform: scale(0.95) translateY(-10px); }
           to   { opacity: 1; transform: scale(1) translateY(0); }
         }
-        .panel-enter { animation: panelFadeIn 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
+        .panel-enter { animation: panelFadeIn 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
 
         @keyframes photoReveal {
           from { opacity: 0; transform: scale(0.9); }
           to   { opacity: 1; transform: scale(1); }
         }
-        .photo-enter { animation: photoReveal 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
+        .photo-enter { animation: photoReveal 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
 
         @keyframes overlayFade {
           from { opacity: 0; }
           to   { opacity: 1; }
         }
-        .overlay-enter { animation: overlayFade 0.3s ease forwards; }
+        .overlay-enter { animation: overlayFade 0.2s ease forwards; }
       `}</style>
 
       {/* HEADER BAR */}
@@ -137,17 +142,18 @@ function GlobalHeader() {
         className="fixed left-1/2 flex items-center gap-2 px-3 py-2 select-none"
         style={{
           top: "1.5rem",
-          zIndex: 9999, // Super high so it NEVER gets trapped by GSAP
+          zIndex: 9999,
           transform: `translateX(-50%) translateY(${isVisible ? "0" : "-200%"})`, 
           opacity: isVisible ? 1 : 0,
-          transition: "transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.4s ease",
-          background: "rgba(255, 255, 255, 0.75)",
+          transition: "transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.3s ease",
+          background: "rgba(255, 255, 255, 0.85)",
           backdropFilter: "blur(24px)",
           WebkitBackdropFilter: "blur(24px)",
           border: "1px solid rgba(255, 255, 255, 0.6)",
           borderRadius: "9999px",
           boxShadow: "0 10px 40px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,1)",
           width: "max-content",
+          maxWidth: "94vw", // Keeps it safe on tiny screens
         }}
       >
         {/* Avatar */}
@@ -161,7 +167,7 @@ function GlobalHeader() {
 
         <div className="w-px h-6 bg-gray-200 flex-shrink-0 ml-1" />
 
-        {/* Links */}
+        {/* Desktop Links */}
         <nav className="hidden sm:flex items-center gap-1 relative px-1">
           {NAV_SECTIONS.map((s) => {
             const isActive = activeSection === s.id;
@@ -176,7 +182,7 @@ function GlobalHeader() {
                 }}
               >
                 {s.label}
-                {/* ── Neon Blue Light Tracker ── */}
+                {/* Neon Blue Light Tracker */}
                 {isActive && (
                   <span 
                     className="absolute bottom-0 left-1/2 -translate-x-1/2 h-[3px] rounded-t-md transition-all duration-300"
@@ -192,9 +198,19 @@ function GlobalHeader() {
           })}
         </nav>
 
+        {/* Mobile Hamburger Menu */}
+        <button
+          onClick={() => setMenuOpen((v) => !v)}
+          className="sm:hidden flex flex-col gap-1 w-9 h-9 items-center justify-center rounded-full hover:bg-gray-100 transition-colors"
+        >
+          <span className="w-4 h-[2px] bg-gray-600 rounded-full transition-all duration-300" style={{ transform: menuOpen ? "rotate(45deg) translateY(5px)" : "none" }} />
+          <span className="w-4 h-[2px] bg-gray-600 rounded-full transition-all duration-300" style={{ opacity: menuOpen ? 0 : 1 }} />
+          <span className="w-4 h-[2px] bg-gray-600 rounded-full transition-all duration-300" style={{ transform: menuOpen ? "rotate(-45deg) translateY(-5px)" : "none" }} />
+        </button>
+
         <div className="w-px h-6 bg-gray-200 flex-shrink-0 mr-1 hidden sm:block" />
 
-        {/* Professional 3-Lines Contact */}
+        {/* 3-Lines Contact */}
         <button
           onClick={() => setContactOpen((v) => !v)}
           className="flex flex-col gap-[3px] w-10 h-10 items-center justify-center rounded-full hover:bg-gray-100 transition-colors flex-shrink-0"
@@ -205,19 +221,53 @@ function GlobalHeader() {
         </button>
       </header>
 
+      {/* MOBILE NAV DROPDOWN */}
+      {isVisible && menuOpen && (
+        <>
+          <div className="fixed inset-0 z-[9997] sm:hidden" onClick={() => setMenuOpen(false)} />
+          <div
+            className="fixed top-[88px] left-1/2 z-[9998] flex flex-col rounded-3xl overflow-hidden sm:hidden panel-enter"
+            style={{
+              transform: "translateX(-50%)",
+              background: "rgba(255, 255, 255, 0.95)",
+              backdropFilter: "blur(32px) saturate(150%)",
+              WebkitBackdropFilter: "blur(32px) saturate(150%)",
+              border: "1px solid rgba(255, 255, 255, 1)",
+              boxShadow: "0 24px 60px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,1)",
+              width: "min(240px, 90vw)", // Perfect mobile scaling
+            }}
+          >
+            {NAV_SECTIONS.map((s) => (
+              <button
+                key={s.id}
+                onClick={() => scrollTo(s.id)}
+                className="px-6 py-4 text-[14px] font-bold text-left transition-all duration-300 hover:bg-blue-50/50"
+                style={{ 
+                  color: activeSection === s.id ? "#3b82f6" : "#475569", 
+                  borderLeft: activeSection === s.id ? "3px solid #3b82f6" : "3px solid transparent",
+                  background: activeSection === s.id ? "rgba(59, 130, 246, 0.05)" : "transparent"
+                }}
+              >
+                {s.label}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
+
       {/* ── PROFESSIONAL CONTACT PANEL ── */}
       {contactOpen && (
         <>
           <div className="fixed inset-0 z-[9998] overlay-enter bg-black/5 backdrop-blur-[2px]" onClick={() => setContactOpen(false)} />
           <div
-            className="fixed top-[88px] right-6 z-[9999] rounded-3xl overflow-hidden panel-enter"
+            className="fixed top-[88px] right-4 sm:right-6 z-[9999] rounded-3xl overflow-hidden panel-enter"
             style={{
               background: "rgba(255, 255, 255, 0.85)",
               backdropFilter: "blur(32px) saturate(150%)",
               WebkitBackdropFilter: "blur(32px) saturate(150%)",
               border: "1px solid rgba(255, 255, 255, 1)",
               boxShadow: "0 24px 60px rgba(0,0,0,0.1), 0 0 0 1px rgba(0,0,0,0.02) inset",
-              width: "280px",
+              width: "min(320px, 92vw)", // Perfectly responsive for mobile & desktop
             }}
           >
             <div className="px-6 pt-5 pb-3 border-b border-gray-100 bg-white/40">
@@ -253,14 +303,14 @@ function GlobalHeader() {
       {/* ── PROFESSIONAL PHOTO LIGHTBOX ── */}
       {photoOpen && (
         <div
-          className="fixed inset-0 z-[10000] flex items-center justify-center p-6 overlay-enter"
+          className="fixed inset-0 z-[10000] flex items-center justify-center p-4 sm:p-6 overlay-enter"
           style={{ background: "rgba(0,0,0,0.8)", backdropFilter: "blur(16px)" }}
           onClick={() => setPhotoOpen(false)}
         >
           <div
             className="relative rounded-[2rem] overflow-hidden photo-enter"
             style={{
-              width: "min(400px, 90vw)",
+              width: "min(400px, 90vw)", // Perfect mobile scaling
               aspectRatio: "3/4",
               boxShadow: "0 40px 100px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.15)",
             }}
@@ -271,12 +321,12 @@ function GlobalHeader() {
             
             {/* Elegant Gradient overlay */}
             <div
-              className="absolute inset-0 flex flex-col justify-end px-8 py-8"
+              className="absolute inset-0 flex flex-col justify-end px-6 py-6 sm:px-8 sm:py-8"
               style={{ background: "linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.4) 40%, transparent 100%)" }}
             >
-              <p className="text-white font-black text-2xl tracking-tight">Surya Peddishetti</p>
+              <p className="text-white font-black text-xl sm:text-2xl tracking-tight">Surya Peddishetti</p>
               <div className="w-10 h-1 bg-blue-500 rounded-full mt-2 mb-3" />
-              <p className="text-gray-300 text-sm font-medium leading-relaxed">AI Engineer & Full-Stack Developer creating cinematic web experiences.</p>
+              <p className="text-gray-300 text-xs sm:text-sm font-medium leading-relaxed">AI Engineer & Full-Stack Developer creating cinematic web experiences.</p>
             </div>
 
             {/* Premium Close button */}
@@ -321,4 +371,4 @@ export default function Home() {
       </main>
     </>
   );
-}
+      }
