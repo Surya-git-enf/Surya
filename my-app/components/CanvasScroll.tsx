@@ -142,7 +142,7 @@ export default function CanvasScroll() {
         scrollTrigger: {
           trigger: container,
           start: "top top",
-          end: "+=900%",
+          end: "+=1900%",
           pin: true,
           scrub: 1.2,
           anticipatePin: 1,
