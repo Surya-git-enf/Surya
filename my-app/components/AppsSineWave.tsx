@@ -53,14 +53,15 @@ function AppCard({ app, active, isTrough }: { app: (typeof APPS)[number]; active
         perspective: "1200px",
       }}
     >
-      {/* Visual Dotted Connector Line (simulating the image reference) */}
+      {/* ── Visual Dotted Connector Line ── */}
+      {/* This spans the exact 60px gap between the card and the wave node */}
       <div 
-        className="absolute left-1/2 w-[2px] border-l-2 border-dashed border-blue-300 opacity-60 pointer-events-none"
+        className="absolute left-1/2 w-[2px] border-l-[3px] border-dotted border-blue-400 opacity-60 pointer-events-none transition-opacity duration-500 delay-300"
         style={{
           height: "60px",
-          top: isTrough ? "-60px" : "100%",
+          top: isTrough ? "100%" : "-60px", // Trough goes down from card, Peak goes up from card
           transform: "translateX(-50%)",
-          display: active ? "block" : "none"
+          opacity: active ? 1 : 0
         }}
       />
 
@@ -179,11 +180,12 @@ export default function AppsSineWave() {
     const marker = markerRef.current;
     if (!section || !marker) return;
 
-    // Reset initial card states
+    // Reset initial card states (push them slightly further away on Y axis to start)
     cardWrappers.current.forEach((el, i) => {
       if (!el) return;
-      // Cards start hidden and slightly translated for a smooth entry
-      gsap.set(el, { opacity: i === 0 ? 1 : 0, y: i === 0 ? 0 : (i === 1 ? -40 : 40) });
+      const isTrough = i === 1;
+      // Start hidden, pushed away
+      gsap.set(el, { opacity: i === 0 ? 1 : 0, y: i === 0 ? 0 : (isTrough ? -40 : 40) });
     });
 
     gsap.set(marker, {
@@ -201,7 +203,7 @@ export default function AppsSineWave() {
         scrollTrigger: {
           trigger: section,
           start: "top top",
-          end: "+=600%", // Pin holds for a long scroll duration
+          end: "+=700%", // Massive scroll duration strictly keeps the pin locked
           pin: true,
           scrub: 1.2, // Smooth interpolation
           anticipatePin: 1,
@@ -222,7 +224,7 @@ export default function AppsSineWave() {
         },
       }, 0);
 
-      // Card 1 fades out
+      // Card 1 fades out and pulls away
       tl.to(cardWrappers.current[0], { opacity: 0, y: 40, duration: 0.5, ease: "power2.in" }, 0.2);
       
       // Number flips cleanly at the halfway point
@@ -232,7 +234,7 @@ export default function AppsSineWave() {
         }
       }, 0.75); 
 
-      // Card 2 fades in
+      // Card 2 fades in and settles into its Y offset
       tl.to(cardWrappers.current[1], {
         opacity: 1,
         y: 0,
@@ -256,7 +258,7 @@ export default function AppsSineWave() {
         },
       }, 1.5);
 
-      // Card 2 fades out
+      // Card 2 fades out and pulls away
       tl.to(cardWrappers.current[1], { opacity: 0, y: -40, duration: 0.5, ease: "power2.in" }, 1.7);
       
       // Number flips at halfway point
@@ -285,95 +287,100 @@ export default function AppsSineWave() {
   }, []);
 
   return (
-    <section
-      id="builtapps"
-      ref={sectionRef}
-      className="relative w-full h-screen bg-[#ffffff] overflow-hidden"
-    >
-      {/* Header */}
-      <div className="absolute top-[6vh] left-0 right-0 flex flex-col items-center z-10 select-none">
-        <h2
-          className="font-black tracking-tight m-0"
-          style={{
-            fontSize: "clamp(2rem, 5vw, 5rem)",
-            background: "linear-gradient(135deg, #111827 30%, #3b82f6 100%)",
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
-            backgroundClip: "text",
-            lineHeight: 1,
-          }}
-        >
-          AI APPS BUILT
-        </h2>
-        <div className="mt-4 h-[3px] w-20 rounded-full bg-gradient-to-r from-transparent via-blue-500 to-transparent" />
-      </div>
-
-      {/* Wave Container */}
-      <div className="absolute top-[28vh] left-0 right-0 h-[44vh] z-0 pointer-events-none">
-        <svg
-          viewBox="0 0 1200 220"
-          preserveAspectRatio="none"
-          className="w-full h-full overflow-visible"
-        >
-          <defs>
-            <filter id="waveGlow" x="-20%" y="-80%" width="140%" height="260%">
-              <feGaussianBlur in="SourceGraphic" stdDeviation="6" result="blur" />
-              <feColorMatrix in="blur" type="matrix" values="0 0 0 0 0.23  0 0 0 0 0.51  0 0 0 0 0.96  0 0 0 1 0" result="blueGlow" />
-              <feMerge>
-                <feMergeNode in="blueGlow" />
-                <feMergeNode in="SourceGraphic" />
-              </feMerge>
-            </filter>
-          </defs>
-
-          {/* Background thick path */}
-          <path
-            d="M0 110 C180 110 220 24 350 24 C500 24 530 196 600 196 C670 196 700 24 850 24 C980 24 1020 110 1200 110"
-            fill="none" stroke="#3b82f6" strokeWidth="24" opacity="0.06" strokeLinecap="round"
-          />
-          {/* Neon core path */}
-          <path
-            d="M0 110 C180 110 220 24 350 24 C500 24 530 196 600 196 C670 196 700 24 850 24 C980 24 1020 110 1200 110"
-            fill="none" stroke="#3b82f6" strokeWidth="3" strokeLinecap="round" filter="url(#waveGlow)"
-          />
-        </svg>
-
-        {/* The glowing marker node that rides the wave */}
-        <div
-          ref={markerRef}
-          className="absolute z-30 w-12 h-12 -translate-x-1/2 -translate-y-1/2 pointer-events-none"
-        >
-          <div className="absolute inset-0 rounded-full bg-blue-500 blur-md opacity-60" />
-          <div className="absolute inset-0 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center shadow-[0_0_0_6px_rgba(59,130,246,0.25)]">
-            <span ref={markerNumRef} className="text-white font-black text-xl select-none">
-              1
-            </span>
-          </div>
+    /* CRITICAL FIX: Z-Index Wrapper (Like CanvasScroll) to prevent Footer bleed-through */
+    <div className="relative w-full z-40 bg-white">
+      <section
+        id="builtapps"
+        ref={sectionRef}
+        className="relative w-full h-screen overflow-hidden"
+      >
+        {/* Header */}
+        <div className="absolute top-[6vh] left-0 right-0 flex flex-col items-center z-10 select-none">
+          <h2
+            className="font-black tracking-tight m-0"
+            style={{
+              fontSize: "clamp(2rem, 5vw, 5rem)",
+              background: "linear-gradient(135deg, #111827 30%, #3b82f6 100%)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              backgroundClip: "text",
+              lineHeight: 1,
+            }}
+          >
+            AI APPS BUILT
+          </h2>
+          <div className="mt-4 h-[3px] w-20 rounded-full bg-gradient-to-r from-transparent via-blue-500 to-transparent" />
         </div>
 
-        {/* Static placement of the 3 App Cards */}
-        {APPS.map((app, i) => {
-          // Card 1 & 3 (Peaks) position below the node. Card 2 (Trough) positions above the node.
-          const isTrough = i === 1; 
-          const yOffset = isTrough ? "-100%" : "0%";
-          const yMargin = isTrough ? "-70px" : "70px";
+        {/* Wave Container */}
+        <div className="absolute top-[30vh] left-0 right-0 h-[40vh] z-0 pointer-events-none">
+          <svg
+            viewBox="0 0 1200 220"
+            preserveAspectRatio="none"
+            className="w-full h-full overflow-visible"
+          >
+            <defs>
+              <filter id="waveGlow" x="-20%" y="-80%" width="140%" height="260%">
+                <feGaussianBlur in="SourceGraphic" stdDeviation="6" result="blur" />
+                <feColorMatrix in="blur" type="matrix" values="0 0 0 0 0.23  0 0 0 0 0.51  0 0 0 0 0.96  0 0 0 1 0" result="blueGlow" />
+                <feMerge>
+                  <feMergeNode in="blueGlow" />
+                  <feMergeNode in="SourceGraphic" />
+                </feMerge>
+              </filter>
+            </defs>
 
-          return (
-            <div
-              key={app.title}
-              ref={(el) => { cardWrappers.current[i] = el; }}
-              className="absolute z-20"
-              style={{
-                left: `${WAVE_POSITIONS[i].leftPct}%`,
-                top: `${WAVE_POSITIONS[i].topPct}%`,
-                transform: `translate(-50%, calc(${yOffset} + ${yMargin}))`,
-              }}
-            >
-              <AppCard app={app} active={activeIndex === i} isTrough={isTrough} />
+            {/* Background thick path */}
+            <path
+              d="M0 110 C180 110 220 24 350 24 C500 24 530 196 600 196 C670 196 700 24 850 24 C980 24 1020 110 1200 110"
+              fill="none" stroke="#3b82f6" strokeWidth="24" opacity="0.06" strokeLinecap="round"
+            />
+            {/* Neon core path */}
+            <path
+              d="M0 110 C180 110 220 24 350 24 C500 24 530 196 600 196 C670 196 700 24 850 24 C980 24 1020 110 1200 110"
+              fill="none" stroke="#3b82f6" strokeWidth="3" strokeLinecap="round" filter="url(#waveGlow)"
+            />
+          </svg>
+
+          {/* The glowing marker node that rides the wave */}
+          <div
+            ref={markerRef}
+            className="absolute z-30 w-12 h-12 -translate-x-1/2 -translate-y-1/2 pointer-events-none"
+          >
+            <div className="absolute inset-0 rounded-full bg-blue-500 blur-md opacity-60" />
+            <div className="absolute inset-0 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center shadow-[0_0_0_6px_rgba(59,130,246,0.25)]">
+              <span ref={markerNumRef} className="text-white font-black text-xl select-none">
+                1
+              </span>
             </div>
-          );
-        })}
-      </div>
-    </section>
+          </div>
+
+          {/* Static placement of the 3 App Cards */}
+          {APPS.map((app, i) => {
+            const isTrough = i === 1; 
+            return (
+              <div
+                key={app.title}
+                ref={(el) => { cardWrappers.current[i] = el; }}
+                className="absolute z-20"
+                style={{
+                  left: `${WAVE_POSITIONS[i].leftPct}%`,
+                  top: `${WAVE_POSITIONS[i].topPct}%`,
+                  /* CRITICAL FIX: Precise 60px padding away from the node.
+                    Trough (1): Pushes UP by 100% (its own height) plus 60px.
+                    Peaks (0, 2): Pushes DOWN by 60px.
+                  */
+                  transform: isTrough 
+                    ? `translate(-50%, calc(-100% - 60px))` 
+                    : `translate(-50%, 60px)`,
+                }}
+              >
+                <AppCard app={app} active={activeIndex === i} isTrough={isTrough} />
+              </div>
+            );
+          })}
+        </div>
+      </section>
+    </div>
   );
-          }
+      }
