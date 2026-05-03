@@ -1,11 +1,17 @@
 
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import dynamic from "next/dynamic";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+
 import HeroReveal from "@/components/HeroReveal";
 import Footer from "@/components/Footer";
 import ErrorBoundary from "@/components/ErrorBoundary";
+
+// Register ScrollTrigger so the Header can use it for scroll-sync
+gsap.registerPlugin(ScrollTrigger);
 
 // Lazy load the heavy GSAP components
 const CanvasScroll = dynamic(() => import("@/components/CanvasScroll"), { ssr: false });
@@ -52,14 +58,13 @@ function GlobalHeader() {
   const [photoOpen, setPhotoOpen] = useState(false);
   const [contactOpen, setContactOpen] = useState(false);
 
+  // 1. Hide header on scroll, show when stopped
   useEffect(() => {
     let scrollTimeout: NodeJS.Timeout;
 
     const handleScroll = () => {
-      setIsVisible(false); // Instantly hide on scroll/scrub
+      setIsVisible(false);
       clearTimeout(scrollTimeout);
-      
-      // Wait 300ms after scroll stops to show again
       scrollTimeout = setTimeout(() => {
         setIsVisible(true);
       }, 300); 
@@ -72,25 +77,31 @@ function GlobalHeader() {
     };
   }, []);
 
-  // Intersection Observer for the Blue Glow active state
+  // 2. PERFECT SYNC: Use GSAP ScrollTrigger to track sections instead of IntersectionObserver
   useEffect(() => {
-    const ids = NAV_SECTIONS.map((s) => s.id);
-    const observers: IntersectionObserver[] = [];
+    // We wrap this in a timeout to ensure all components and pins are fully mounted
+    const ctx = gsap.context(() => {
+      setTimeout(() => {
+        NAV_SECTIONS.forEach(({ id }) => {
+          const el = document.getElementById(id);
+          if (!el) return;
 
-    ids.forEach((id) => {
-      const el = document.getElementById(id);
-      if (!el) return;
-      const obs = new IntersectionObserver(
-        ([entry]) => {
-          if (entry.isIntersecting) setActiveSection(id);
-        },
-        { threshold: 0.3 } 
-      );
-      obs.observe(el);
-      observers.push(obs);
+          ScrollTrigger.create({
+            trigger: el,
+            // Trigger when the top of the section hits the middle of the viewport
+            start: "top 50%", 
+            end: "bottom 50%",
+            onToggle: (self) => {
+              if (self.isActive) {
+                setActiveSection(id);
+              }
+            },
+          });
+        });
+      }, 500);
     });
 
-    return () => observers.forEach((o) => o.disconnect());
+    return () => ctx.revert();
   }, []);
 
   const scrollTo = useCallback((id: string) => {
@@ -100,57 +111,79 @@ function GlobalHeader() {
 
   return (
     <>
+      <style>{`
+        /* Premium entrance animations */
+        @keyframes panelFadeIn {
+          from { opacity: 0; transform: scale(0.95) translateY(-10px); }
+          to   { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        .panel-enter { animation: panelFadeIn 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
+
+        @keyframes photoReveal {
+          from { opacity: 0; transform: scale(0.9); }
+          to   { opacity: 1; transform: scale(1); }
+        }
+        .photo-enter { animation: photoReveal 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
+
+        @keyframes overlayFade {
+          from { opacity: 0; }
+          to   { opacity: 1; }
+        }
+        .overlay-enter { animation: overlayFade 0.3s ease forwards; }
+      `}</style>
+
       {/* HEADER BAR */}
       <header
         className="fixed left-1/2 flex items-center gap-2 px-3 py-2 select-none"
         style={{
-          top: "1rem",
-          zIndex: 9999, // Super high so it NEVER gets trapped
-          transform: `translateX(-50%) translateY(${isVisible ? "0" : "-150%"})`, 
+          top: "1.5rem",
+          zIndex: 9999, // Super high so it NEVER gets trapped by GSAP
+          transform: `translateX(-50%) translateY(${isVisible ? "0" : "-200%"})`, 
           opacity: isVisible ? 1 : 0,
-          transition: "transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s ease",
-          background: "rgba(255,255,255,0.85)",
-          backdropFilter: "blur(20px)",
-          WebkitBackdropFilter: "blur(20px)",
-          border: "1px solid rgba(0,0,0,0.08)",
+          transition: "transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.4s ease",
+          background: "rgba(255, 255, 255, 0.75)",
+          backdropFilter: "blur(24px)",
+          WebkitBackdropFilter: "blur(24px)",
+          border: "1px solid rgba(255, 255, 255, 0.6)",
           borderRadius: "9999px",
-          boxShadow: "0 4px 32px rgba(0,0,0,0.10), 0 1px 0 rgba(255,255,255,0.9) inset",
+          boxShadow: "0 10px 40px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,1)",
           width: "max-content",
         }}
       >
         {/* Avatar */}
         <button
           onClick={() => setPhotoOpen(true)}
-          className="w-9 h-9 rounded-full overflow-hidden flex-shrink-0 ring-2 ring-[#3b82f6] ring-offset-1 transition-all duration-200 hover:scale-105 active:scale-95"
+          className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0 ring-[2px] ring-[#3b82f6] ring-offset-2 transition-all duration-300 hover:scale-105 active:scale-95 shadow-sm"
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/surya.png" alt="Surya" className="w-full h-full object-cover" />
         </button>
 
-        <div className="w-px h-5 bg-black/10 flex-shrink-0" />
+        <div className="w-px h-6 bg-gray-200 flex-shrink-0 ml-1" />
 
         {/* Links */}
-        <nav className="hidden sm:flex items-center gap-0.5 relative">
+        <nav className="hidden sm:flex items-center gap-1 relative px-1">
           {NAV_SECTIONS.map((s) => {
             const isActive = activeSection === s.id;
             return (
               <button
                 key={s.id}
                 onClick={() => scrollTo(s.id)}
-                className="relative px-3 py-1.5 rounded-full text-xs font-bold transition-all duration-300"
+                className="relative px-4 py-2 rounded-full text-[13px] font-bold transition-all duration-300"
                 style={{
-                  color: isActive ? "#3b82f6" : "#555", 
-                  textShadow: isActive ? "0 0 12px rgba(59, 130, 246, 0.4)" : "none",
+                  color: isActive ? "#3b82f6" : "#64748b", 
+                  textShadow: isActive ? "0 0 16px rgba(59, 130, 246, 0.4)" : "none",
                 }}
               >
                 {s.label}
+                {/* ── Neon Blue Light Tracker ── */}
                 {isActive && (
                   <span 
                     className="absolute bottom-0 left-1/2 -translate-x-1/2 h-[3px] rounded-t-md transition-all duration-300"
                     style={{
-                      width: "60%",
+                      width: "50%",
                       background: "#3b82f6",
-                      boxShadow: "0 -2px 10px rgba(59, 130, 246, 0.8)",
+                      boxShadow: "0 -2px 12px rgba(59, 130, 246, 0.9)",
                     }}
                   />
                 )}
@@ -159,56 +192,56 @@ function GlobalHeader() {
           })}
         </nav>
 
-        <div className="w-px h-5 bg-black/10 flex-shrink-0" />
+        <div className="w-px h-6 bg-gray-200 flex-shrink-0 mr-1 hidden sm:block" />
 
-        {/* 3-Lines Contact */}
+        {/* Professional 3-Lines Contact */}
         <button
           onClick={() => setContactOpen((v) => !v)}
-          className="flex flex-col gap-1 w-8 h-8 items-center justify-center rounded-full hover:bg-black/5 transition-colors flex-shrink-0"
+          className="flex flex-col gap-[3px] w-10 h-10 items-center justify-center rounded-full hover:bg-gray-100 transition-colors flex-shrink-0"
         >
-          <span className="w-4 h-0.5 bg-gray-600 rounded-full" />
-          <span className="w-3 h-0.5 bg-gray-600 rounded-full self-start ml-2" />
-          <span className="w-4 h-0.5 bg-gray-600 rounded-full" />
+          <span className="w-4 h-[2px] bg-gray-700 rounded-full" />
+          <span className="w-3 h-[2px] bg-gray-700 rounded-full self-start ml-3" />
+          <span className="w-4 h-[2px] bg-gray-700 rounded-full" />
         </button>
       </header>
 
-      {/* CONTACT DROPDOWN */}
+      {/* ── PROFESSIONAL CONTACT PANEL ── */}
       {contactOpen && (
         <>
-          <div className="fixed inset-0 z-[9998]" onClick={() => setContactOpen(false)} />
+          <div className="fixed inset-0 z-[9998] overlay-enter bg-black/5 backdrop-blur-[2px]" onClick={() => setContactOpen(false)} />
           <div
-            className="fixed top-[72px] right-4 z-[9999] rounded-2xl overflow-hidden"
+            className="fixed top-[88px] right-6 z-[9999] rounded-3xl overflow-hidden panel-enter"
             style={{
-              background: "rgba(255,255,255,0.96)",
-              backdropFilter: "blur(24px)",
-              border: "1px solid rgba(0,0,0,0.08)",
-              boxShadow: "0 12px 50px rgba(0,0,0,0.14)",
-              minWidth: "260px",
-              animation: "panelFadeIn 0.3s forwards"
+              background: "rgba(255, 255, 255, 0.85)",
+              backdropFilter: "blur(32px) saturate(150%)",
+              WebkitBackdropFilter: "blur(32px) saturate(150%)",
+              border: "1px solid rgba(255, 255, 255, 1)",
+              boxShadow: "0 24px 60px rgba(0,0,0,0.1), 0 0 0 1px rgba(0,0,0,0.02) inset",
+              width: "280px",
             }}
           >
-            <div className="px-5 pt-4 pb-2 border-b border-black/6">
-              <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Contact me</p>
-              <p className="text-gray-900 font-black text-base leading-tight mt-0.5">Surya Peddishetti</p>
+            <div className="px-6 pt-5 pb-3 border-b border-gray-100 bg-white/40">
+              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400">Get in touch</p>
+              <p className="text-gray-900 font-black text-lg leading-tight mt-1 tracking-tight">Surya Peddishetti</p>
             </div>
-            <div className="flex flex-col p-2">
+            <div className="flex flex-col p-3 gap-1">
               {CONTACT_LINKS.map((link) => (
                 <a
                   key={link.name}
                   href={link.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors hover:bg-black/5 group"
+                  className="flex items-center gap-4 px-3 py-3 rounded-2xl transition-all duration-300 hover:bg-white hover:shadow-sm hover:scale-[1.02] group border border-transparent hover:border-gray-100"
                 >
                   <div
-                    className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 text-white"
+                    className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 text-white shadow-sm transition-transform group-hover:rotate-6"
                     style={{ background: link.color }}
                   >
                     {link.svg}
                   </div>
                   <div className="flex flex-col">
-                    <span className="text-xs font-bold text-gray-900">{link.name}</span>
-                    <span className="text-[10px] text-gray-400">{link.handle}</span>
+                    <span className="text-sm font-bold text-gray-900">{link.name}</span>
+                    <span className="text-[11px] text-gray-500 font-medium">{link.handle}</span>
                   </div>
                 </a>
               ))}
@@ -217,37 +250,42 @@ function GlobalHeader() {
         </>
       )}
 
-      {/* PHOTO LIGHTBOX */}
+      {/* ── PROFESSIONAL PHOTO LIGHTBOX ── */}
       {photoOpen && (
         <div
-          className="fixed inset-0 z-[10000] flex items-center justify-center p-6"
-          style={{ background: "rgba(0,0,0,0.7)", backdropFilter: "blur(12px)", animation: "photoReveal 0.3s forwards" }}
+          className="fixed inset-0 z-[10000] flex items-center justify-center p-6 overlay-enter"
+          style={{ background: "rgba(0,0,0,0.8)", backdropFilter: "blur(16px)" }}
           onClick={() => setPhotoOpen(false)}
         >
           <div
-            className="relative rounded-3xl overflow-hidden"
+            className="relative rounded-[2rem] overflow-hidden photo-enter"
             style={{
-              maxWidth: "min(420px, 90vw)",
-              maxHeight: "min(560px, 85vh)",
-              boxShadow: "0 40px 100px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.1)",
+              width: "min(400px, 90vw)",
+              aspectRatio: "3/4",
+              boxShadow: "0 40px 100px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.15)",
             }}
             onClick={(e) => e.stopPropagation()}
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/surya.png" alt="Surya" className="w-full h-full object-cover" />
+            
+            {/* Elegant Gradient overlay */}
             <div
-              className="absolute bottom-0 left-0 right-0 px-6 py-5"
-              style={{ background: "linear-gradient(to top, rgba(0,0,0,0.85) 0%, transparent 100%)" }}
+              className="absolute inset-0 flex flex-col justify-end px-8 py-8"
+              style={{ background: "linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.4) 40%, transparent 100%)" }}
             >
-              <p className="text-white font-black text-xl leading-none">Surya Peddishetti</p>
-              <p className="text-white/60 text-sm mt-1">AI · Full-Stack Dev · India 🇮🇳</p>
+              <p className="text-white font-black text-2xl tracking-tight">Surya Peddishetti</p>
+              <div className="w-10 h-1 bg-blue-500 rounded-full mt-2 mb-3" />
+              <p className="text-gray-300 text-sm font-medium leading-relaxed">AI Engineer & Full-Stack Developer creating cinematic web experiences.</p>
             </div>
+
+            {/* Premium Close button */}
             <button
               onClick={() => setPhotoOpen(false)}
-              className="absolute top-3 right-3 w-9 h-9 rounded-full flex items-center justify-center transition-all hover:scale-105 active:scale-95"
-              style={{ background: "rgba(0,0,0,0.5)", backdropFilter: "blur(8px)" }}
+              className="absolute top-4 right-4 w-10 h-10 rounded-full flex items-center justify-center transition-all hover:scale-110 active:scale-95 border border-white/20"
+              style={{ background: "rgba(255,255,255,0.1)", backdropFilter: "blur(12px)" }}
             >
-              <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" className="w-4 h-4">
+              <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" className="w-5 h-5">
                 <path d="M18 6L6 18M6 6l12 12" strokeLinecap="round"/>
               </svg>
             </button>
@@ -262,10 +300,6 @@ function GlobalHeader() {
 export default function Home() {
   return (
     <>
-      {/* CRITICAL FIX: 
-        The GlobalHeader is mounted OUTSIDE of the <main> tag. 
-        This prevents GSAP's pin-spacers and overflow rules from clipping or breaking the fixed header! 
-      */}
       <GlobalHeader />
 
       <main className="relative flex flex-col w-full bg-white overflow-x-hidden">
