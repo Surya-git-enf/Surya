@@ -170,7 +170,7 @@ export default function SkillsOrbit() {
           height: "50vh",
           marginTop: "10vh",
           perspective: "1100px", // Crucial for 3D depth
-          touchAction: "none",   // Prevents screen scrolling while swiping the orbit
+          touchAction: "pan-y",   // Prevents screen scrolling while swiping the orbit
           cursor: "grab",
         }}
         onPointerDown={handlePointerDown}
