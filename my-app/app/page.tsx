@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import dynamic from "next/dynamic";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -10,17 +10,20 @@ import HeroReveal from "@/components/HeroReveal";
 import Footer from "@/components/Footer";
 import ErrorBoundary from "@/components/ErrorBoundary";
 
+// Register ScrollTrigger so the Header can use it for scroll-sync
 gsap.registerPlugin(ScrollTrigger);
 
+// Lazy load the heavy GSAP components
 const CanvasScroll = dynamic(() => import("@/components/CanvasScroll"), { ssr: false });
 const SkillsOrbit  = dynamic(() => import("@/components/SkillsOrbit"),  { ssr: false });
 const AppsSineWave = dynamic(() => import("@/components/AppsSineWave"), { ssr: false });
 
+// ── HEADER DATA ──
 const NAV_SECTIONS = [
   { id: "personal",   label: "Personal" },
   { id: "techstack",  label: "Techstack" },
   { id: "builtapps",  label: "Built Apps" },
-  { id: "3dwebsite",  label: "Footer" }, // Updated label for clarity
+  { id: "3dwebsite",  label: "Recent Builds" }, // Updated label as requested!
 ] as const;
 
 const CONTACT_LINKS = [
@@ -48,6 +51,7 @@ const CONTACT_LINKS = [
   },
 ];
 
+// ── EMBEDDED GLOBAL HEADER ──
 function GlobalHeader() {
   const [activeSection, setActiveSection] = useState<string>("personal");
   const [isVisible, setIsVisible] = useState(true);
@@ -55,117 +59,309 @@ function GlobalHeader() {
   const [contactOpen, setContactOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
+  // 1. Hide header on scroll, show when stopped
   useEffect(() => {
     let scrollTimeout: NodeJS.Timeout;
-    const handleScroll = () => {
-      [span_3](start_span)setIsVisible(false); // Hide during scroll[span_3](end_span)
-      clearTimeout(scrollTimeout);
-      scrollTimeout = setTimeout(() => setIsVisible(true), 300); // Show after stop
 
-      // Sync active light with scroll position
-      NAV_SECTIONS.forEach(({ id }) => {
-        const el = document.getElementById(id);
-        if (el) {
-          const rect = el.getBoundingClientRect();
-          if (rect.top <= window.innerHeight / 2 && rect.bottom >= window.innerHeight / 2) {
-            setActiveSection(id);
-          }
-        }
-      });
+    const handleScroll = () => {
+      setIsVisible(false);
+      clearTimeout(scrollTimeout);
+      scrollTimeout = setTimeout(() => setIsVisible(true), 300);
     };
+
     window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      clearTimeout(scrollTimeout);
+    };
   }, []);
 
+  // 2. PERFECT GSAP SCROLL SPY
+  // This uses GSAP to map the exact pinned locations, solving the "Wrong Section Glowing" bug entirely!
+  useEffect(() => {
+    const ctx = gsap.context(() => {
+      // Delay to ensure all GSAP pin-spacers are fully built before measuring
+      setTimeout(() => {
+        NAV_SECTIONS.forEach(({ id }) => {
+          const el = document.getElementById(id);
+          if (!el) return;
+
+          ScrollTrigger.create({
+            trigger: el,
+            start: "top 50%", 
+            end: "bottom 50%",
+            onToggle: (self) => {
+              if (self.isActive) setActiveSection(id);
+            }
+          });
+        });
+      }, 1000); 
+    });
+
+    return () => ctx.revert();
+  }, []);
+
+  // 3. Smooth Scroll Navigation
   const scrollTo = useCallback((id: string) => {
     const el = document.getElementById(id);
-    [span_4](start_span)if (el) el.scrollIntoView({ behavior: "smooth" }); // Smooth navigation[span_4](end_span)
+    if (el) {
+      // Safely scroll to the top of the GSAP pin-spacer if it exists, otherwise the section itself
+      const scrollTarget = el.closest(".pin-spacer") || el;
+      scrollTarget.scrollIntoView({ behavior: "smooth" });
+    }
     setMenuOpen(false);
+    setContactOpen(false);
   }, []);
 
   return (
     <>
+      {/* HEADER BAR */}
       <header
         className="fixed left-1/2 flex items-center gap-2 px-3 py-2 select-none"
         style={{
           top: "1.5rem",
-          [span_5](start_span)zIndex: 9999, // Ensure header is always on top[span_5](end_span)
-          transform: `translateX(-50%) translateY(${isVisible ? "0" : "-200%"})`,
+          zIndex: 9999, // Safely above everything
+          transform: `translateX(-50%) translateY(${isVisible ? "0" : "-200%"})`, 
           opacity: isVisible ? 1 : 0,
-          transition: "transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.3s",
-          background: "rgba(255, 255, 255, 0.8)",
-          backdropFilter: "blur(20px)",
+          transition: "transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.3s ease",
+          background: "rgba(255, 255, 255, 0.85)",
+          backdropFilter: "blur(24px)",
+          WebkitBackdropFilter: "blur(24px)",
+          border: "1px solid rgba(255, 255, 255, 0.6)",
           borderRadius: "9999px",
-          boxShadow: "0 10px 40px rgba(0,0,0,0.1)",
+          boxShadow: "0 10px 40px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,1)",
           width: "max-content",
-          maxWidth: "94vw",
+          maxWidth: "94vw", // Prevents cutoff on extremely small phones
         }}
       >
-        <button onClick={() => setPhotoOpen(true)} className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0 ring-2 ring-[#3b82f6] ring-offset-2">
+        {/* Avatar */}
+        <button
+          onClick={() => setPhotoOpen(true)}
+          className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0 ring-[2px] ring-[#3b82f6] ring-offset-2 transition-all duration-300 hover:scale-105 active:scale-95 shadow-sm"
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/surya.png" alt="Surya" className="w-full h-full object-cover" />
         </button>
-        <nav className="hidden sm:flex items-center gap-1 relative px-2">
-          {NAV_SECTIONS.map((s) => (
-            <button
-              key={s.id}
-              onClick={() => scrollTo(s.id)}
-              className="relative px-4 py-2 text-[13px] font-bold transition-all"
-              style={{ color: activeSection === s.id ? "#3b82f6" : "#64748b" }}
-            >
-              {s.label}
-              {activeSection === s.id && (
-                <span className="absolute bottom-0 left-1/2 -translate-x-1/2 h-[3px] w-1/2 bg-[#3b82f6] rounded-t-md shadow-[0_-2px_10px_rgba(59,130,246,0.8)]" />
-              )}
-            </button>
-          ))}
+
+        <div className="w-px h-6 bg-gray-200 flex-shrink-0 ml-1" />
+
+        {/* Desktop Links with Neon Tracker */}
+        <nav className="hidden sm:flex items-center gap-1 relative px-1">
+          {NAV_SECTIONS.map((s) => {
+            const isActive = activeSection === s.id;
+            return (
+              <button
+                key={s.id}
+                onClick={() => scrollTo(s.id)}
+                className="relative px-4 py-2 rounded-full text-[13px] font-bold transition-all duration-300"
+                style={{
+                  color: isActive ? "#3b82f6" : "#64748b", 
+                  textShadow: isActive ? "0 0 16px rgba(59, 130, 246, 0.4)" : "none",
+                }}
+              >
+                {s.label}
+                {/* ── Neon Blue Light Tracker ── */}
+                {isActive && (
+                  <span 
+                    className="absolute bottom-0 left-1/2 -translate-x-1/2 h-[3px] rounded-t-md transition-all duration-300"
+                    style={{
+                      width: "50%",
+                      background: "#3b82f6",
+                      boxShadow: "0 -2px 12px rgba(59, 130, 246, 0.9)",
+                    }}
+                  />
+                )}
+              </button>
+            );
+          })}
         </nav>
-        <button onClick={() => setContactOpen(!contactOpen)} className="w-10 h-10 flex flex-col items-center justify-center gap-1 rounded-full hover:bg-gray-100">
-           <span className="w-4 h-[2px] bg-gray-700 rounded-full" />
-           <span className="w-3 h-[2px] bg-gray-700 rounded-full self-start ml-3" />
-           <span className="w-4 h-[2px] bg-gray-700 rounded-full" />
+
+        {/* Mobile Hamburger Menu */}
+        <button
+          onClick={() => setMenuOpen((v) => !v)}
+          className="sm:hidden flex flex-col gap-1 w-9 h-9 items-center justify-center rounded-full hover:bg-gray-100 transition-colors"
+        >
+          <span className="w-4 h-[2px] bg-gray-600 rounded-full transition-all duration-300" style={{ transform: menuOpen ? "rotate(45deg) translateY(5px)" : "none" }} />
+          <span className="w-4 h-[2px] bg-gray-600 rounded-full transition-all duration-300" style={{ opacity: menuOpen ? 0 : 1 }} />
+          <span className="w-4 h-[2px] bg-gray-600 rounded-full transition-all duration-300" style={{ transform: menuOpen ? "rotate(-45deg) translateY(-5px)" : "none" }} />
+        </button>
+
+        <div className="w-px h-6 bg-gray-200 flex-shrink-0 mr-1 hidden sm:block" />
+
+        {/* 3-Lines Contact Toggle */}
+        <button
+          onClick={() => setContactOpen((v) => !v)}
+          className="flex flex-col gap-[3px] w-10 h-10 items-center justify-center rounded-full hover:bg-gray-100 transition-colors flex-shrink-0"
+        >
+          <span className="w-4 h-[2px] bg-gray-700 rounded-full" />
+          <span className="w-3 h-[2px] bg-gray-700 rounded-full self-start ml-3" />
+          <span className="w-4 h-[2px] bg-gray-700 rounded-full" />
         </button>
       </header>
 
-      [span_6](start_span){/* Floating Contact Panel[span_6](end_span) */}
+      {/* MOBILE NAV DROPDOWN */}
+      {isVisible && menuOpen && (
+        <>
+          <div className="fixed inset-0 z-[9997] sm:hidden" onClick={() => setMenuOpen(false)} />
+          <div
+            className="fixed top-[88px] left-1/2 z-[9998] flex flex-col rounded-3xl overflow-hidden sm:hidden"
+            style={{
+              transform: "translateX(-50%)",
+              background: "rgba(255, 255, 255, 0.95)",
+              backdropFilter: "blur(32px) saturate(150%)",
+              border: "1px solid rgba(255, 255, 255, 1)",
+              boxShadow: "0 24px 60px rgba(0,0,0,0.1)",
+              width: "min(240px, 90vw)", // Clamped for mobile safety
+              animation: "panelFadeIn 0.3s forwards"
+            }}
+          >
+            {NAV_SECTIONS.map((s) => (
+              <button
+                key={s.id}
+                onClick={() => scrollTo(s.id)}
+                className="px-6 py-4 text-[14px] font-bold text-left transition-all duration-300 hover:bg-blue-50/50"
+                style={{ 
+                  color: activeSection === s.id ? "#3b82f6" : "#475569", 
+                  borderLeft: activeSection === s.id ? "3px solid #3b82f6" : "3px solid transparent",
+                  background: activeSection === s.id ? "rgba(59, 130, 246, 0.05)" : "transparent"
+                }}
+              >
+                {s.label}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
+
+      {/* FLOATING CONTACT PANEL */}
       {contactOpen && (
-        <div className="fixed top-24 right-6 z-[9999] p-4 bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/50 w-64">
-           <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Contact me</p>
-           {CONTACT_LINKS.map(link => (
-             <a key={link.name} href={link.url} target="_blank" rel="noreferrer" className="flex items-center gap-3 p-3 rounded-2xl hover:bg-blue-50 transition-all">
-                <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white" style={{ background: link.color }}>{link.svg}</div>
-                <div>
-                   <p className="text-sm font-bold text-gray-900">{link.name}</p>
-                   <p className="text-xs text-gray-500">{link.handle}</p>
-                </div>
-             </a>
-           ))}
+        <>
+          <div className="fixed inset-0 z-[9998] bg-black/5 backdrop-blur-[2px]" onClick={() => setContactOpen(false)} />
+          <div
+            className="fixed top-[88px] right-4 sm:right-6 z-[9999] rounded-3xl overflow-hidden"
+            style={{
+              background: "rgba(255, 255, 255, 0.85)",
+              backdropFilter: "blur(32px) saturate(150%)",
+              border: "1px solid rgba(255, 255, 255, 1)",
+              boxShadow: "0 24px 60px rgba(0,0,0,0.1)",
+              width: "min(320px, 92vw)", // Clamped for perfect mobile/desktop fit
+              animation: "panelFadeIn 0.3s forwards"
+            }}
+          >
+            <div className="px-6 pt-5 pb-3 border-b border-gray-100 bg-white/40">
+              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400">Get in touch</p>
+              <p className="text-gray-900 font-black text-lg leading-tight mt-1 tracking-tight">Surya Peddishetti</p>
+            </div>
+            <div className="flex flex-col p-3 gap-1">
+              {CONTACT_LINKS.map((link) => (
+                <a
+                  key={link.name}
+                  href={link.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-4 px-3 py-3 rounded-2xl transition-all duration-300 hover:bg-white hover:shadow-sm hover:scale-[1.02] group"
+                >
+                  <div
+                    className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 text-white shadow-sm transition-transform group-hover:rotate-6"
+                    style={{ background: link.color }}
+                  >
+                    {link.svg}
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-sm font-bold text-gray-900">{link.name}</span>
+                    <span className="text-[11px] text-gray-500 font-medium">{link.handle}</span>
+                  </div>
+                </a>
+              ))}
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* PHOTO LIGHTBOX */}
+      {photoOpen && (
+        <div
+          className="fixed inset-0 z-[10000] flex items-center justify-center p-4 sm:p-6"
+          style={{ background: "rgba(0,0,0,0.8)", backdropFilter: "blur(16px)", animation: "overlayFade 0.3s forwards" }}
+          onClick={() => setPhotoOpen(false)}
+        >
+          <div
+            className="relative rounded-[2rem] overflow-hidden"
+            style={{
+              width: "min(400px, 90vw)", // Adapts perfectly to mobile screens
+              aspectRatio: "3/4",
+              boxShadow: "0 40px 100px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.15)",
+              animation: "photoReveal 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards"
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/surya.png" alt="Surya" className="w-full h-full object-cover" />
+            <div
+              className="absolute inset-0 flex flex-col justify-end px-6 py-6 sm:px-8 sm:py-8"
+              style={{ background: "linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.4) 40%, transparent 100%)" }}
+            >
+              <p className="text-white font-black text-xl sm:text-2xl tracking-tight">Surya Peddishetti</p>
+              <div className="w-10 h-1 bg-blue-500 rounded-full mt-2 mb-3" />
+              <p className="text-gray-300 text-xs sm:text-sm font-medium leading-relaxed">AI Engineer & Full-Stack Developer creating cinematic web experiences.</p>
+            </div>
+            <button
+              onClick={() => setPhotoOpen(false)}
+              className="absolute top-4 right-4 w-10 h-10 rounded-full flex items-center justify-center transition-all hover:scale-110 active:scale-95 border border-white/20"
+              style={{ background: "rgba(255,255,255,0.1)", backdropFilter: "blur(12px)" }}
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" className="w-5 h-5">
+                <path d="M18 6L6 18M6 6l12 12" strokeLinecap="round"/>
+              </svg>
+            </button>
+          </div>
         </div>
       )}
 
-      [span_7](start_span){/* Lightbox for Surya's Photo[span_7](end_span) */}
-      {photoOpen && (
-        <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/80 backdrop-blur-md p-6" onClick={() => setPhotoOpen(false)}>
-           <div className="relative max-w-sm w-full aspect-[3/4] rounded-[2.5rem] overflow-hidden shadow-2xl" onClick={e => e.stopPropagation()}>
-              <img src="/surya.png" alt="Surya" className="w-full h-full object-cover" />
-              <button onClick={() => setPhotoOpen(false)} className="absolute top-4 right-4 w-10 h-10 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-white">✕</button>
-           </div>
-        </div>
-      )}
+      {/* INJECT ANIMATION STYLES GLOBALLY */}
+      <style>{`
+        @keyframes panelFadeIn {
+          from { opacity: 0; transform: scale(0.95) translateY(-10px); }
+          to   { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        @keyframes photoReveal {
+          from { opacity: 0; transform: scale(0.9); }
+          to   { opacity: 1; transform: scale(1); }
+        }
+        @keyframes overlayFade {
+          from { opacity: 0; }
+          to   { opacity: 1; }
+        }
+      `}</style>
     </>
   );
 }
 
+// ── MAIN PAGE ──
 export default function Home() {
   return (
     <>
       <GlobalHeader />
+
       <main className="relative flex flex-col w-full bg-white overflow-x-hidden">
         <HeroReveal />
-        <section id="personal" className="relative z-10 bg-black min-h-screen"><CanvasScroll /></section>
-        <section id="techstack" className="relative z-20 bg-white min-h-screen"><SkillsOrbit /></section>
-        <section id="builtapps" className="relative z-30 bg-white min-h-screen"><AppsSineWave /></section>
-        <section id="3dwebsite" className="relative z-40 bg-[#f5f7f2]"><Footer /></section>
+
+        {/* Removed duplicate IDs that caused overlapping layouts */}
+        <ErrorBoundary>
+          <CanvasScroll />
+        </ErrorBoundary>
+
+        <ErrorBoundary>
+          <SkillsOrbit />
+        </ErrorBoundary>
+
+        <ErrorBoundary>
+          <AppsSineWave />
+        </ErrorBoundary>
+
+        <Footer />
       </main>
     </>
   );
-}
+                }
+      
