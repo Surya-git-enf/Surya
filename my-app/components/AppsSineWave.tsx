@@ -31,11 +31,11 @@ const APPS = [
   },
 ] as const;
 
-// Mathematically perfect node coordinates matching the new SVG path
+// Mathematically perfect node coordinates matching the pure Cubic Bezier Sine Wave
 const WAVE_POSITIONS = [
-  { leftPct: 20.83, topPct: 13.63 }, // Card 1: First Peak
+  { leftPct: 33.33, topPct: 13.63 }, // Card 1: First Peak
   { leftPct: 50.00, topPct: 86.36 }, // Card 2: Trough
-  { leftPct: 79.16, topPct: 13.63 }, // Card 3: Second Peak
+  { leftPct: 66.66, topPct: 13.63 }, // Card 3: Second Peak
 ];
 
 function AppCard({ app, active, isTrough }: { app: (typeof APPS)[number]; active: boolean; isTrough: boolean }) {
@@ -43,27 +43,14 @@ function AppCard({ app, active, isTrough }: { app: (typeof APPS)[number]; active
 
   return (
     <div
-      className="relative pointer-events-auto"
+      className="relative pointer-events-auto transition-opacity duration-500"
       style={{
-        width: "clamp(260px, 24vw, 340px)",
-        height: "clamp(380px, 45vh, 480px)",
+        width: "clamp(240px, 22vw, 340px)",
+        height: "clamp(360px, 45vh, 460px)",
         perspective: "1200px",
-        // Pushes the card perfectly straight up or down from the glowing node
-        marginTop: isTrough ? "0" : "50px",
-        marginBottom: isTrough ? "50px" : "0",
+        opacity: active ? 1 : 0,
       }}
     >
-      {/* ── Visual Dotted Connector Line ── */}
-      <div 
-        className="absolute left-1/2 w-[2px] border-l-[3px] border-dotted border-blue-300 pointer-events-none transition-all duration-500 delay-200"
-        style={{
-          height: "50px",
-          top: isTrough ? "100%" : "-50px", 
-          transform: "translateX(-50%)",
-          opacity: active ? 1 : 0
-        }}
-      />
-
       {/* 3D Flipper Container */}
       <div
         onClick={() => setFlipped((f) => !f)}
@@ -73,9 +60,9 @@ function AppCard({ app, active, isTrough }: { app: (typeof APPS)[number]; active
           transform: flipped ? "rotateY(180deg)" : "rotateY(0deg)",
           // Neon Olive Green Shadow/Border applied when active
           boxShadow: active 
-            ? "0 15px 40px rgba(107, 140, 90, 0.25), 0 0 20px rgba(107, 140, 90, 0.15)" 
+            ? "0 15px 40px rgba(107, 140, 90, 0.35), 0 0 25px rgba(107, 140, 90, 0.2)" 
             : "0 15px 35px rgba(0,0,0,0.05)",
-          border: active ? "2px solid rgba(107, 140, 90, 0.7)" : "1px solid rgba(0,0,0,0.05)",
+          border: active ? "2px solid rgba(107, 140, 90, 0.85)" : "1px solid rgba(0,0,0,0.08)",
         }}
       >
         {/* ── FRONT FACE (60% Image / 40% Text) ── */}
@@ -83,20 +70,23 @@ function AppCard({ app, active, isTrough }: { app: (typeof APPS)[number]; active
           className="absolute inset-0 rounded-3xl overflow-hidden flex flex-col bg-white"
           style={{ backfaceVisibility: "hidden" }}
         >
-          {/* Flip Icon (Top Right) */}
-          <div className="absolute top-4 right-4 z-10 text-gray-400 hover:text-gray-700 transition-colors">
-            <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          {/* Flip Icon 🔁 (Top Right) */}
+          <div className="absolute top-4 right-4 z-10 text-gray-400">
+            <svg viewBox="0 0 24 24" className="w-5 h-5 drop-shadow-md" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M17 2l4 4-4 4" />
+              <path d="M3 11v-1a4 4 0 0 1 4-4h14" />
+              <path d="M7 22l-4-4 4-4" />
+              <path d="M21 13v1a4 4 0 0 1-4 4H3" />
             </svg>
           </div>
 
           {/* 60% Image Section - Perfectly Centered */}
-          <div className="h-[60%] w-full relative bg-gray-50 flex items-center justify-center p-8 border-b border-gray-100">
+          <div className="h-[60%] w-full relative bg-[#f9fafb] flex items-center justify-center p-8 border-b border-gray-100">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img 
               src={app.imgSrc} 
               alt={app.title} 
-              className="max-w-full max-h-full object-contain drop-shadow-lg transition-transform duration-500 hover:scale-105"
+              className="max-w-full max-h-full object-contain drop-shadow-lg"
             />
           </div>
           
@@ -105,7 +95,7 @@ function AppCard({ app, active, isTrough }: { app: (typeof APPS)[number]; active
             <h3 className="font-black text-gray-900 tracking-tight" style={{ fontSize: "clamp(1.5rem, 2vw, 2rem)" }}>
               {app.title}
             </h3>
-            <p className="font-bold tracking-[0.2em] uppercase mt-2 text-[#6b8c5a]" style={{ fontSize: "clamp(10px, 1vw, 12px)" }}>
+            <p className="font-bold tracking-[0.2em] uppercase mt-2 text-[#6b8c5a]" style={{ fontSize: "clamp(9px, 1vw, 11px)" }}>
               {app.tagline}
             </p>
           </div>
@@ -119,10 +109,13 @@ function AppCard({ app, active, isTrough }: { app: (typeof APPS)[number]; active
             transform: "rotateY(180deg)",
           }}
         >
-          {/* Flip Icon (Top Right) */}
-          <div className="absolute top-4 right-4 z-10 text-gray-400 hover:text-gray-700 transition-colors">
-            <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          {/* Flip Icon 🔁 (Top Right) */}
+          <div className="absolute top-4 right-4 z-10 text-gray-400">
+            <svg viewBox="0 0 24 24" className="w-5 h-5 drop-shadow-md" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M17 2l4 4-4 4" />
+              <path d="M3 11v-1a4 4 0 0 1 4-4h14" />
+              <path d="M7 22l-4-4 4-4" />
+              <path d="M21 13v1a4 4 0 0 1-4 4H3" />
             </svg>
           </div>
 
@@ -166,6 +159,7 @@ export default function AppsSineWave() {
     cardWrappers.current.forEach((el, i) => {
       if (!el) return;
       const isTrough = i === 1;
+      // Cards start faded out and pushed away
       gsap.set(el, { opacity: i === 0 ? 1 : 0, y: i === 0 ? 0 : (isTrough ? 40 : -40) });
     });
 
@@ -192,22 +186,22 @@ export default function AppsSineWave() {
       });
 
       // === BEAT 1: Node 1 -> Node 2 ===
-      // Elite Trick: Animate X linearly and Y with Sine.inOut to flawlessly trace the SVG curve!
+      // Linear X + Sine Y = Physically Perfect Sine Wave tracking
       tl.to(markerProxy, {
         left: WAVE_POSITIONS[1].leftPct,
         duration: 1.5,
-        ease: "none", // X moves straight
+        ease: "none", 
         onUpdate: () => { if (marker) marker.style.left = `${markerProxy.left}%`; },
       }, 0);
       tl.to(markerProxy, {
         top: WAVE_POSITIONS[1].topPct,
         duration: 1.5,
-        ease: "sine.inOut", // Y moves in a curve
+        ease: "sine.inOut", 
         onUpdate: () => { if (marker) marker.style.top = `${markerProxy.top}%`; },
       }, 0);
 
       // Card 1 out
-      tl.to(cardWrappers.current[0], { opacity: 0, y: -40, duration: 0.5, ease: "power2.in" }, 0.2);
+      tl.to(cardWrappers.current[0], { opacity: 0, y: 40, duration: 0.5, ease: "power2.in" }, 0.2);
       
       // Number Flip
       tl.to({ val: 1 }, {
@@ -237,7 +231,7 @@ export default function AppsSineWave() {
       }, 1.5);
 
       // Card 2 out
-      tl.to(cardWrappers.current[1], { opacity: 0, y: 40, duration: 0.5, ease: "power2.in" }, 1.7);
+      tl.to(cardWrappers.current[1], { opacity: 0, y: -40, duration: 0.5, ease: "power2.in" }, 1.7);
       
       // Number Flip
       tl.to({ val: 2 }, {
@@ -252,7 +246,7 @@ export default function AppsSineWave() {
         onStart: () => setActiveIndex(2),
       }, 2.3);
 
-      // Hold final card
+      // Hold final card to prevent footer crush
       tl.to({}, { duration: 2.0 });
 
     }, section);
@@ -261,14 +255,14 @@ export default function AppsSineWave() {
   }, []);
 
   return (
-    <div className="relative w-full z-40 bg-white">
+    <div className="relative w-full z-40 bg-white pointer-events-auto">
       <section
         id="builtapps"
         ref={sectionRef}
         className="relative w-full h-screen overflow-hidden"
       >
         {/* Header */}
-        <div className="absolute top-[6vh] left-0 right-0 flex flex-col items-center z-10 select-none">
+        <div className="absolute top-[6vh] left-0 right-0 flex flex-col items-center z-10 select-none pointer-events-none">
           <h2
             className="font-black tracking-tight m-0"
             style={{
@@ -285,25 +279,38 @@ export default function AppsSineWave() {
           <div className="mt-4 h-[3px] w-20 rounded-full bg-gradient-to-r from-transparent via-blue-500 to-transparent" />
         </div>
 
-        {/* Professional SVG Wave Canvas Area */}
+        {/* Professional SVG Wave Canvas Area.
+          Using a strict mathematically computed Bezier curve so the JS ease matches the visual line identically. 
+        */}
         <div className="absolute top-[30vh] left-0 right-0 h-[40vh] z-0 pointer-events-none">
           <svg
             viewBox="0 0 1200 220"
             preserveAspectRatio="none"
             className="w-full h-full overflow-visible"
           >
-            {/* Elegant, Mathematically smooth Cubic Bezier Sine Wave */}
+            <defs>
+              <filter id="waveGlow" x="-20%" y="-80%" width="140%" height="260%">
+                <feGaussianBlur in="SourceGraphic" stdDeviation="6" result="blur" />
+                <feColorMatrix in="blur" type="matrix" values="0 0 0 0 0.23  0 0 0 0 0.51  0 0 0 0 0.96  0 0 0 1 0" result="blueGlow" />
+                <feMerge>
+                  <feMergeNode in="blueGlow" />
+                  <feMergeNode in="SourceGraphic" />
+                </feMerge>
+              </filter>
+            </defs>
+
+            {/* Pure Bezier approximations for half-cosine waves */}
             <path
-              d="M 0 110 C 100 110, 150 30, 250 30 C 400 30, 450 190, 600 190 C 750 190, 800 30, 950 30 C 1050 30, 1100 110, 1200 110"
+              d="M 0 30 C 72.8 30, 127.2 190, 200 190 C 272.8 190, 327.2 30, 400 30 C 472.8 30, 527.2 190, 600 190 C 672.8 190, 727.2 30, 800 30 C 872.8 30, 927.2 190, 1000 190 C 1072.8 190, 1127.2 30, 1200 30"
               fill="none" stroke="#e0e7ff" strokeWidth="20" opacity="0.4" strokeLinecap="round"
             />
             <path
-              d="M 0 110 C 100 110, 150 30, 250 30 C 400 30, 450 190, 600 190 C 750 190, 800 30, 950 30 C 1050 30, 1100 110, 1200 110"
-              fill="none" stroke="#3b82f6" strokeWidth="3" strokeLinecap="round"
+              d="M 0 30 C 72.8 30, 127.2 190, 200 190 C 272.8 190, 327.2 30, 400 30 C 472.8 30, 527.2 190, 600 190 C 672.8 190, 727.2 30, 800 30 C 872.8 30, 927.2 190, 1000 190 C 1072.8 190, 1127.2 30, 1200 30"
+              fill="none" stroke="#3b82f6" strokeWidth="3" strokeLinecap="round" filter="url(#waveGlow)"
             />
           </svg>
 
-          {/* The glowing marker node */}
+          {/* Glowing marker node */}
           <div
             ref={markerRef}
             className="absolute z-30 w-12 h-12 -translate-x-1/2 -translate-y-1/2 pointer-events-none"
@@ -316,23 +323,35 @@ export default function AppsSineWave() {
             </div>
           </div>
 
-          {/* Card Layout: Perfectly aligned to the node vertically */}
+          {/* Hard-Coded Alignments: Card 1 and 3 sit straight below. Card 2 sits straight above. */}
           {APPS.map((app, i) => {
             const isTrough = i === 1; 
             return (
               <div
                 key={app.title}
                 ref={(el) => { cardWrappers.current[i] = el; }}
-                className="absolute z-20"
+                className="absolute z-40 pointer-events-auto"
                 style={{
                   left: `${WAVE_POSITIONS[i].leftPct}%`,
                   top: `${WAVE_POSITIONS[i].topPct}%`,
-                  // If it's the bottom wave (Trough), shift the entire container up by 100% so it sits above the node.
-                  // If it's the top wave (Peak), shift it down by 0% so it sits below the node.
-                  transform: `translate(-50%, ${isTrough ? "-100%" : "0%"})`,
+                  transform: `translateX(-50%)`,
                 }}
               >
-                <AppCard app={app} active={activeIndex === i} isTrough={isTrough} />
+                {isTrough ? (
+                  // Node 2 is down. Card sits perfectly above the node.
+                  <div className="absolute bottom-[calc(100%+40px)] left-1/2 -translate-x-1/2">
+                    <AppCard app={app} active={activeIndex === i} isTrough={isTrough} />
+                    {/* Dotted Line dropping down to the node */}
+                    <div className="absolute top-[100%] left-1/2 w-[2px] h-[40px] border-l-[3px] border-dotted border-blue-300 opacity-60" />
+                  </div>
+                ) : (
+                  // Node 1 & 3 are up. Card sits perfectly below the node.
+                  <div className="absolute top-[calc(100%+40px)] left-1/2 -translate-x-1/2">
+                    {/* Dotted Line rising up to the node */}
+                    <div className="absolute bottom-[100%] left-1/2 w-[2px] h-[40px] border-l-[3px] border-dotted border-blue-300 opacity-60" />
+                    <AppCard app={app} active={activeIndex === i} isTrough={isTrough} />
+                  </div>
+                )}
               </div>
             );
           })}
@@ -340,4 +359,4 @@ export default function AppsSineWave() {
       </section>
     </div>
   );
-}
+                                                                                  }
