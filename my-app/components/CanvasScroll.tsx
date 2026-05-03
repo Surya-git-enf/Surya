@@ -70,7 +70,7 @@ export default function CanvasScroll() {
     const container = containerRef.current;
     if (!container) return;
 
-    // Initial states
+    // Initial states: Cards are hidden and pushed down
     gsap.set(textRef.current, { opacity: 1, y: 0 });
     cardRefs.current.forEach((el) => {
       if (el) gsap.set(el, { opacity: 0, y: 100, scale: 0.9 });
@@ -81,14 +81,14 @@ export default function CanvasScroll() {
         scrollTrigger: {
           trigger: container,
           start: "top top",
-          end: "+=350%", // Adjusted for a perfect scroll duration before unpinning
+          end: "+=350%", // Enough scroll depth for the animation sequence
           pin: true,
-          scrub: 1,
+          scrub: 1, // Smooth interpolation
           anticipatePin: 1,
         },
       });
 
-      // 1. Text fades up and out
+      // 1. Text fades up and out as you scroll
       tl.to(textRef.current, { 
         opacity: 0, 
         y: -60, 
@@ -106,7 +106,7 @@ export default function CanvasScroll() {
         ease: "back.out(1.2)" 
       }, "-=0.5");
 
-      // 3. Hold the cards on screen for a moment so the user can read them before unpinning
+      // 3. Hold the cards on screen before allowing the pin to release
       tl.to({}, { duration: 1.5 });
 
     }, container);
@@ -115,99 +115,102 @@ export default function CanvasScroll() {
   }, []);
 
   return (
-    <div
-      ref={containerRef}
-      id="personal"
-      className="relative w-full overflow-hidden flex items-center justify-center"
-      style={{ height: "100vh", background: "#000" }}
-    >
-      {/* Video Background */}
-      <video
-        autoPlay
-        loop
-        muted
-        playsInline
-        className="absolute inset-0 w-full h-full object-cover z-0 pointer-events-none"
-      >
-        <source src="/bg.mp4" type="video/mp4" />
-      </video>
-
-      {/* Dark gradient overlay to ensure text/cards remain legible over the video */}
+    /* CRITICAL FIX: The wrapper that prevents Techstack from bleeding through */
+    <div className="relative w-full z-50 bg-black">
       <div
-        className="absolute inset-0 z-10 pointer-events-none"
-        style={{ background: "linear-gradient(to bottom, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0.3) 50%, rgba(0,0,0,0.8) 100%)" }}
-      />
+        ref={containerRef}
+        id="personal"
+        className="relative w-full overflow-hidden flex items-center justify-center"
+        style={{ height: "100vh", background: "#000" }}
+      >
+        {/* Video Background */}
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="absolute inset-0 w-full h-full object-cover z-0 pointer-events-none"
+        >
+          <source src="/bg.mp4" type="video/mp4" />
+        </video>
 
-      {/* Foreground Container */}
-      <div className="absolute inset-0 z-20 flex flex-col items-center justify-center pointer-events-none">
-        
-        {/* Intro text */}
-        <div ref={textRef} className="absolute text-center flex flex-col items-center gap-4 px-6">
-          <h2 className="text-white font-black leading-none" style={{ fontSize: "clamp(2.8rem, 6vw, 6rem)" }}>
-            Hey 👋, I&apos;m Surya
-          </h2>
-          <p className="text-white/60 font-medium tracking-widest uppercase text-base">
-            Scroll to discover
-          </p>
-        </div>
+        {/* Dark gradient overlay to ensure text/cards remain legible over the video */}
+        <div
+          className="absolute inset-0 z-10 pointer-events-none"
+          style={{ background: "linear-gradient(to bottom, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0.3) 50%, rgba(0,0,0,0.8) 100%)" }}
+        />
 
-        {/* Cards row */}
-        <div className="flex flex-col md:flex-row items-center justify-center gap-5 md:gap-7 px-[4vw] w-full">
-          {PANELS.map((panel, i) => (
-            <div
-              key={panel.label}
-              ref={(el) => { cardRefs.current[i] = el; }}
-              className="pointer-events-auto flex-shrink-0 flex flex-col relative"
-              style={{
-                width: "clamp(240px, 24vw, 320px)",
-                background: "linear-gradient(145deg, rgba(18,18,22,0.85) 0%, rgba(10,10,14,0.95) 100%)",
-                backdropFilter: "blur(24px)",
-                WebkitBackdropFilter: "blur(24px)",
-                border: `1px solid ${panel.accentFrom}44`,
-                borderRadius: "22px",
-                boxShadow: `0 20px 50px rgba(0,0,0,0.5), 0 0 0 1px ${panel.accentFrom}22`,
-                transition: "transform 0.35s cubic-bezier(0.16,1,0.3,1), box-shadow 0.35s ease",
-                cursor: "pointer",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = "translateY(-10px) scale(1.02)";
-                e.currentTarget.style.boxShadow = `0 32px 70px rgba(0,0,0,0.7), 0 0 28px ${panel.accentFrom}55`;
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = "translateY(0) scale(1)";
-                e.currentTarget.style.boxShadow = `0 20px 50px rgba(0,0,0,0.5), 0 0 0 1px ${panel.accentFrom}22`;
-              }}
-            >
-              <div style={{ height: "3px", borderRadius: "22px 22px 0 0", background: `linear-gradient(90deg, ${panel.accentFrom}, ${panel.accentTo})` }} />
-              <div className="flex flex-col gap-4 p-5">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
-                    style={{ background: panel.badgeBg, boxShadow: `0 4px 16px ${panel.accentFrom}55` }}>
-                    {panel.icon}
-                  </div>
-                  <div>
-                    <p className="text-white/40 text-[9px] font-bold uppercase tracking-[0.3em]">About me</p>
-                    <p className="text-white font-black text-lg leading-tight">{panel.label}</p>
-                  </div>
-                </div>
-                <div className="h-px w-full" style={{ background: `linear-gradient(90deg, ${panel.accentFrom}44, ${panel.accentTo}44)` }} />
-                <div className="flex flex-col gap-3">
-                  {panel.lines.map((row) => (
-                    <div key={row.label} className="flex justify-between items-start gap-3">
-                      <span className="text-[10px] font-bold uppercase tracking-widest flex-shrink-0 mt-0.5" style={{ color: `${panel.accentFrom}cc` }}>
-                        {row.label}
-                      </span>
-                      <span className="text-white/90 font-medium text-xs text-right leading-relaxed">
-                        {row.value}
-                      </span>
+        {/* Foreground Container */}
+        <div className="absolute inset-0 z-20 flex flex-col items-center justify-center pointer-events-none">
+          
+          {/* Intro text */}
+          <div ref={textRef} className="absolute text-center flex flex-col items-center gap-4 px-6">
+            <h2 className="text-white font-black leading-none" style={{ fontSize: "clamp(2.8rem, 6vw, 6rem)" }}>
+              Hey 👋, I&apos;m Surya
+            </h2>
+            <p className="text-white/60 font-medium tracking-widest uppercase text-base">
+              Scroll to discover
+            </p>
+          </div>
+
+          {/* Cards row */}
+          <div className="flex flex-col md:flex-row items-center justify-center gap-5 md:gap-7 px-[4vw] w-full">
+            {PANELS.map((panel, i) => (
+              <div
+                key={panel.label}
+                ref={(el) => { cardRefs.current[i] = el; }}
+                className="pointer-events-auto flex-shrink-0 flex flex-col relative"
+                style={{
+                  width: "clamp(240px, 24vw, 320px)",
+                  background: "linear-gradient(145deg, rgba(18,18,22,0.85) 0%, rgba(10,10,14,0.95) 100%)",
+                  backdropFilter: "blur(24px)",
+                  WebkitBackdropFilter: "blur(24px)",
+                  border: `1px solid ${panel.accentFrom}44`,
+                  borderRadius: "22px",
+                  boxShadow: `0 20px 50px rgba(0,0,0,0.5), 0 0 0 1px ${panel.accentFrom}22`,
+                  transition: "transform 0.35s cubic-bezier(0.16,1,0.3,1), box-shadow 0.35s ease",
+                  cursor: "pointer",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = "translateY(-10px) scale(1.02)";
+                  e.currentTarget.style.boxShadow = `0 32px 70px rgba(0,0,0,0.7), 0 0 28px ${panel.accentFrom}55`;
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = "translateY(0) scale(1)";
+                  e.currentTarget.style.boxShadow = `0 20px 50px rgba(0,0,0,0.5), 0 0 0 1px ${panel.accentFrom}22`;
+                }}
+              >
+                <div style={{ height: "3px", borderRadius: "22px 22px 0 0", background: `linear-gradient(90deg, ${panel.accentFrom}, ${panel.accentTo})` }} />
+                <div className="flex flex-col gap-4 p-5">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+                      style={{ background: panel.badgeBg, boxShadow: `0 4px 16px ${panel.accentFrom}55` }}>
+                      {panel.icon}
                     </div>
-                  ))}
+                    <div>
+                      <p className="text-white/40 text-[9px] font-bold uppercase tracking-[0.3em]">About me</p>
+                      <p className="text-white font-black text-lg leading-tight">{panel.label}</p>
+                    </div>
+                  </div>
+                  <div className="h-px w-full" style={{ background: `linear-gradient(90deg, ${panel.accentFrom}44, ${panel.accentTo}44)` }} />
+                  <div className="flex flex-col gap-3">
+                    {panel.lines.map((row) => (
+                      <div key={row.label} className="flex justify-between items-start gap-3">
+                        <span className="text-[10px] font-bold uppercase tracking-widest flex-shrink-0 mt-0.5" style={{ color: `${panel.accentFrom}cc` }}>
+                          {row.label}
+                        </span>
+                        <span className="text-white/90 font-medium text-xs text-right leading-relaxed">
+                          {row.value}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </div>
     </div>
   );
-}
+          }
