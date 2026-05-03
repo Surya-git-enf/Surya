@@ -340,7 +340,7 @@ export default function Footer() {
           </div>
 
           <p style={{ fontSize: 11, color: "#aaa", margin: 0, fontWeight: 500 }}>
-            © {new Date().getFullYear()} Surya Peddishetti · Built with Next.js & GSAP
+            © {new Date().getFullYear()} Surya Peddishetti · Built with Love & Dedication 
           </p>
         </div>
       </div>
