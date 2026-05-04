@@ -296,4 +296,5 @@ export default function HeroReveal() {
       </div>
     </section>
   );
-}
+          }
+          
