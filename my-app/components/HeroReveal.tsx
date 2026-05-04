@@ -28,7 +28,7 @@ export default function HeroReveal() {
       gsap.set(crossbarRef.current, { opacity: 0 });
       gsap.set(letterRefs.current, { opacity: 0, y: 20 });
       gsap.set(aLetterRef.current, { opacity: 0 });
-      gsap.set(topLetterRefs.current, { opacity: 0, y: 30 });
+      gsap.set(topLetterRefs.current, { opacity: 0, y: 60 });
 
       // Start the character off the LEFT edge of the screen
       gsap.set(charWrapRef.current, { left: "0%", xPercent: 0 });
@@ -92,17 +92,17 @@ export default function HeroReveal() {
         );
       });
 
-      // PEDDISHETTI reveal
+      // PEDDISHETTI rises from bottom AFTER SURYA is fully revealed
       tl.to(
         topLetterRefs.current,
         {
           opacity: 1,
           y: 0,
-          duration: 1.2,
-          stagger: 0.05,
+          duration: 1.0,
+          stagger: 0.06,
           ease: "power3.out",
         },
-        "walkStart+=2.0"
+        "walkStart+=4.2"
       );
 
       // Figure slows/stops — legs settle
@@ -256,7 +256,6 @@ export default function HeroReveal() {
               zIndex: 20,
               // Start at the very left edge
               left: "0%",
-              xPercent: 0,
             }}
           >
             <div style={{ transformStyle: "preserve-3d", height: "100%" }}>
@@ -296,5 +295,4 @@ export default function HeroReveal() {
       </div>
     </section>
   );
-          }
-          
+                  }
