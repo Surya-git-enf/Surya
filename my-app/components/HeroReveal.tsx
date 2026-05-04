@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useLayoutEffect, useRef } from "react";
@@ -21,16 +22,20 @@ export default function HeroReveal() {
     if (!section) return;
 
     const ctx = gsap.context(() => {
+      // Hide everything immediately before any paint
       gsap.set(backLegRef.current, { opacity: 0, attr: { x2: 30, y2: 115 } });
       gsap.set(frontLegRef.current, { opacity: 0, attr: { x2: 30, y2: 115 } });
       gsap.set(crossbarRef.current, { opacity: 0 });
       gsap.set(letterRefs.current, { opacity: 0, y: 20 });
       gsap.set(aLetterRef.current, { opacity: 0 });
       gsap.set(topLetterRefs.current, { opacity: 0, y: 30 });
+
+      // Start the character off the LEFT edge of the screen
       gsap.set(charWrapRef.current, { left: "0%", xPercent: 0 });
 
-      const tl = gsap.timeline();
+      const tl = gsap.timeline({ delay: 0.1 });
 
+      // Legs appear
       tl.to([backLegRef.current, frontLegRef.current], {
         opacity: 1,
         duration: 0.4,
@@ -41,6 +46,7 @@ export default function HeroReveal() {
 
       const walkDuration = 3.2;
 
+      // Walk from left (0%) to right (100%)
       tl.to(
         charWrapRef.current,
         {
@@ -52,6 +58,7 @@ export default function HeroReveal() {
         "walkStart"
       );
 
+      // Leg swing animation
       tl.to(
         backLegRef.current,
         {
@@ -76,6 +83,7 @@ export default function HeroReveal() {
         "walkStart"
       );
 
+      // S, U, R, Y reveal as figure walks past
       LETTERS.forEach((_, i) => {
         tl.to(
           letterRefs.current[i],
@@ -84,6 +92,7 @@ export default function HeroReveal() {
         );
       });
 
+      // PEDDISHETTI reveal
       tl.to(
         topLetterRefs.current,
         {
@@ -96,6 +105,7 @@ export default function HeroReveal() {
         "walkStart+=2.0"
       );
 
+      // Figure slows/stops — legs settle
       tl.to(
         backLegRef.current,
         {
@@ -116,6 +126,7 @@ export default function HeroReveal() {
         "walkStart+=3.15"
       );
 
+      // Crossbar appears — turns into the letter A
       tl.to(
         crossbarRef.current,
         {
@@ -125,6 +136,7 @@ export default function HeroReveal() {
         "walkStart+=3.3"
       );
 
+      // The standalone "A" letter fades in where the figure was
       tl.to(
         aLetterRef.current,
         {
@@ -134,6 +146,7 @@ export default function HeroReveal() {
         "walkStart+=3.5"
       );
 
+      // Figure fades out, leaving only the A
       tl.to(
         charWrapRef.current,
         {
@@ -153,12 +166,14 @@ export default function HeroReveal() {
       className="relative w-full flex flex-col items-center justify-center bg-white overflow-hidden select-none"
       style={{ minHeight: "100vh" }}
     >
+      {/* Radial glow background */}
       <div
         className="pointer-events-none absolute inset-0"
         style={{
           background: `radial-gradient(ellipse 80% 50% at 50% 65%, ${ORANGE}14 0%, transparent 70%)`,
         }}
       />
+      {/* Noise texture */}
       <div
         className="pointer-events-none absolute inset-0 opacity-[0.025]"
         style={{
@@ -169,7 +184,12 @@ export default function HeroReveal() {
       />
 
       <div className="relative z-10 flex flex-col items-stretch w-full px-[5vw]">
-        <div className="flex justify-between items-baseline w-full" aria-label="PEDDISHETTI">
+        {/* Top row: PEDDISHETTI — hidden until animation reveals */}
+        <div
+          className="flex justify-between items-baseline w-full"
+          aria-label="PEDDISHETTI"
+          style={{ visibility: "visible" }}
+        >
           {"PEDDISHETTI".split("").map((ch, i) => (
             <span
               key={i}
@@ -181,6 +201,8 @@ export default function HeroReveal() {
                 fontSize: "clamp(2.4rem, 5.8vw, 7rem)",
                 color: ORANGE,
                 textShadow: `0 0 80px ${ORANGE}55`,
+                // Pre-hidden via GSAP set; this prevents SSR flash
+                opacity: 0,
               }}
             >
               {ch}
@@ -188,6 +210,7 @@ export default function HeroReveal() {
           ))}
         </div>
 
+        {/* Bottom row: S U R Y  [walking figure]  A */}
         <div
           className="relative flex justify-between items-baseline w-full mt-2"
           style={{ fontSize: "clamp(1.5rem, 3.6vw, 4.4rem)" }}
@@ -199,20 +222,31 @@ export default function HeroReveal() {
                 letterRefs.current[i] = el;
               }}
               className="font-black leading-none inline-block"
-              style={{ color: ORANGE, textShadow: `0 0 40px ${ORANGE}55` }}
+              style={{
+                color: ORANGE,
+                textShadow: `0 0 40px ${ORANGE}55`,
+                // Pre-hidden to prevent flash
+                opacity: 0,
+              }}
             >
               {ch}
             </span>
           ))}
 
+          {/* The final "A" that the figure morphs into */}
           <span
             ref={aLetterRef}
             className="font-black leading-none inline-block"
-            style={{ color: ORANGE, textShadow: `0 0 60px ${ORANGE}99, 0 0 20px ${ORANGE}77` }}
+            style={{
+              color: ORANGE,
+              textShadow: `0 0 60px ${ORANGE}99, 0 0 20px ${ORANGE}77`,
+              opacity: 0,
+            }}
           >
             A
           </span>
 
+          {/* Walking stick figure — absolutely positioned, travels left→right */}
           <div
             ref={charWrapRef}
             className="absolute flex justify-center pointer-events-none"
@@ -220,6 +254,9 @@ export default function HeroReveal() {
               bottom: "-0.05em",
               height: "1.1em",
               zIndex: 20,
+              // Start at the very left edge
+              left: "0%",
+              xPercent: 0,
             }}
           >
             <div style={{ transformStyle: "preserve-3d", height: "100%" }}>
@@ -245,8 +282,11 @@ export default function HeroReveal() {
                 </defs>
 
                 <g filter="url(#oglow)" stroke={ORANGE} strokeLinecap="round" fill="none">
+                  {/* Back leg */}
                   <line ref={backLegRef} x1="30" y1="20" x2="30" y2="115" strokeWidth="6" />
+                  {/* Front leg */}
                   <line ref={frontLegRef} x1="30" y1="20" x2="30" y2="115" strokeWidth="6" />
+                  {/* Crossbar — appears at end to form the letter A */}
                   <line ref={crossbarRef} x1="20" y1="75" x2="40" y2="75" strokeWidth="6" />
                 </g>
               </svg>
