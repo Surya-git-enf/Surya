@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@vercel/speed-insights": "^2.0.0",
     "autoprefixer": "^10.4.19",
     "gsap": "^3.12.5",
     "next": "14.2.35",
@@ -25,6 +26,7 @@
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "@types/three": "^0.184.0",
+    "eslint-config-next": "^16.2.4",
     "typescript": "^5"
   }
 }
