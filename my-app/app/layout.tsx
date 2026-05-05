@@ -1,31 +1,40 @@
 
-// app/layout.tsx
 import type { Metadata } from "next";
-import { Ubuntu } from "next/font/google";
 import "./globals.css";
 
-const ubuntu = Ubuntu({
-  weight: ["300", "400", "500", "700"],
-  subsets: ["latin"],
-  variable: "--font-ubuntu",
-});
-
 export const metadata: Metadata = {
-  title: "Peddishetti Surya | Creative Developer",
+  title: "Surya Peddishetti | AI & Full-Stack Engineer",
   description:
-    "I build full stack AI apps and design immersive 3D websites that convert visitors into customers.",
+    "Creative developer building cinematic web experiences, interactive 3D portfolios, and AI-powered full stack apps.",
+  // Your live Vercel URL!
+  metadataBase: new URL("https://surya-lemon.vercel.app"), 
+  openGraph: {
+    title: "Surya Peddishetti | AI & Full-Stack Engineer",
+    description:
+      "Creative developer building cinematic web experiences, interactive 3D portfolios, and AI-powered full stack apps.",
+    url: "https://surya-lemon.vercel.app",
+    siteName: "Surya Peddishetti Portfolio",
+    images: [
+      {
+        url: "/opengraph-image.png", // Next.js will automatically find this in your app/ folder
+        width: 1200,
+        height: 630,
+        alt: "Surya Peddishetti - Portfolio Preview",
+      },
+    ],
+    locale: "en_US",
+    type: "website",
+  },
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
     <html lang="en">
-      <body
-        className={`${ubuntu.variable} font-sans antialiased bg-white text-gray-900 overflow-x-hidden`}
-      >
+      <body className="antialiased bg-white">
         {children}
       </body>
     </html>
