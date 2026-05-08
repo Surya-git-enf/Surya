@@ -71,7 +71,7 @@ const SOCIALS = [
   },
   {
     name: "Twitter / X",
-    href: "https://twitter.com/surya_builds", // Fixed to a valid URL!
+    href: "https://twitter.com/surya_builds",
     color: "#000",
     svg: (
       <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
@@ -113,6 +113,28 @@ export default function Footer() {
         }
         .marquee-container:hover .marquee-track {
           animation-play-state: paused;
+        }
+        .visit-link {
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+          color: #2563eb;
+          font-size: 11px;
+          font-weight: 600;
+          text-decoration: none;
+          letter-spacing: 0.01em;
+          transition: color 0.2s ease, gap 0.2s ease;
+          margin-top: 6px;
+        }
+        .visit-link:hover {
+          color: #1d4ed8;
+          gap: 6px;
+        }
+        .visit-link svg {
+          transition: transform 0.2s ease;
+        }
+        .visit-link:hover svg {
+          transform: translate(1px, -1px);
         }
       `}</style>
 
@@ -165,7 +187,6 @@ export default function Footer() {
 
         {/* ── Infinite Scrolling Carousel ── */}
         <div className="marquee-container" style={{ display: "flex", overflow: "hidden", width: "100%", paddingBottom: "5rem" }}>
-          {/* We render the array twice to create the seamless infinite loop */}
           <div 
             className="marquee-track" 
             style={{ 
@@ -193,6 +214,7 @@ export default function Footer() {
                   borderRadius: 20,
                   overflow: "hidden",
                   padding: "1.25rem",
+                  paddingBottom: "1.5rem",
                   background: hovered === i ? "rgba(255,255,255,0.85)" : "rgba(255,255,255,0.55)",
                   backdropFilter: "blur(20px)",
                   WebkitBackdropFilter: "blur(20px)",
@@ -206,7 +228,7 @@ export default function Footer() {
                 {/* Top accent bar */}
                 <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 3, background: `linear-gradient(90deg, ${c.accent}, ${c.accent}88)`, borderRadius: "20px 20px 0 0" }} />
 
-                {/* Requested Image Layout - Perfectly Centered */}
+                {/* Image */}
                 <div style={{ 
                   width: "100%", 
                   height: "160px", 
@@ -254,7 +276,34 @@ export default function Footer() {
                 </div>
                 <p style={{ fontSize: 12, color: "#666", fontWeight: 500, margin: 0 }}>{c.sub}</p>
 
-                {/* Hover arrow */}
+                {/* ── Visit link ── */}
+                <a
+                  href={c.url}
+                  target={c.url !== "#" ? "_blank" : "_self"}
+                  rel="noopener noreferrer"
+                  className="visit-link"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  Visit site
+                  <svg
+                    viewBox="0 0 12 12"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    style={{ width: 11, height: 11 }}
+                  >
+                    {/* Box */}
+                    <path d="M2 2h4v4" opacity="0" />
+                    {/* External link icon */}
+                    <path d="M7 1h4v4" />
+                    <path d="M11 1L5 7" />
+                    <path d="M5 2H2a1 1 0 00-1 1v7a1 1 0 001 1h7a1 1 0 001-1V8" />
+                  </svg>
+                </a>
+
+                {/* Hover arrow (top-right) */}
                 <div
                   style={{
                     position: "absolute",
@@ -355,5 +404,4 @@ export default function Footer() {
       </div>
     </footer>
   );
-                  }
-                  
+                       }
