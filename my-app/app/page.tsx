@@ -5,7 +5,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import dynamic from "next/dynamic";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { SpeedInsights } from "@vercel/speed-insights/next"
+
 import HeroReveal from "@/components/HeroReveal";
 import Footer from "@/components/Footer";
 import ErrorBoundary from "@/components/ErrorBoundary";
