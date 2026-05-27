@@ -1,3 +1,4 @@
+
 import { SpeedInsights } from "@vercel/speed-insights/next"
 import type { Metadata } from "next";
 import "./globals.css";
@@ -6,8 +7,7 @@ export const metadata: Metadata = {
   title: "Surya Peddishetti | AI & Full-Stack Engineer",
   description:
     "Creative developer building cinematic web experiences, interactive 3D portfolios, and AI-powered full stack apps.",
-  // Your live Vercel URL!
-  metadataBase: new URL("https://surya-lemon.vercel.app"), 
+  metadataBase: new URL("https://surya-lemon.vercel.app"),
   openGraph: {
     title: "Surya Peddishetti | AI & Full-Stack Engineer",
     description:
@@ -16,7 +16,7 @@ export const metadata: Metadata = {
     siteName: "Surya Peddishetti Portfolio",
     images: [
       {
-        url: "/opengraph-image.png", // Next.js will automatically find this in your app/ folder
+        url: "/opengraph-image.png",
         width: 1200,
         height: 630,
         alt: "Surya Peddishetti - Portfolio Preview",
@@ -36,6 +36,7 @@ export default function RootLayout({
     <html lang="en">
       <body className="antialiased bg-white">
         {children}
+        <SpeedInsights />
       </body>
     </html>
   );
