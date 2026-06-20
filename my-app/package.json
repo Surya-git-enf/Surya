@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@vercel/speed-insights": "^2.0.0",
     "autoprefixer": "^10.4.19",
     "gsap": "^3.12.5",
     "next": "14.2.35",
